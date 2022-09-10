@@ -1,36 +1,13 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
-import {styled, createTheme, ThemeProvider} from "@mui/material/styles";
+import {styled, ThemeProvider} from "@mui/material/styles";
 import {Tooltip} from "@mui/material";
 import files from "../assets/dock/files.svg";
 import gazebo from "../assets/dock/gazebo.svg";
 import vscode from "../assets/dock/vscode.svg";
 import terminal from "../assets/dock/terminal.svg";
+import {theme} from "../App";
 export default function Dock() {
-  const theme = createTheme({
-    palette: {
-      primary: {
-        50: "#f5f3ff",
-        100: "#ede9fe",
-        200: "#ddd6fe",
-        300: "#c4b5fd",
-        400: "#a78bfa",
-        500: "#8b5cf6",
-        600: "#7c3aed",
-        700: "#6d28d9",
-        800: "#5b21b6",
-        900: "#4c1d95",
-      },
-      background: {
-        default: "rgba(255,255,255,0.5)",
-      },
-      text: {
-        primary: "#fff",
-        dir: "#a78bfa",
-        execDir: "#8b5cf6",
-      },
-    },
-  });
   const IconAppContainer = styled(Box)`
     ${({theme}) => `
     display: flex;
@@ -49,7 +26,7 @@ export default function Dock() {
   `;
   const IconApp = props => {
     return (
-      <IconAppContainer>
+      <IconAppContainer onClick={props.onClick}>
         <Tooltip title={props.title}>
           <img
             src={props.src}
@@ -73,11 +50,11 @@ export default function Dock() {
         width={"200px"}
         display={"flex"}
         justifyContent={"space-between"}
-        bgcolor={theme.palette.background.default}
+        bgcolor={theme.palette.background.dock}
         pl={"30px"}
         pr={"30px"}
         borderRadius={"32px"}
-        sx={{backdropFilter: "blur(20px)"}}>
+        sx={{backdropFilter: "blur(10px)"}}>
         <IconApp src={files} width={42} title={"File Manager"} />
         <IconApp src={terminal} width={38} title={"Terminal"} />
         <IconApp src={vscode} width={33} title={"Code Editor"} />

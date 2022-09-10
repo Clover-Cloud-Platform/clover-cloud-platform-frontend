@@ -1,12 +1,12 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import {createTheme, ThemeProvider} from "@mui/material/styles";
-import wallpaper from "../assets/wallpaper.jpg";
+import {ThemeProvider} from "@mui/material/styles";
 import CircleIcon from "@mui/icons-material/Circle";
 import Fade from "@mui/material/Fade";
 import {Rnd} from "react-rnd";
 import {Tooltip} from "@mui/material";
+import {theme} from "../App";
 
 let historyKey = 0;
 let historyIndex = 0;
@@ -18,31 +18,6 @@ let prevTermPosition = false;
 let prevTermSize = false;
 
 export default function Terminal() {
-  const theme = createTheme({
-    palette: {
-      primary: {
-        50: "#f5f3ff",
-        100: "#ede9fe",
-        200: "#ddd6fe",
-        300: "#c4b5fd",
-        400: "#a78bfa",
-        500: "#8b5cf6",
-        600: "#7c3aed",
-        700: "#6d28d9",
-        800: "#5b21b6",
-        900: "#4c1d95",
-      },
-      background: {
-        default: "rgba(33,29,42,0.9)",
-      },
-      text: {
-        primary: "#fff",
-        dir: "#a78bfa",
-        execDir: "#8b5cf6",
-      },
-    },
-  });
-
   const [output, setOutput] = React.useState([]);
   const [draggable, disableDraggable] = React.useState(false);
   const [minimized, setMinimized] = React.useState(true);
