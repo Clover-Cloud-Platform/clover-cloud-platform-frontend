@@ -240,7 +240,17 @@ export default function App() {
                     </Tooltip>
                   </Box>
                 </Box>
-                {props.children}
+                <Box
+                  onMouseOver={() => {
+                    disableDraggable(true);
+                  }}
+                  onMouseOut={() => {
+                    if (!fullscreenMode) {
+                      disableDraggable(false);
+                    }
+                  }}>
+                  {props.children}
+                </Box>
               </Box>
             </Box>
           </Rnd>
@@ -252,7 +262,7 @@ export default function App() {
   const launchApp = appName => {
     let app;
     if (appName === "terminal") {
-      app = <Terminal />;
+      app = <Terminal instanceIndex={instanceIndex} />;
     }
     setInstances([
       ...instances,

@@ -2,20 +2,12 @@ import * as React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {ThemeProvider} from "@mui/material/styles";
-import CircleIcon from "@mui/icons-material/Circle";
-import Fade from "@mui/material/Fade";
-import {Rnd} from "react-rnd";
-import {Tooltip} from "@mui/material";
 import {theme} from "../App";
-
-let historyKey = 0;
-let historyIndex = 0;
-let down = false;
-let up = false;
-let history = [];
 
 export default function Terminal(props) {
   const [output, setOutput] = React.useState([]);
+  const [history, setHistory] = React.useState([]);
+  const [historyKey, setHistoryKey] = React.useState(0);
 
   const execute = command => {
     if (command.trim() !== "") {
@@ -30,7 +22,6 @@ export default function Terminal(props) {
           break;
         case "clear":
           setOutput([]);
-          historyIndex = 0;
           break;
         default:
           setOutput([
@@ -44,50 +35,17 @@ export default function Terminal(props) {
   };
 
   const handleKeyDown = e => {
+    const input = document.getElementById(
+      `terminalInput${props.instanceIndex}`,
+    );
     const moveCaretToEnd = () => {
-      e.target.setSelectionRange(
-        e.currentTarget.value.length,
-        e.currentTarget.value.length,
-      );
+      input.selectionStart = input.selectionEnd = input.value.length;
     };
     if (e.key === "Enter") {
       execute(e.currentTarget.value);
-      history.unshift(e.currentTarget.value);
-      historyKey++;
-      historyIndex = 0;
+      setHistory([e.currentTarget.value, ...history]);
+      setHistoryKey(prev => prev + 1);
       e.currentTarget.value = "";
-    } else if (e.key === "ArrowUp") {
-      if (historyIndex < historyKey) {
-        if (down) {
-          historyIndex++;
-          down = false;
-        }
-        if (history[historyIndex]) {
-          e.currentTarget.value = history[historyIndex];
-        }
-        moveCaretToEnd();
-        historyIndex++;
-        up = true;
-      }
-    } else if (e.key === "ArrowDown") {
-      if (historyIndex > 0) {
-        if (!up) {
-          historyIndex--;
-        } else {
-          historyIndex -= 2;
-          up = false;
-        }
-        down = true;
-        if (history[historyIndex]) {
-          e.currentTarget.value = history[historyIndex];
-        }
-        moveCaretToEnd();
-      } else {
-        down = false;
-        up = false;
-        historyIndex = 0;
-        e.currentTarget.value = "";
-      }
     }
   };
 
@@ -112,6 +70,12 @@ export default function Terminal(props) {
     );
   };
 
+  const handleRightClick = e => {
+    console.log("a");
+    //TODO: create context menu with copy/paste functions and commands from history
+    e.preventDefault();
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <Box
@@ -129,9 +93,10 @@ export default function Terminal(props) {
               ~$
             </Typography>
             <input
-              id={"terminalInput"}
+              id={`terminalInput${props.instanceIndex}`}
               autoFocus
               onKeyDown={handleKeyDown}
+              onContextMenu={handleRightClick}
               style={{
                 background: "transparent",
                 width: "100%",
