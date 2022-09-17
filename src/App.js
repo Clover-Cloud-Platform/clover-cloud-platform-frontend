@@ -1,23 +1,26 @@
 import * as React from "react";
+import {createTheme, ThemeProvider} from "@mui/material/styles";
 import Box from "@mui/material/Box";
-import {createTheme, styled, ThemeProvider} from "@mui/material/styles";
-import wallpaper from "./assets/wallpaper.jpg";
-import Terminal from "./Components/Terminal";
-import {Tooltip} from "@mui/material";
-import files from "./assets/dock/files.svg";
-import terminal from "./assets/dock/terminal.svg";
-import vscode from "./assets/dock/vscode.svg";
-import gazebo from "./assets/dock/gazebo.svg";
-import Fade from "@mui/material/Fade";
-import {Rnd} from "react-rnd";
-import CircleIcon from "@mui/icons-material/Circle";
-
-//number of running apps
-let instanceIndex = 0;
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import Menu from "@mui/material/Menu";
+import MenuIcon from "@mui/icons-material/Menu";
+import Container from "@mui/material/Container";
+import Button from "@mui/material/Button";
+import Tooltip from "@mui/material/Tooltip";
+import MenuItem from "@mui/material/MenuItem";
+import {ReactComponent as FullLogo} from "./assets/clover-cloud-platform-logo-full.svg";
+import {ReactComponent as Logo} from "./assets/clover-cloud-platform-logo.svg";
+import ArrowCircleRightIcon from "@mui/icons-material/ArrowCircleRight";
+import PlayCircleOutlineRoundedIcon from "@mui/icons-material/PlayCircleOutlineRounded";
+import ccp from "./assets/ccp.png";
 
 //global theme for the whole app
 export const theme = createTheme({
   palette: {
+    mode: "light",
     primary: {
       50: "#f5f3ff",
       100: "#ede9fe",
@@ -33,261 +36,179 @@ export const theme = createTheme({
     background: {
       default: "rgba(33,29,42,0.9)",
       dock: "rgba(255,255,255,0.7)",
+      appBar: "#ddd6fe",
     },
     text: {
-      primary: "#fff",
+      primary: "rgba(33,29,42,0.9)",
       dir: "#a78bfa",
       execDir: "#8b5cf6",
     },
   },
 });
 
-//main function
-export default function App() {
-  //all running apps
-  const [instances, setInstances] = React.useState([]);
+const pages = ["Docs", "GitHub", "Contact us"];
 
-  //dock panel
-  const Dock = () => {
-    //container for each application launcher icon with changing bg on hover
-    const IconAppContainer = styled(Box)`
-      ${({theme}) => `
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 5px;
-    width: 50px;
-    margin: 2px;
-    transition: ${theme.transitions.create(["background-color"], {
-      duration: theme.transitions.duration.standard,
-    })};
-    &:hover {
-      background-color: #f5f3ff;
-    }
-  `}
-    `;
+const ResponsiveAppBar = () => {
+  const [anchorElNav, setAnchorElNav] = React.useState(null);
 
-    //application launcher icon
-    const IconApp = props => {
-      return (
-        <IconAppContainer onClick={props.onClick}>
-          <Tooltip title={props.title}>
-            <img
-              src={props.src}
-              width={props.width}
-              alt={props.title}
-              style={{cursor: "pointer"}}
-            />
-          </Tooltip>
-        </IconAppContainer>
-      );
-    };
-
-    //return dock element
-    return (
-      <ThemeProvider theme={theme}>
-        <Box
-          position={"absolute"}
-          ml={"auto"}
-          mr={"auto"}
-          left={0}
-          right={0}
-          bottom={"10px"}
-          width={"200px"}
-          display={"flex"}
-          justifyContent={"space-between"}
-          bgcolor={theme.palette.background.dock}
-          pl={"30px"}
-          pr={"30px"}
-          borderRadius={"32px"}
-          sx={{backdropFilter: "blur(10px)"}}>
-          <IconApp src={files} width={42} title={"File Manager"} />
-          <IconApp
-            src={terminal}
-            width={38}
-            title={"Terminal"}
-            onClick={() => {
-              launchApp("terminal");
-            }}
-          />
-          <IconApp src={vscode} width={33} title={"Code Editor"} />
-          <IconApp src={gazebo} width={42} title={"Gazebo"} />
-        </Box>
-      </ThemeProvider>
-    );
+  const handleOpenNavMenu = event => {
+    setAnchorElNav(event.currentTarget);
   };
 
-  //container for each app with controls
-  const AppContainer = props => {
-    const [draggable, disableDraggable] = React.useState(false);
-    const [opened, setOpened] = React.useState(true);
-    const [size, setSize] = React.useState({width: 700, height: 400});
-    const [position, setPosition] = React.useState({
-      x: window.innerWidth / 2 - 350,
-      y: window.innerHeight / 2 - 200,
-    });
-    const [fullscreenMode, setFullscreenMode] = React.useState(false);
-    const [prevPosition, setPrevPosition] = React.useState();
-    const [prevSize, setPrevSize] = React.useState();
+  const handleCloseNavMenu = () => {
+    setAnchorElNav(null);
+  };
 
-    return (
-      <Fade in={opened}>
-        <Box>
-          <Rnd
-            enableResizing={!draggable}
-            disableDragging={draggable}
-            minHeight={200}
-            minWidth={250}
-            size={size}
-            position={position}
-            onDragStop={(e, d) => {
-              setPosition({x: d.x, y: d.y});
-              setPrevPosition({x: d.x, y: d.y});
-            }}
-            onResizeStop={(e, direction, ref, delta, position) => {
-              setSize({
-                width: ref.style.width,
-                height: ref.style.height,
-              });
-              setPrevSize({
-                width: ref.style.width,
-                height: ref.style.height,
-              });
-              setPrevPosition(position);
-              setPosition(position);
-            }}
-            resizeHandleStyles={{
-              left: {cursor: "e-resize"},
-              right: {cursor: "ew-resize"},
-              top: {cursor: "s-resize"},
-              bottom: {cursor: "s-resize"},
+  return (
+    <AppBar position="fixed" sx={{bgcolor: theme.palette.background.appBar}}>
+      <Container maxWidth={"xl"}>
+        <Toolbar disableGutters>
+          <Box sx={{display: {xs: "none", md: "flex"}, mr: 1}}>
+            <FullLogo style={{height: "52px", width: "320px"}} />
+          </Box>
+          <Box sx={{flexGrow: 1, display: {xs: "flex", md: "none"}}}>
+            <IconButton
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleOpenNavMenu}
+              sx={{color: theme.palette.text.primary}}>
+              <MenuIcon />
+            </IconButton>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchorElNav}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "left",
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "left",
+              }}
+              open={Boolean(anchorElNav)}
+              onClose={handleCloseNavMenu}
+              sx={{
+                display: {xs: "block", md: "none"},
+              }}>
+              {pages.map(page => (
+                <MenuItem key={page} onClick={handleCloseNavMenu}>
+                  <Typography textAlign="center">{page}</Typography>
+                </MenuItem>
+              ))}
+            </Menu>
+          </Box>
+          <Box
+            sx={{
+              display: {xs: "flex", md: "none"},
+              mr: 1,
             }}>
-            <Box
-              sx={{cursor: "auto"}}
-              bgcolor={theme.palette.background.default}
-              boxShadow={"4px 4px 26px 1px rgba(0, 0, 0, 0.47)"}
-              borderRadius={"18px"}
-              position={"absolute"}
-              m={"auto"}
-              left={0}
-              right={0}
-              top={0}
-              bottom={0}>
-              <Box mb={"10px"} ml={"14px"} mr={"14px"}>
-                <Box position={"absolute"} top={0} right={0} display={"flex"}>
-                  <Box
-                    m={"1px"}
-                    p={"5px"}
-                    onClick={() => {
-                      setOpened(prev => !prev);
-                    }}>
-                    <Tooltip title={"Minimize"}>
-                      <CircleIcon
-                        sx={{
-                          fontSize: 17,
-                          color: theme.palette.success.light,
-                          ":hover": {color: theme.palette.success.dark},
-                        }}
-                      />
-                    </Tooltip>
-                  </Box>
-                  <Box
-                    m={"1px"}
-                    p={"5px"}
-                    onClick={() => {
-                      if (!fullscreenMode) {
-                        setFullscreenMode(true);
-                        setPosition({
-                          x: 0,
-                          y: 0,
-                        });
-                        setSize({width: "100%", height: "100%"});
-                        disableDraggable(true);
-                      } else {
-                        setSize(prevSize);
-                        setPosition(prevPosition);
-                        setFullscreenMode(false);
-                        disableDraggable(false);
-                      }
-                    }}>
-                    <Tooltip
-                      title={
-                        fullscreenMode ? "Window Mode" : "Fullscreen Mode"
-                      }>
-                      <CircleIcon
-                        sx={{
-                          fontSize: 17,
-                          color: theme.palette.warning.light,
-                          ":hover": {color: theme.palette.warning.dark},
-                        }}
-                      />
-                    </Tooltip>
-                  </Box>
-                  <Box
-                    m={"1px"}
-                    p={"5px"}
-                    onClick={() => {
-                      setOpened(prev => !prev);
-                    }}>
-                    <Tooltip title={"Close"}>
-                      <CircleIcon
-                        sx={{
-                          fontSize: 17,
-                          color: theme.palette.error.light,
-                          ":hover": {color: theme.palette.error.dark},
-                        }}
-                      />
-                    </Tooltip>
-                  </Box>
-                </Box>
-                <Box
-                  onMouseOver={() => {
-                    disableDraggable(true);
-                  }}
-                  onMouseOut={() => {
-                    if (!fullscreenMode) {
-                      disableDraggable(false);
-                    }
-                  }}>
-                  {props.children}
-                </Box>
-              </Box>
-            </Box>
-          </Rnd>
-        </Box>
-      </Fade>
-    );
-  };
+            <Logo style={{height: "52px", width: "32px"}} />
+          </Box>
+          <Box sx={{flexGrow: 1, display: {xs: "none", md: "flex"}}}>
+            {pages.map(page => (
+              <Button
+                key={page}
+                onClick={handleCloseNavMenu}
+                sx={{my: 2, display: "block"}}>
+                {page}
+              </Button>
+            ))}
+          </Box>
+        </Toolbar>
+      </Container>
+    </AppBar>
+  );
+};
 
-  const launchApp = appName => {
-    let app;
-    if (appName === "terminal") {
-      app = <Terminal instanceIndex={instanceIndex} />;
-    }
-    setInstances([
-      ...instances,
-      <AppContainer instanceIndex={instanceIndex} key={instanceIndex}>
-        {app}
-      </AppContainer>,
-    ]);
-    instanceIndex++;
-  };
-
-  //return root element with wallpaper, dock and apps
+export default function App() {
   return (
     <ThemeProvider theme={theme}>
-      <Box
-        position={"relative"}
-        width={"100%"}
-        height={"100vh"}
-        overflow={"hidden"}
+      <ResponsiveAppBar />
+      <Container
+        maxWidth={"lg"}
         sx={{
-          backgroundImage: `url(${wallpaper})`,
-          backgroundSize: "cover",
+          display: "flex",
+          justifyContent: "space-between",
+          "@media (max-width:900px)": {flexDirection: "column"},
         }}>
-        {instances}
-        <Dock />
-      </Box>
+        <Box mt={"130px"} maxWidth={"550px"}>
+          <Button
+            variant={"outlined"}
+            endIcon={<ArrowCircleRightIcon />}
+            sx={{
+              textTransform: "none",
+              fontWeight: "normal",
+              whiteSpace: "pre",
+              "@media (max-width:900px)": {width: "100%"},
+            }}>
+            <b>Register now</b> to join Clover Cloud Platform
+          </Button>
+          <Typography
+            sx={{
+              background: "linear-gradient(0deg, #8b5cf6 0%, #14b8a6 100%)",
+              backgroundClip: "text",
+              color: "transparent",
+              fontFamily: "Google Sans,Noto Sans,sans-serif",
+              letterSpacing: "-.5px",
+              lineHeight: "1.2em",
+              fontWeight: "600",
+              fontSize: "8vw",
+              mt: "30px",
+              "@media (min-width:900px)": {fontSize: "60px"},
+            }}>
+            Simulate, test, and code with Clover Cloud
+          </Typography>
+          <Typography
+            fontSize={"18px"}
+            mt={"17px"}
+            sx={{letterSpacing: "-.2px"}}>
+            Get access to Clover simulation in browser, test code faster, and
+            learn drones easier.
+          </Typography>
+          <Box mt={"32px"}>
+            <Button
+              variant={"contained"}
+              size={"large"}
+              sx={{
+                width: "200px",
+                "@media (max-width:900px)": {width: "100%"},
+              }}>
+              Get started
+            </Button>
+          </Box>
+        </Box>
+        <Box
+          mt={"130px"}
+          position={"relative"}
+          sx={{"@media (max-width:900px)": {mt: "50px"}}}>
+          <img
+            src={ccp}
+            alt={"overview"}
+            style={{
+              borderRadius: "28px",
+              cursor: "pointer",
+              maxWidth: "440px",
+              width: "100%",
+            }}
+          />
+          <PlayCircleOutlineRoundedIcon
+            sx={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              m: "auto",
+              fontSize: "70px",
+              color: theme.palette.background.default,
+              cursor: "pointer",
+            }}
+          />
+        </Box>
+      </Container>
     </ThemeProvider>
   );
 }
