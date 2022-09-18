@@ -1,70 +1,47 @@
-# Getting Started with Create React App
+# Clover Cloud Platform
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+[CopterHack-2023](copterhack2023.md), команда **Clover Cloud Team**.
 
-## Available Scripts
+## Team information
 
-In the project directory, you can run:
+The list of team members:
 
-### `npm start`
+* Кирилл Лещинский / Kirill Leshchinskiy, [@k_leshchinskiy](https://t.me/k_leshchinskiy) - TeamLead.
+* Кузнецов Михаил / Mikhail Kuznetsov, [@bruhfloppa](https://t.me/bruhfloppa) - Frontend.
+* Даниил Валишин / Daniil Valishin, [@Astel_1](https://t.me/Astel_1) - Backend.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Project description
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Table of contents:
 
-### `npm test`
+* [Project Idea](#idea)
+* [Key features](#features)
+* [The potential outcomes](#outcomes)
+* [Using Clover platform](#platform)
+* [Additional information](#info)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### <a name='idea'></a>Project Idea
 
-### `npm run build`
+The idea of the project is to create an online environment for learning Clover platform. Includes an online simulator, code editor, and terminal, as well as advanced features such as loading custom worlds, changing drone settings, and saving the environment.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### <a name='features'></a>Key features
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+* Instant access to environment
+* Modern Material design
+* User-friendly UI
+* Complete drone simulation
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### <a name='outcomes'></a>The potential outcomes
 
-### `npm run eject`
+We plan to make a full-fledged environment for working with Clover simulation online.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### <a name='platform'></a>Using Clover platform
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+In our project we use Clover packages for drone simulation.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### <a name='info'></a>Additional information
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Links to our repositories:
+* [Frontend](https://github.com/DevMBS/clover-cloud-platform-frontend)
+* [Backend](https://github.com/Astel-d/clover-cloud-platform-backend)
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
