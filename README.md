@@ -1,6 +1,6 @@
 # Clover Cloud Platform
 
-[CopterHack-2023](copterhack2023.md), команда **Clover Cloud Team**.
+[CopterHack-2023](copterhack2023.md), **Clover Cloud Team**.
 
 ## Team information
 
@@ -42,6 +42,6 @@ In our project we use Clover packages for drone simulation.
 ### <a name='info'></a>Additional information
 
 Links to our repositories:
+
 * [Frontend](https://github.com/DevMBS/clover-cloud-platform-frontend)
 * [Backend](https://github.com/Astel-d/clover-cloud-platform-backend)
-
