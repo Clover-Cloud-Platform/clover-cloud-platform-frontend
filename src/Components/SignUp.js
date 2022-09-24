@@ -11,6 +11,9 @@ import Container from "@mui/material/Container";
 import {ThemeProvider} from "@mui/material/styles";
 import {theme} from "../App";
 import Fade from "@mui/material/Fade";
+import {io} from "socket.io-client";
+
+const socket = io("");
 
 function Copyright(props) {
   return (
@@ -26,14 +29,51 @@ function Copyright(props) {
   );
 }
 
+export const emailRegex =
+  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+
 export default function SignUp() {
+  const [usernameError, setUsernameError] = React.useState(false);
+  const [emailError, setEmailError] = React.useState(false);
+  const [passwordError, setPasswordError] = React.useState(false);
+  const [usernameHelper, setUsernameHelper] = React.useState("");
+  const [emailHelper, setEmailHelper] = React.useState("");
+  const [passwordHelper, setPasswordHelper] = React.useState("");
+
   const handleSubmit = event => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    const username = data.get("username").trim();
+    const email = data.get("email").trim();
+    const password = data.get("password");
+    if (!emailRegex.test(email)) {
+      setEmailError(true);
+      setEmailHelper("Invalid email");
+    } else if (!passwordRegex.test(password)) {
+      setPasswordError(true);
+      setPasswordHelper(
+        "Password must contain minimum 6 characters, at least one letter and one number",
+      );
+    } else {
+      socket.emit("SignUp", {
+        username: username,
+        email: email,
+        password: password,
+      });
+      socket.on("SignUpRes", res => {
+        if (res.error === "username") {
+          setUsernameError(true);
+          setUsernameHelper("This username is already taken");
+        } else if (res.error === "email") {
+          setEmailError(true);
+          setEmailHelper("There is already an account with this email");
+        } else if (!res.error && res.uid) {
+          localStorage.setItem("uid", res.uid);
+          window.location.href = "/clover";
+        }
+      });
+    }
   };
 
   return (
@@ -54,25 +94,33 @@ export default function SignUp() {
               <Typography component="h1" variant="h5">
                 Sign up
               </Typography>
-              <Box
-                component="form"
-                noValidate
-                onSubmit={handleSubmit}
-                sx={{mt: 3}}>
+              <Box component="form" onSubmit={handleSubmit} sx={{mt: 3}}>
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <TextField
-                      autoComplete="nickname"
-                      name="nickname"
+                      onChange={() => {
+                        setUsernameError(false);
+                        setUsernameHelper("");
+                      }}
+                      error={usernameError}
+                      helperText={usernameHelper}
+                      autoComplete="username"
+                      name="username"
                       required
                       fullWidth
-                      id="nickname"
-                      label="Nickname"
+                      id="username"
+                      label="Username"
                       autoFocus
                     />
                   </Grid>
                   <Grid item xs={12}>
                     <TextField
+                      onChange={() => {
+                        setEmailError(false);
+                        setEmailHelper("");
+                      }}
+                      error={emailError}
+                      helperText={emailHelper}
                       required
                       fullWidth
                       id="email"
@@ -83,6 +131,12 @@ export default function SignUp() {
                   </Grid>
                   <Grid item xs={12}>
                     <TextField
+                      onChange={() => {
+                        setPasswordError(false);
+                        setPasswordHelper("");
+                      }}
+                      error={passwordError}
+                      helperText={passwordHelper}
                       required
                       fullWidth
                       name="password"

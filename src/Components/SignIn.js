@@ -13,6 +13,10 @@ import Container from "@mui/material/Container";
 import {ThemeProvider} from "@mui/material/styles";
 import {theme} from "../App";
 import Fade from "@mui/material/Fade";
+import {emailRegex} from "./SignUp";
+import {io} from "socket.io-client";
+
+const socket = io("");
 
 function Copyright(props) {
   return (
@@ -29,13 +33,39 @@ function Copyright(props) {
 }
 
 export default function SignIn() {
+  const [emailError, setEmailError] = React.useState(false);
+  const [passwordError, setPasswordError] = React.useState(false);
+  const [emailHelper, setEmailHelper] = React.useState("");
+  const [passwordHelper, setPasswordHelper] = React.useState("");
+
   const handleSubmit = event => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    const email = data.get("email").trim();
+    const password = data.get("password");
+    const remember = data.get("remember");
+    if (!emailRegex.test(email)) {
+      setEmailError(true);
+      setEmailHelper("Invalid email");
+    } else {
+      socket.emit("SignIn", {email: email, password: password});
+      socket.on("SignInRes", res => {
+        if (res.error === "email") {
+          setEmailError(true);
+          setEmailHelper("No account with this email");
+        } else if (res.error === "password") {
+          setPasswordError(true);
+          setPasswordHelper("Invalid password");
+        } else if (!res.error && res.uid) {
+          if (remember) {
+            localStorage.setItem("uid", res.uid);
+          } else {
+            sessionStorage.setItem("uid", res.uid);
+          }
+          window.location.href = "/clover";
+        }
+      });
+    }
   };
 
   return (
@@ -56,12 +86,14 @@ export default function SignIn() {
               <Typography component="h1" variant="h5">
                 Sign in
               </Typography>
-              <Box
-                component="form"
-                onSubmit={handleSubmit}
-                noValidate
-                sx={{mt: 1}}>
+              <Box component="form" onSubmit={handleSubmit} sx={{mt: 1}}>
                 <TextField
+                  error={emailError}
+                  helperText={emailHelper}
+                  onChange={() => {
+                    setEmailError(false);
+                    setEmailHelper("");
+                  }}
                   margin="normal"
                   required
                   fullWidth
@@ -72,6 +104,12 @@ export default function SignIn() {
                   autoFocus
                 />
                 <TextField
+                  error={passwordError}
+                  helperText={passwordHelper}
+                  onChange={() => {
+                    setPasswordError(false);
+                    setPasswordHelper("");
+                  }}
                   margin="normal"
                   required
                   fullWidth
@@ -82,7 +120,13 @@ export default function SignIn() {
                   autoComplete="current-password"
                 />
                 <FormControlLabel
-                  control={<Checkbox value="remember" color="primary" />}
+                  control={
+                    <Checkbox
+                      value="remember"
+                      name="remember"
+                      color="primary"
+                    />
+                  }
                   label="Remember me"
                 />
                 <Button
