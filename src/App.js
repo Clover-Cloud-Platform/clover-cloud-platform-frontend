@@ -75,7 +75,7 @@ const ResponsiveAppBar = () => {
   };
 
   return (
-    <AppBar position="fixed" sx={{bgcolor: theme.palette.background.appBar}}>
+    <AppBar position="fixed" sx={{bgcolor: "background.appBar"}}>
       <Container maxWidth={"xl"}>
         <Toolbar disableGutters>
           <Box sx={{display: {xs: "none", md: "flex"}, mr: 1}}>
@@ -88,7 +88,7 @@ const ResponsiveAppBar = () => {
               aria-controls="menu-appbar"
               aria-haspopup="true"
               onClick={handleOpenNavMenu}
-              sx={{color: theme.palette.text.primary}}>
+              sx={{color: "text.primary"}}>
               <MenuIcon />
             </IconButton>
             <Menu
@@ -151,7 +151,7 @@ const ResponsiveAppBar = () => {
           <Button
             variant={"outlined"}
             key={"Sign Up"}
-            onClick={handleCloseNavMenu}
+            href={"/signup"}
             sx={{
               my: 2,
               display: "block",
@@ -180,7 +180,7 @@ const Tile = props => {
         {props.icon}
       </Avatar>
       <Typography
-        color={theme.palette.text.primary}
+        color={"text.primary"}
         mt={"15px"}
         sx={{fontSize: "30px", "@media (max-width:900px)": {fontSize: "24px"}}}>
         {props.title}
@@ -189,7 +189,7 @@ const Tile = props => {
         variant={"subtitle1"}
         mt={"15px"}
         textAlign={"center"}
-        color={theme.palette.text.secondary}>
+        color={"text.secondary"}>
         {props.subtitle}
       </Typography>
     </Box>
@@ -218,6 +218,7 @@ export default function App() {
               maxWidth={"550px"}
               sx={{"@media (max-width:900px)": {maxWidth: "100%"}}}>
               <Button
+                href={"/signup"}
                 variant={"outlined"}
                 endIcon={<ArrowCircleRightIcon />}
                 sx={{
@@ -252,6 +253,7 @@ export default function App() {
               </Typography>
               <Box mt={"32px"}>
                 <Button
+                  href={"/signup"}
                   variant={"contained"}
                   size={"large"}
                   sx={{
@@ -289,13 +291,13 @@ export default function App() {
                   right: 0,
                   m: "auto",
                   fontSize: "70px",
-                  color: theme.palette.background.default,
+                  color: "background.default",
                   cursor: "pointer",
                 }}
               />
             </Box>
           </Box>
-          <Box bgcolor={theme.palette.primary[50]} mt={"70px"}>
+          <Box bgcolor={"primary.50"} mt={"70px"}>
             <Box
               width={"85vw"}
               m={"auto"}
@@ -319,7 +321,7 @@ export default function App() {
                   fontWeight: "600",
                   fontSize: "7vw",
                   mt: "60px",
-                  color: theme.palette.text.primary,
+                  color: "text.primary",
                   "@media (min-width:900px)": {fontSize: "40px"},
                 }}>
                 The platform you've always wanted.
@@ -535,12 +537,13 @@ export default function App() {
                     textAlign: "center",
                   },
                 }}
-                color={theme.palette.text.primary}>
+                color={"text.primary"}>
                 Clover Cloud Platform is the fastest way to test your code on
                 Clover. Run your scripts on our servers and watch the real time
                 drone simulation.
               </Typography>
               <Button
+                href={"/signup"}
                 sx={{
                   "@media (max-width:900px)": {
                     width: "100%",
@@ -570,12 +573,12 @@ export default function App() {
             pb={"20px"}
             ml={"20px"}
             mr={"20px"}>
-            <Typography fontSize={"16px"} color={theme.palette.text.primary}>
+            <Typography fontSize={"16px"} color={"text.primary"}>
               <Link
                 href="#"
                 underline="none"
                 color={"inherit"}
-                sx={{"&:hover": {color: theme.palette.primary[500]}}}>
+                sx={{"&:hover": {color: "primary.500"}}}>
                 Privacy Policy
               </Link>{" "}
               |{" "}
@@ -583,7 +586,7 @@ export default function App() {
                 href="#"
                 underline="none"
                 color={"inherit"}
-                sx={{"&:hover": {color: theme.palette.primary[500]}}}>
+                sx={{"&:hover": {color: "primary.500"}}}>
                 License
               </Link>{" "}
               |{" "}
@@ -591,13 +594,13 @@ export default function App() {
                 href="#"
                 underline="none"
                 color={"inherit"}
-                sx={{"&:hover": {color: theme.palette.primary[500]}}}>
+                sx={{"&:hover": {color: "primary.500"}}}>
                 Terms of Use
               </Link>
             </Typography>
             <Typography
               fontSize={"16px"}
-              color={theme.palette.text.secondary}
+              color={"text.secondary"}
               sx={{"@media (max-width:900px)": {mt: "10px"}}}>
               © Clover Cloud Team {new Date().getFullYear()}
             </Typography>
