@@ -35,12 +35,6 @@ export default function Terminal(props) {
   };
 
   const handleKeyDown = e => {
-    const input = document.getElementById(
-      `terminalInput${props.instanceIndex}`,
-    );
-    const moveCaretToEnd = () => {
-      input.selectionStart = input.selectionEnd = input.value.length;
-    };
     if (e.key === "Enter") {
       execute(e.currentTarget.value);
       setHistory([e.currentTarget.value, ...history]);
