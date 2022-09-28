@@ -112,7 +112,7 @@ export default function SignUp() {
         window.location.href = "/clover";
       });
     } else {
-      //TODO auth code error
+      //TODO authentication code error
     }
   };
 
