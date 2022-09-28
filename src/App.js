@@ -31,6 +31,8 @@ import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRigh
 import workEl from "./assets/hiw/work.svg";
 import Fade from "@mui/material/Fade";
 
+export const serverLink = process.env.SERVER_LINK;
+
 //global theme for the whole app
 export const theme = createTheme({
   palette: {
@@ -113,7 +115,7 @@ const ResponsiveAppBar = () => {
                   <Typography textAlign="center">{page}</Typography>
                 </MenuItem>
               ))}
-              <MenuItem key={"Login"} onClick={handleCloseNavMenu}>
+              <MenuItem key={"Login"} href={"/signin"}>
                 <Typography textAlign="center">{"Login"}</Typography>
               </MenuItem>
               <MenuItem key={"Sign Up"} onClick={handleCloseNavMenu}>
@@ -140,7 +142,7 @@ const ResponsiveAppBar = () => {
           </Box>
           <Button
             key={"Login"}
-            onClick={handleCloseNavMenu}
+            href={"/signin"}
             sx={{
               my: 2,
               display: "block",

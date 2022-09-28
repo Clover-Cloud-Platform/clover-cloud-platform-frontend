@@ -15,8 +15,9 @@ import {theme} from "../App";
 import Fade from "@mui/material/Fade";
 import {emailRegex} from "./SignUp";
 import {io} from "socket.io-client";
+import {serverLink} from "../App";
 
-const socket = io("");
+const socket = io(serverLink);
 
 function Copyright(props) {
   return (

@@ -12,8 +12,9 @@ import {ThemeProvider} from "@mui/material/styles";
 import {theme} from "../App";
 import Fade from "@mui/material/Fade";
 import {io} from "socket.io-client";
+import {serverLink} from "../App";
 
-const socket = io("");
+const socket = io(serverLink);
 
 function Copyright(props) {
   return (
@@ -48,6 +49,11 @@ export default function SignUp() {
   const [authCode, setAuthCode] = React.useState();
   const [timer, setTimer] = React.useState(60);
   const [resend, disableResend] = React.useState(true);
+  const [userData, setUserData] = React.useState({
+    email: undefined,
+    username: undefined,
+    password: undefined,
+  });
 
   const handleSubmit = event => {
     event.preventDefault();
@@ -64,31 +70,28 @@ export default function SignUp() {
         "Password must contain minimum 6 characters, at least one letter and one number",
       );
     } else {
-      setVerify(true);
       const timerInterval = setInterval(() => {
         if (timerCount > 0) {
           setTimer(prev => prev - 1);
           timerCount--;
         } else {
           clearInterval(timerInterval);
-          setTimer();
           disableResend(false);
+          setTimer(60);
+          timerCount = 60;
         }
       }, 1000);
       socket.emit("SignUp", {
-        username: username,
         email: email,
-        password: password,
       });
       socket.on("SignUpRes", res => {
-        if (res.error === "username") {
-          setUsernameError(true);
-          setUsernameHelper("This username is already taken");
-        } else if (res.error === "email") {
+        if (res.error) {
           setEmailError(true);
           setEmailHelper("There is already an account with this email");
         } else if (!res.error && res.code) {
           setAuthCode(res.code);
+          setVerify(true);
+          setUserData({email: email, username: username, password: password});
         }
       });
     }
@@ -98,14 +101,42 @@ export default function SignUp() {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const enteredCode = data.get("authCode").trim();
-    if (enteredCode === authCode) {
-      socket.emit("AuthByEmail", true);
+    if (enteredCode == authCode) {
+      socket.emit("AuthByEmail", {
+        email: userData.email,
+        username: userData.username,
+        password: userData.password,
+        resend_code: false,
+      });
+      socket.on("AuthByEmailRes", uid => {
+        localStorage.setItem("uid", uid);
+        window.location.href = "/clover";
+      });
+    } else {
+      //TODO
     }
   };
 
   const resendCode = e => {
     e.preventDefault();
-    socket.emit("AuthByEmail", false);
+    socket.emit("AuthByEmail", {
+      email: userData.email,
+      username: userData.username,
+      password: userData.password,
+      resend_code: true,
+    });
+    disableResend(true);
+    const timerInterval = setInterval(() => {
+      if (timerCount > 0) {
+        setTimer(prev => prev - 1);
+        timerCount--;
+      } else {
+        clearInterval(timerInterval);
+        disableResend(false);
+        setTimer(60);
+        timerCount = 60;
+      }
+    }, 1000);
   };
 
   return (
@@ -258,7 +289,7 @@ export default function SignUp() {
                       size={"small"}
                       onClick={resendCode}
                       disabled={resend}>
-                      Resend code {timer}
+                      Resend code {resend ? timer : ""}
                     </Button>
                   </Grid>
                 </Grid>
