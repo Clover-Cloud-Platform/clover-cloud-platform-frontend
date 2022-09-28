@@ -31,8 +31,6 @@ import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRigh
 import workEl from "./assets/hiw/work.svg";
 import Fade from "@mui/material/Fade";
 
-export const serverLink = process.env.SERVER_LINK;
-
 //global theme for the whole app
 export const theme = createTheme({
   palette: {

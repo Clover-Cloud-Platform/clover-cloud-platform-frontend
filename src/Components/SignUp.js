@@ -12,9 +12,8 @@ import {ThemeProvider} from "@mui/material/styles";
 import {theme} from "../App";
 import Fade from "@mui/material/Fade";
 import {io} from "socket.io-client";
-import {serverLink} from "../App";
 
-const socket = io(serverLink);
+const socket = io(process.env.REACT_APP_SERVER_LINK);
 
 function Copyright(props) {
   return (

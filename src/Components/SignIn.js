@@ -17,7 +17,6 @@ import {emailRegex} from "./SignUp";
 import {io} from "socket.io-client";
 
 const socket = io(process.env.REACT_APP_SERVER_LINK);
-console.log(process.env.REACT_APP_SERVER_LINK);
 
 function Copyright(props) {
   return (
