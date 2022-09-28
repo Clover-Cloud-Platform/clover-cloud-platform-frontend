@@ -16,7 +16,7 @@ import Fade from "@mui/material/Fade";
 import {emailRegex} from "./SignUp";
 import {io} from "socket.io-client";
 
-const socket = io(process.env.REACT_APP_SERVER_LINK);
+const socket = io("https://0b2d-217-107-126-1.eu.ngrok.io");
 
 function Copyright(props) {
   return (
