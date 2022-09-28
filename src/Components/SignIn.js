@@ -18,6 +18,7 @@ import {io} from "socket.io-client";
 import {serverLink} from "../App";
 
 const socket = io(serverLink);
+console.log(serverLink);
 
 function Copyright(props) {
   return (
