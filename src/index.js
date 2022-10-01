@@ -8,7 +8,7 @@ import MainApp from "./Components/MainApp";
 import SignUp from "./Components/SignUp";
 import SignIn from "./Components/SignIn";
 import {initializeApp} from "firebase/app";
-import {getAnalytics} from "firebase/analytics";
+import {getAnalytics, logEvent} from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -23,6 +23,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
+logEvent(analytics, "entered_website");
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
