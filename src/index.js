@@ -23,7 +23,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-logEvent(analytics, "entered_website");
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
