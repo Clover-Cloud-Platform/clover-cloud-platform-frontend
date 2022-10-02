@@ -10,7 +10,7 @@ import SignIn from "./Components/SignIn";
 import {initializeApp} from "firebase/app";
 import {getAnalytics, logEvent} from "firebase/analytics";
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
   projectId: "clover-cloud-platform",
@@ -23,7 +23,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

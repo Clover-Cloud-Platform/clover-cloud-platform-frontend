@@ -12,8 +12,12 @@ import {ThemeProvider} from "@mui/material/styles";
 import {theme} from "../App";
 import Fade from "@mui/material/Fade";
 import {io} from "socket.io-client";
+import {initializeApp} from "firebase/app";
 import {getAnalytics, logEvent} from "firebase/analytics";
-const analytics = getAnalytics();
+import {firebaseConfig} from "../index";
+
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 logEvent(analytics, "sign_up");
 
 const socket = io(process.env.REACT_APP_SERVER_LINK);
