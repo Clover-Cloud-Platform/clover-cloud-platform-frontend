@@ -14,8 +14,15 @@ import Fade from "@mui/material/Fade";
 import {io} from "socket.io-client";
 import {initializeApp} from "firebase/app";
 import {getAnalytics, logEvent} from "firebase/analytics";
-import {firebaseConfig} from "../index";
-
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: "clover-cloud-platform",
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
+};
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 logEvent(analytics, "sign_up");
