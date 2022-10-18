@@ -58,6 +58,12 @@ export const theme = createTheme({
       dir: "#a78bfa",
       execDir: "#8b5cf6",
     },
+    success: {
+      main: "#10b981",
+    },
+    error: {
+      main: "#f43f5e",
+    },
   },
 });
 
@@ -438,7 +444,11 @@ export default function App() {
                   src={shareEl}
                   alt={"share"}
                   width={"250px"}
-                  style={{position: "absolute", top: "116.4px", left: "515px"}}
+                  style={{
+                    position: "absolute",
+                    top: "116.4px",
+                    left: "515px",
+                  }}
                 />
                 <Box
                   width={"340px"}
@@ -466,25 +476,41 @@ export default function App() {
                       src={files}
                       alt={"files"}
                       width={"60px"}
-                      style={{position: "absolute", top: "85px", left: "19px"}}
+                      style={{
+                        position: "absolute",
+                        top: "85px",
+                        left: "19px",
+                      }}
                     />
                     <img
                       src={terminal}
                       alt={"files"}
                       width={"50px"}
-                      style={{position: "absolute", top: "90px", left: "102px"}}
+                      style={{
+                        position: "absolute",
+                        top: "90px",
+                        left: "102px",
+                      }}
                     />
                     <img
                       src={vscode}
                       alt={"files"}
                       width={"50px"}
-                      style={{position: "absolute", top: "90px", left: "181px"}}
+                      style={{
+                        position: "absolute",
+                        top: "90px",
+                        left: "181px",
+                      }}
                     />
                     <img
                       src={appIcon}
                       alt={"runApp"}
                       width={"160px"}
-                      style={{position: "absolute", top: "78px", left: "250px"}}
+                      style={{
+                        position: "absolute",
+                        top: "78px",
+                        left: "250px",
+                      }}
                     />
                   </Box>
                 </Box>

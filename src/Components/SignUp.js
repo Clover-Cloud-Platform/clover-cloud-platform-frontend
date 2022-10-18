@@ -25,7 +25,6 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-logEvent(analytics, "sign_up");
 
 const socket = io(process.env.REACT_APP_SERVER_LINK);
 
@@ -123,10 +122,12 @@ export default function SignUp() {
       });
       socket.on("AuthByEmailRes", uid => {
         localStorage.setItem("uid", uid);
-        window.location.href = "/clover";
+        localStorage.setItem("containers", JSON.stringify([false, false]));
+        window.location.href = "/instances";
       });
     } else {
-      //TODO authentication code error
+      setCodeError(true);
+      setCodeHelper("Invalid auth code");
     }
   };
 

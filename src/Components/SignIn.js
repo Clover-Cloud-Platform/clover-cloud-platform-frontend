@@ -59,10 +59,12 @@ export default function SignIn() {
         } else if (!res.error && res.uid) {
           if (remember) {
             localStorage.setItem("uid", res.uid);
+            localStorage.setItem("containers", JSON.stringify(res.cont_list));
           } else {
             sessionStorage.setItem("uid", res.uid);
+            sessionStorage.setItem("containers", JSON.stringify(res.cont_list));
           }
-          window.location.href = "/clover";
+          window.location.href = "/instances";
         }
       });
     }

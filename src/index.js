@@ -7,6 +7,7 @@ import {BrowserRouter as Router, Routes, Route} from "react-router-dom";
 import MainApp from "./Components/MainApp";
 import SignUp from "./Components/SignUp";
 import SignIn from "./Components/SignIn";
+import Instances from "./Components/Instances";
 import {initializeApp} from "firebase/app";
 import {getAnalytics, logEvent} from "firebase/analytics";
 
@@ -33,6 +34,7 @@ root.render(
         <Route path="/clover" element={<MainApp />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/signin" element={<SignIn />} />
+        <Route path="/instances" element={<Instances />} />
       </Routes>
     </Router>
   </React.StrictMode>,
