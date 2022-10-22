@@ -64,6 +64,9 @@ export const theme = createTheme({
     error: {
       main: "#f43f5e",
     },
+    warning: {
+      main: "#fb923c",
+    },
   },
 });
 
