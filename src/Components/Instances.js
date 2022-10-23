@@ -160,10 +160,11 @@ export default function Instances() {
               disabled={disabledInstances[props.num] ? true : running}
               onClick={() => {
                 //send run instance request
-                socket.emit("RunInstance", {uid: uid, cont_name: props.name});
+                socket.emit("StartInstance", {uid: uid, cont_name: props.name});
                 //disable button
                 setRunning(true);
               }}
+              color={"success"}
               variant="outlined"
               size="small"
               endIcon={<PlayArrowRoundedIcon />}>
@@ -207,9 +208,12 @@ export default function Instances() {
           pushInstanceCounter++
         ) {
           if (data.cont_list[pushInstanceCounter]) {
+            let dInstances = disabledInstances;
+            dInstances[pushInstanceCounter] = false;
+            setInstanceDisabled(dInstances);
             instanceList.push(
               <Instance
-                running={false}
+                running={data.running[pushInstanceCounter]}
                 key={pushInstanceCounter}
                 num={pushInstanceCounter}
                 name={data.cont_list[pushInstanceCounter]}
