@@ -10,6 +10,7 @@ import Typography from "@mui/material/Typography";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import {ReactComponent as FullLogo} from "../assets/clover-cloud-platform-logo-full.svg";
+import {ReactComponent as Logo} from "../assets/clover-cloud-platform-logo.svg";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import {CircularProgress, Grow, Tooltip} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
@@ -36,11 +37,17 @@ let instancesHandled = false;
 
 //instances state buffer
 let instanceList = [];
+
+//instance names for checking name availability
+const names = [];
+
 //instance counter for instance keys
 let instanceCounter = 0;
+
 //counter for loop that inserts existing instances when receiving Username socket
 let pushInstanceCounter = 0;
-//UID of user
+
+//UID of the user
 let uid;
 
 //Page that displays user's instances and makes it possible to manage them and create new ones
@@ -58,16 +65,31 @@ export default function Instances() {
 
   //username state
   const [username, setUsername] = React.useState("");
+
   //state of user menu
   const [anchorElUser, setAnchorElUser] = React.useState(null);
+
   //state of available instances
   const [instances, setInstances] = React.useState([]);
+
   //state of instance name prompt
   const [openAskNameDialog, setOpenAskNameDialog] = React.useState(false);
+
   //state of instance name prompt's input
   const [instanceNameValue, setInstanceNameValue] = React.useState("");
-  //list of disabled instances (instance disabled while its creating)
-  const [disabledInstances, setInstanceDisabled] = React.useState([true, true]);
+
+  //preloader opacity state for animation
+  const [preloaderOpacity, setPreloaderOpacity] = React.useState(1);
+
+  //show/hide preloader
+  const [preloader, setPreloader] = React.useState(true);
+
+  //instance names state for checking name availability
+  const [instanceNames, setInstanceNames] = React.useState([]);
+
+  //show error that name is already in use
+  const [dialogError, setDialogError] = React.useState(false);
+  const [dialogHelper, setDialogHelper] = React.useState("");
 
   //open/close user menu
   const handleOpenUserMenu = event => {
@@ -81,8 +103,24 @@ export default function Instances() {
   const Instance = props => {
     //state for showing / hiding the instance
     const [container, setContainer] = React.useState(true);
+
     //state to change active instance buttons
     const [running, setRunning] = React.useState(props.running);
+
+    //link to instance workspace
+    const [link, setLink] = React.useState(props.link);
+
+    //disable (while creating) / enable instance
+    const [disabled, setDisabled] = React.useState(!props.init);
+
+    socket.on("InstanceCreated", data => {
+      if (data.name === props.name) {
+        //set link to the workspace
+        setLink(data.code);
+        //enable instance
+        setDisabled(false);
+      }
+    });
     return (
       <Grow in={container}>
         <Box
@@ -115,14 +153,14 @@ export default function Instances() {
               size={"1.3rem"}
               sx={{
                 ml: "20px",
-                display: disabledInstances[props.num] ? "visible" : "none",
+                display: disabled ? "visible" : "none",
               }}
               color={"warning"}
             />
           </Box>
           <Box display={"flex"} alignItems={"center"} mr={"20px"} gap={"10px"}>
             <Button
-              disabled={disabledInstances[props.num] ? true : running}
+              disabled={disabled || running}
               onClick={() => {
                 //send delete instance request
                 socket.emit("DeleteInstance", {
@@ -143,7 +181,7 @@ export default function Instances() {
               Delete
             </Button>
             <Button
-              disabled={disabledInstances[props.num] ? true : !running}
+              disabled={disabled || !running}
               onClick={() => {
                 //send stop instance request
                 socket.emit("StopInstance", {uid: uid, cont_name: props.name});
@@ -157,7 +195,7 @@ export default function Instances() {
               Stop
             </Button>
             <Button
-              disabled={disabledInstances[props.num] ? true : running}
+              disabled={disabled || running}
               onClick={() => {
                 //send run instance request
                 socket.emit("StartInstance", {uid: uid, cont_name: props.name});
@@ -171,9 +209,10 @@ export default function Instances() {
               Run
             </Button>
             <IconButton
+              href={`/clover?id=${link}`}
               aria-label="open"
               color="primary"
-              disabled={disabledInstances[props.num] ? true : !running}>
+              disabled={disabled || !running}>
               <LaunchRoundedIcon />
             </IconButton>
           </Box>
@@ -208,11 +247,11 @@ export default function Instances() {
           pushInstanceCounter++
         ) {
           if (data.cont_list[pushInstanceCounter]) {
-            let dInstances = disabledInstances;
-            dInstances[pushInstanceCounter] = false;
-            setInstanceDisabled(dInstances);
+            names.push(data.cont_list[pushInstanceCounter]);
             instanceList.push(
               <Instance
+                link={data.cont_codes[pushInstanceCounter]}
+                init={true}
                 running={data.running[pushInstanceCounter]}
                 key={pushInstanceCounter}
                 num={pushInstanceCounter}
@@ -222,7 +261,12 @@ export default function Instances() {
             instanceCounter++;
           }
         }
+        setInstanceNames(names);
         setInstances(instanceList);
+        setPreloaderOpacity(0);
+        setTimeout(() => {
+          setPreloader(false);
+        }, 225);
       }
       //stop the loop
       setTimeout(() => {
@@ -239,6 +283,7 @@ export default function Instances() {
     const name = instanceNameValue.trim();
     const key = instanceCounter;
     if (instances.length < 2) {
+      setInstanceNames([...instanceNames, name]);
       //send create new instance request
       socket.emit("CreateNewInstance", {
         uid: uid,
@@ -246,32 +291,61 @@ export default function Instances() {
       });
       setInstances([
         ...instances,
-        <Instance key={key} num={key} name={name} />,
+        <Instance
+          key={key}
+          num={key}
+          name={name}
+          running={true}
+          init={false}
+          link={""}
+        />,
       ]);
-      instanceList.push(<Instance key={key} num={key} name={name} />);
+      instanceList.push(
+        <Instance
+          key={key}
+          num={key}
+          name={name}
+          running={true}
+          init={false}
+          link={""}
+        />,
+      );
       instanceCounter++;
-      //enable instance
-      socket.on("InstanceCreated", () => {
-        const dInstances = disabledInstances;
-        dInstances[key] = false;
-        setInstanceDisabled(dInstances);
-      });
     }
   };
 
   return (
     <ThemeProvider theme={theme}>
+      {preloader ? (
+        <Box
+          style={{
+            transition: "opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms",
+            opacity: preloaderOpacity,
+          }}
+          position={"fixed"}
+          height={"100vh"}
+          zIndex={99999}
+          bgcolor={"#fff"}
+          width={"100%"}
+          display={"flex"}
+          justifyContent={"center"}
+          alignItems={"center"}>
+          <CircularProgress size={"60px"} sx={{position: "absolute"}} />
+          <Logo width={"40px"} />
+        </Box>
+      ) : (
+        <></>
+      )}
       <Box
         bgcolor={"#f8f6f9"}
         sx={{
           display: "flex",
-          justifyContent: "center",
           height: "100vh",
           flexDirection: "column",
         }}>
         <Container maxWidth={"xl"}>
           <Box sx={{flexGrow: 1}}>
-            <AppBar position="fixed">
+            <AppBar position="fixed" sx={{bgcolor: "background.appBar"}}>
               <Toolbar>
                 <Box sx={{display: "flex", mr: 1, flexGrow: 1}}>
                   <FullLogo style={{height: "52px", width: "320px"}} />
@@ -329,6 +403,7 @@ export default function Instances() {
             </AppBar>
           </Box>
           <Box
+            mt={"200px"}
             display={"flex"}
             flexDirection={"column"}
             position={"relative"}
@@ -376,9 +451,22 @@ export default function Instances() {
                   </DialogContentText>
                   <TextField
                     onChange={e => {
+                      const value = e.currentTarget.value;
+                      //check if name is not available
+                      if (instanceNames.includes(value)) {
+                        //show error
+                        setDialogError(true);
+                        setDialogHelper("This name is already in use");
+                      } else {
+                        //hide error
+                        setDialogError(false);
+                        setDialogHelper("");
+                      }
                       //set new value to state
-                      setInstanceNameValue(e.currentTarget.value);
+                      setInstanceNameValue(value);
                     }}
+                    error={dialogError}
+                    helperText={dialogHelper}
                     autoFocus
                     margin="dense"
                     id="name"
@@ -395,7 +483,11 @@ export default function Instances() {
                     }}>
                     Cancel
                   </Button>
-                  <Button onClick={handleSubmitAskNameDialog}>Ok</Button>
+                  <Button
+                    onClick={handleSubmitAskNameDialog}
+                    disabled={dialogError || instanceNameValue === ""}>
+                    Ok
+                  </Button>
                 </DialogActions>
               </Dialog>
             </Box>

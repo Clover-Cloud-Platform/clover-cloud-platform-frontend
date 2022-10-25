@@ -27,17 +27,15 @@ const analytics = getAnalytics(app);
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <React.StrictMode>
-    <Router>
-      <Routes>
-        <Route path="/" element={<App />} />
-        <Route path="/clover" element={<MainApp />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/instances" element={<Instances />} />
-      </Routes>
-    </Router>
-  </React.StrictMode>,
+  <Router>
+    <Routes>
+      <Route path="/" element={<App />} />
+      <Route path="/clover" element={<MainApp />} />
+      <Route path="/signup" element={<SignUp />} />
+      <Route path="/signin" element={<SignIn />} />
+      <Route path="/instances" element={<Instances />} />
+    </Routes>
+  </Router>,
 );
 
 // If you want to start measuring performance in your app, pass a function
