@@ -213,6 +213,7 @@ export default function App() {
         <Box>
           <Box
             width={"85vw"}
+            maxWidth={"1500px"}
             m={"auto"}
             sx={{
               display: "flex",
@@ -309,6 +310,7 @@ export default function App() {
           <Box bgcolor={"primary.50"} mt={"70px"}>
             <Box
               width={"85vw"}
+              maxWidth={"1500px"}
               m={"auto"}
               sx={{
                 "@media (max-width:900px)": {
