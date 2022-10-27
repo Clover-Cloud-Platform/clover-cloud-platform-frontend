@@ -83,8 +83,23 @@ const ResponsiveAppBar = () => {
     setAnchorElNav(null);
   };
 
+  const [appBar, setAppBar] = React.useState(false);
+
+  onscroll = () => {
+    if (window.scrollY > 0) {
+      setAppBar(true);
+    } else {
+      setAppBar(false);
+    }
+  };
+
   return (
-    <AppBar position="fixed" sx={{bgcolor: "background.appBar"}}>
+    <AppBar
+      position="fixed"
+      elevation={appBar ? 4 : 0}
+      sx={{
+        backgroundColor: "background.appBar",
+      }}>
       <Container maxWidth={"xl"}>
         <Toolbar disableGutters>
           <Box sx={{display: {xs: "none", md: "flex"}, mr: 1}}>
@@ -271,6 +286,17 @@ export default function App() {
                     "@media (max-width:900px)": {width: "100%"},
                   }}>
                   Get started
+                </Button>
+                <Button
+                  href={"/instances"}
+                  variant={"outlined"}
+                  size={"large"}
+                  sx={{
+                    ml: "16px",
+                    width: "200px",
+                    "@media (max-width:900px)": {width: "100%", ml: 0},
+                  }}>
+                  Go to dashboard
                 </Button>
               </Box>
             </Box>
