@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 import {styled, ThemeProvider} from "@mui/material/styles";
 import wallpaper from "../assets/wallpaper.jpg";
 import Terminal from "./Terminal";
+import Gazebo from "./Gazebo";
 import {Tooltip} from "@mui/material";
 import files from "../assets/dock/files.svg";
 import terminal from "../assets/dock/terminal.svg";
@@ -85,7 +86,16 @@ export default function MainApp() {
             }}
           />
           <IconApp src={vscode} width={33} title={"Code Editor"} />
-          <IconApp src={gazebo} width={42} title={"Gazebo"} />
+          <IconApp
+            src={gazebo}
+            width={42}
+            title={"Gazebo"}
+            onClick={() => {
+              React.startTransition(() => {
+                launchApp("gazebo");
+              });
+            }}
+          />
         </Box>
       </ThemeProvider>
     );
@@ -237,6 +247,8 @@ export default function MainApp() {
     let app;
     if (appName === "terminal") {
       app = <Terminal instanceIndex={instanceIndex} />;
+    } else if (appName === "gazebo") {
+      app = <Gazebo />;
     }
     setInstances([
       ...instances,
