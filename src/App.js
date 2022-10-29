@@ -294,7 +294,11 @@ export default function App() {
                   sx={{
                     ml: "16px",
                     width: "200px",
-                    "@media (max-width:900px)": {width: "100%", ml: 0},
+                    "@media (max-width:900px)": {
+                      width: "100%",
+                      ml: 0,
+                      mt: "10px",
+                    },
                   }}>
                   Go to dashboard
                 </Button>
