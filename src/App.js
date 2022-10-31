@@ -70,8 +70,6 @@ export const theme = createTheme({
   },
 });
 
-const pages = ["Docs", "GitHub", "Contact us"];
-
 const ResponsiveAppBar = () => {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
 
@@ -132,11 +130,27 @@ const ResponsiveAppBar = () => {
               sx={{
                 display: {xs: "block", md: "none"},
               }}>
-              {pages.map(page => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography textAlign="center">{page}</Typography>
-                </MenuItem>
-              ))}
+              <MenuItem
+                onClick={() => {
+                  window.location.href =
+                    "https://github.com/Clover-Cloud-Platform/clover-cloud-platform-frontend/wiki";
+                }}>
+                <Typography textAlign="center">Docs</Typography>
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  window.location.href =
+                    "https://github.com/Clover-Cloud-Platform";
+                }}>
+                <Typography textAlign="center">GitHub</Typography>
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  window.location.href =
+                    "https://github.com/Clover-Cloud-Platform/clover-cloud-platform-frontend/issues";
+                }}>
+                <Typography textAlign="center">Contact us</Typography>
+              </MenuItem>
               <MenuItem key={"Login"} href={"/signin"}>
                 <Typography textAlign="center">{"Login"}</Typography>
               </MenuItem>
@@ -153,14 +167,25 @@ const ResponsiveAppBar = () => {
             <Logo style={{height: "52px", width: "32px"}} />
           </Box>
           <Box sx={{flexGrow: 1, display: {xs: "none", md: "flex"}}}>
-            {pages.map(page => (
-              <Button
-                key={page}
-                onClick={handleCloseNavMenu}
-                sx={{my: 2, display: "block"}}>
-                {page}
-              </Button>
-            ))}
+            <Button
+              href={
+                "https://github.com/Clover-Cloud-Platform/clover-cloud-platform-frontend/wiki"
+              }
+              sx={{my: 2, display: "block"}}>
+              Docs
+            </Button>
+            <Button
+              href={"https://github.com/Clover-Cloud-Platform"}
+              sx={{my: 2, display: "block"}}>
+              GitHub
+            </Button>
+            <Button
+              href={
+                "https://github.com/Clover-Cloud-Platform/clover-cloud-platform-frontend/issues"
+              }
+              sx={{my: 2, display: "block"}}>
+              Contact us
+            </Button>
           </Box>
           <Button
             key={"Login"}

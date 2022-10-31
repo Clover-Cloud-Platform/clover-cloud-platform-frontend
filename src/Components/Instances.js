@@ -348,7 +348,12 @@ export default function Instances() {
             <AppBar position="fixed" sx={{bgcolor: "background.appBar"}}>
               <Toolbar>
                 <Box sx={{display: "flex", mr: 1, flexGrow: 1}}>
-                  <FullLogo style={{height: "52px", width: "320px"}} />
+                  <FullLogo
+                    style={{height: "52px", width: "320px", cursor: "pointer"}}
+                    onClick={() => {
+                      window.location.href = "/";
+                    }}
+                  />
                 </Box>
                 <Box sx={{flexGrow: 0}}>
                   <Tooltip title="Open settings">
@@ -384,17 +389,13 @@ export default function Instances() {
                         {username}
                       </Typography>
                     </MenuItem>
-                    <MenuItem onClick={handleCloseUserMenu}>
-                      <Typography textAlign="center">
-                        Change username
-                      </Typography>
-                    </MenuItem>
-                    <MenuItem onClick={handleCloseUserMenu}>
-                      <Typography textAlign="center">
-                        Change password
-                      </Typography>
-                    </MenuItem>
-                    <MenuItem onClick={handleCloseUserMenu}>
+                    <MenuItem
+                      onClick={() => {
+                        localStorage.getItem("uid")
+                          ? localStorage.removeItem("uid")
+                          : sessionStorage.removeItem("uid");
+                        window.location.href = "/signin";
+                      }}>
                       <Typography textAlign="center">Log out</Typography>
                     </MenuItem>
                   </Menu>
