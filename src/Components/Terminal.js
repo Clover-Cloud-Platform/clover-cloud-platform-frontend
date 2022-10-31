@@ -44,7 +44,7 @@ export default function Terminal(props) {
   };
 
   const OutputElement = props => {
-    let color = theme.palette.text.primary;
+    let color = theme.palette.primary["50"];
     if (props.error) {
       color = theme.palette.error.main;
     }
@@ -78,7 +78,7 @@ export default function Terminal(props) {
           overflowY: "scroll",
           left: 10,
           right: 10,
-          top: 25,
+          top: 30,
           bottom: 10,
         }}>
         <Box display={"flex"} flexDirection={"column-reverse"}>
@@ -96,7 +96,7 @@ export default function Terminal(props) {
                 width: "100%",
                 outline: "none",
                 border: "none",
-                color: theme.palette.text.primary,
+                color: theme.palette.primary["50"],
                 fontFamily: "Monospace",
                 fontWeight: 400,
                 fontSize: "1rem",

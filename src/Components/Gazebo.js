@@ -26,17 +26,21 @@ const Clover = () => {
 export default function Gazebo() {
   const texture = useLoader(TextureLoader, "/models/floor.jpg");
   texture.wrapS = texture.wrapT = RepeatWrapping;
-  texture.repeat.set(50, 50);
+  texture.repeat.set(10, 10);
   return (
     <Box
       sx={{
         position: "absolute",
         left: 10,
         right: 10,
-        top: 25,
+        top: 30,
         bottom: 10,
       }}>
-      <Canvas dpr={[1, 2]} shadows camera={{position: [-30, 0, 0], fov: 90}}>
+      <Canvas
+        dpr={[1, 2]}
+        shadows
+        camera={{position: [-3, 0, 0], fov: 90}}
+        style={{borderRadius: "10px"}}>
         <hemisphereLight
           intensity={0.2}
           color="#f5f3ff"
@@ -49,9 +53,12 @@ export default function Gazebo() {
           position={[10, 200, -100]}
         />
         <Clover />
-        <mesh position={[0, -0.92, 0]} receiveShadow>
-          <boxGeometry args={[500, 0.1, 500]} />
-          <meshStandardMaterial map={texture} repeat={400} />
+        <mesh
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, -0.87, 0]}
+          receiveShadow>
+          <planeGeometry args={[80, 80]} />
+          <meshStandardMaterial map={texture} />
         </mesh>
         <OrbitControls />
       </Canvas>
