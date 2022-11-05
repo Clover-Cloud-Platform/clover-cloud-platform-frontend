@@ -20,15 +20,9 @@ import WorkspacesRoundedIcon from "@mui/icons-material/WorkspacesRounded";
 import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
 import ElectricBoltRoundedIcon from "@mui/icons-material/ElectricBoltRounded";
 import MemoryRoundedIcon from "@mui/icons-material/MemoryRounded";
-import connection from "./assets/hiw/connection.svg";
-import appIcon from "./assets/hiw/app.svg";
-import files from "./assets/dock/files.svg";
-import terminal from "./assets/dock/terminal.svg";
-import vscode from "./assets/dock/vscode.svg";
-import environment from "./assets/hiw/env.svg";
-import shareEl from "./assets/hiw/share.svg";
+import {ReactComponent as HowItWorks} from "./assets/hiw.svg";
 import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRightRounded";
-import workEl from "./assets/hiw/work.svg";
+import workEl from "./assets/work.svg";
 import Fade from "@mui/material/Fade";
 
 //global theme for the whole app
@@ -486,97 +480,16 @@ export default function App() {
               to comfortably work with the simulator.
             </Typography>
             <Box
-              maxWidth={"1000px"}
-              minWidth={"760px"}
+              width={"800px"}
+              height={"auto"}
               border={"solid 2px #444"}
               borderRadius={"28px"}
               ml={"auto"}
               mr={"auto"}
               mt={"70px"}
+              p={"20px"}
               sx={{"@media (max-width:900px)": {display: "none"}}}>
-              <Box
-                position={"relative"}
-                width={"760px"}
-                mt={"50px"}
-                mb={"50px"}
-                left={"50%"}
-                sx={{transform: "translateX(-50%)"}}>
-                <img src={connection} alt={"connection"} width={"300px"} />
-                <img
-                  src={shareEl}
-                  alt={"share"}
-                  width={"250px"}
-                  style={{
-                    position: "absolute",
-                    top: "116.4px",
-                    left: "515px",
-                  }}
-                />
-                <Box
-                  width={"340px"}
-                  height={"180px"}
-                  bgcolor={"#000"}
-                  position={"absolute"}
-                  left={"170px"}
-                  top={"60px"}
-                  borderRadius={"16px"}
-                  border={"2px solid #1b1b1b"}>
-                  <Box
-                    position={"relative"}
-                    m={"3px"}
-                    bgcolor={"#121212"}
-                    width={"334px"}
-                    height={"174px"}
-                    borderRadius={"12px"}>
-                    <img
-                      src={environment}
-                      width={"200px"}
-                      style={{marginLeft: "67px", marginTop: "4px"}}
-                      alt={"environment"}
-                    />
-                    <img
-                      src={files}
-                      alt={"files"}
-                      width={"60px"}
-                      style={{
-                        position: "absolute",
-                        top: "85px",
-                        left: "19px",
-                      }}
-                    />
-                    <img
-                      src={terminal}
-                      alt={"files"}
-                      width={"50px"}
-                      style={{
-                        position: "absolute",
-                        top: "90px",
-                        left: "102px",
-                      }}
-                    />
-                    <img
-                      src={vscode}
-                      alt={"files"}
-                      width={"50px"}
-                      style={{
-                        position: "absolute",
-                        top: "90px",
-                        left: "181px",
-                      }}
-                    />
-                    <img
-                      src={appIcon}
-                      alt={"runApp"}
-                      width={"160px"}
-                      style={{
-                        position: "absolute",
-                        top: "78px",
-                        left: "250px",
-                      }}
-                    />
-                  </Box>
-                </Box>
-              </Box>
+              <HowItWorks width={"800px"} height={"450px"} />
             </Box>
           </Box>
           <Box
