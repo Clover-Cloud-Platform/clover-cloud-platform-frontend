@@ -18,8 +18,29 @@ import IconButton from "@mui/material/IconButton";
 import Avatar from "@mui/material/Avatar";
 import ExitToAppRoundedIcon from "@mui/icons-material/ExitToAppRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import {io} from "socket.io-client";
+import {useSearchParams} from "react-router-dom";
+
+const socket = io(process.env.REACT_APP_SERVER_LINK);
 
 export default function MainApp() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [instanceName, setInstanceName] = React.useState("");
+  const [username, setUsername] = React.useState("");
+  const instanceID = searchParams.get("id");
+  let uid;
+  if (localStorage.getItem("uid")) {
+    uid = localStorage.getItem("uid");
+  } else if (sessionStorage.getItem("uid")) {
+    uid = sessionStorage.getItem("uid");
+  } else {
+    window.location.href = "/signin";
+  }
+  socket.emit("GetInstanceData", {uid: uid, instance_id: instanceID});
+  socket.on("InstanceData", data => {
+    setUsername(data.username);
+    setInstanceName(data.instance_name);
+  });
   return (
     <ThemeProvider theme={theme}>
       <Box width={"100%"} height={"100vh"}>
@@ -57,7 +78,7 @@ export default function MainApp() {
               fontWeight: 400,
               fontSize: "15px",
             }}>
-            instance name
+            {instanceName}
           </Typography>
           <Box display={"flex"} gap={"15px"} mr={"10px"}>
             <Button
@@ -75,7 +96,7 @@ export default function MainApp() {
                     width: "32px",
                     bgcolor: "primary.200",
                   }}>
-                  U
+                  {username ? username.split("")[0].toUpperCase() : ""}
                 </Avatar>
               </IconButton>
             </Tooltip>

@@ -28,6 +28,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import LaunchRoundedIcon from "@mui/icons-material/LaunchRounded";
+import ExitToAppRoundedIcon from "@mui/icons-material/ExitToAppRounded";
 
 //connect to server
 const socket = io(process.env.REACT_APP_SERVER_LINK);
@@ -408,7 +409,10 @@ export default function Instances() {
                           : sessionStorage.removeItem("uid");
                         window.location.href = "/signin";
                       }}>
-                      <Typography textAlign="center">Log out</Typography>
+                      <ExitToAppRoundedIcon />
+                      <Typography textAlign="center" ml={"8px"}>
+                        Log out
+                      </Typography>
                     </MenuItem>
                   </Menu>
                 </Box>
