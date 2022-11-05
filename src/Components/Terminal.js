@@ -73,13 +73,11 @@ export default function Terminal(props) {
   return (
     <ThemeProvider theme={theme}>
       <Box
+        height={"100%"}
+        bgcolor={"#202327"}
+        p={"5px"}
         sx={{
-          position: "absolute",
           overflowY: "scroll",
-          left: 10,
-          right: 10,
-          top: 30,
-          bottom: 10,
         }}>
         <Box display={"flex"} flexDirection={"column-reverse"}>
           <Box display={"flex"}>

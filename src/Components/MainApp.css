@@ -1,0 +1,12 @@
+.gutter-horizontal {
+    height: 100%;
+    width: 1px;
+    background: #343434;
+}
+.gutter-vertical{
+    height: 1px;
+    background: #343434;
+}
+.dragger{
+    display: none;
+}

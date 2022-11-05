@@ -186,7 +186,13 @@ export default function Instances() {
                 //send stop instance request
                 socket.emit("StopInstance", {uid: uid, cont_name: props.name});
                 //disable button
-                setRunning(false);
+                setDisabled(true);
+                socket.on("InstanceStopped", name => {
+                  if (name == props.name) {
+                    setDisabled(false);
+                    setRunning(false);
+                  }
+                });
               }}
               variant="outlined"
               size="small"
@@ -200,7 +206,13 @@ export default function Instances() {
                 //send run instance request
                 socket.emit("StartInstance", {uid: uid, cont_name: props.name});
                 //disable button
-                setRunning(true);
+                setDisabled(true);
+                socket.on("InstanceStarted", name => {
+                  if (name == props.name) {
+                    setDisabled(false);
+                    setRunning(true);
+                  }
+                });
               }}
               color={"success"}
               variant="outlined"
