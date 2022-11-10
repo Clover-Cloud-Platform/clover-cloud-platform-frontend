@@ -92,6 +92,8 @@ export default function Instances() {
   const [dialogError, setDialogError] = React.useState(false);
   const [dialogHelper, setDialogHelper] = React.useState("");
 
+  const [disableNewInstance, setNewInstanceDisabled] = React.useState(false);
+
   //open/close user menu
   const handleOpenUserMenu = event => {
     setAnchorElUser(event.currentTarget);
@@ -120,6 +122,8 @@ export default function Instances() {
         setLink(data.code);
         //enable instance
         setDisabled(false);
+        //enable create new button
+        setNewInstanceDisabled(false);
       }
     });
     return (
@@ -293,6 +297,10 @@ export default function Instances() {
     event.preventDefault();
     //close the dialog
     setOpenAskNameDialog(false);
+
+    //disable new instance button
+    setNewInstanceDisabled(true);
+
     const name = instanceNameValue.trim();
     const key = instanceCounter;
     if (instances.length < 2) {
@@ -449,7 +457,7 @@ export default function Instances() {
                   //open dialog
                   setOpenAskNameDialog(true);
                 }}
-                disabled={!(instances.length < 2)}
+                disabled={!(instances.length < 2) || disableNewInstance}
                 variant="outlined"
                 size="small"
                 endIcon={<AddRoundedIcon />}>

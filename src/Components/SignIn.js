@@ -125,6 +125,7 @@ export default function SignIn() {
                 <FormControlLabel
                   control={
                     <Checkbox
+                      checked
                       value="remember"
                       name="remember"
                       color="primary"
