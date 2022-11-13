@@ -23,11 +23,16 @@ import {useSearchParams} from "react-router-dom";
 
 const socket = io(process.env.REACT_APP_SERVER_LINK);
 
+let instanceDataReceived = false;
+
 export default function MainApp() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [instanceName, setInstanceName] = React.useState("");
   const [username, setUsername] = React.useState("");
   const instanceID = searchParams.get("id");
+  if (!instanceID) {
+    window.location.href = "/instances";
+  }
   let uid;
   if (localStorage.getItem("uid")) {
     uid = localStorage.getItem("uid");
@@ -38,8 +43,11 @@ export default function MainApp() {
   }
   socket.emit("GetInstanceData", {uid: uid, instance_id: instanceID});
   socket.on("InstanceData", data => {
-    setUsername(data.username);
-    setInstanceName(data.instance_name);
+    if (!instanceDataReceived) {
+      setUsername(data.username);
+      setInstanceName(data.instance_name);
+      instanceDataReceived = true;
+    }
   });
   return (
     <ThemeProvider theme={theme}>
