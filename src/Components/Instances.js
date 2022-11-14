@@ -151,6 +151,10 @@ export default function Instances() {
                 fontFamily: "Inter,sans-serif",
                 fontWeight: 600,
                 color: "#524d56",
+                maxWidth: "500px",
+                textOverflow: "ellipsis",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
               }}>
               {props.name}
             </Typography>

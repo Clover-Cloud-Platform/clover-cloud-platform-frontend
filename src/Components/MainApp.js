@@ -60,7 +60,7 @@ export default function MainApp() {
           alignItems={"center"}>
           <Box display={"flex"} gap={"15px"} ml={"10px"}>
             <Tooltip title="Back to dashboard">
-              <IconButton aria-label="exit" color="primary">
+              <IconButton aria-label="exit" color="primary" href={"/instances"}>
                 <ExitToAppRoundedIcon sx={{transform: "rotate(180deg)"}} />
               </IconButton>
             </Tooltip>
@@ -71,23 +71,27 @@ export default function MainApp() {
               Share Template
             </Button>
           </Box>
-          <Typography
-            position={"absolute"}
-            sx={{
-              maxWidth: "400px",
-              textAlign: "center",
-              textOverflow: "ellipsis",
-              color: "#b0b1b2",
-              lineHeight: 1.2,
-              left: "50%",
-              transform: "translate(-50%, 0)",
-              fontFamily:
-                "system-ui, -apple-system, Segoe UI, Roboto, Cantarell, sans-serif",
-              fontWeight: 400,
-              fontSize: "15px",
-            }}>
-            {instanceName}
-          </Typography>
+          <Tooltip title={instanceName}>
+            <Typography
+              position={"absolute"}
+              sx={{
+                maxWidth: "400px",
+                textAlign: "center",
+                textOverflow: "ellipsis",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                color: "#b0b1b2",
+                lineHeight: 1.2,
+                left: "50%",
+                transform: "translate(-50%, 0)",
+                fontFamily:
+                  "system-ui, -apple-system, Segoe UI, Roboto, Cantarell, sans-serif",
+                fontWeight: 400,
+                fontSize: "15px",
+              }}>
+              {instanceName}
+            </Typography>
+          </Tooltip>
           <Box display={"flex"} gap={"15px"} mr={"10px"}>
             <Button
               sx={{textTransform: "none", fontWeight: 400}}
@@ -126,7 +130,7 @@ export default function MainApp() {
               direction={SplitDirection.Vertical}
               draggerClassName={"dragger"}
               gutterClassName={"gutter-vertical"}>
-              <Gazebo />
+              <Gazebo instanceID={instanceID} />
               <Terminal />
             </ReactSplit>
           </ReactSplit>
