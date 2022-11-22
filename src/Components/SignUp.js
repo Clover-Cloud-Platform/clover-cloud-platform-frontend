@@ -44,7 +44,7 @@ function Copyright(props) {
 
 export const emailRegex =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/;
 
 let timerCount = 60;
 
@@ -66,9 +66,11 @@ export default function SignUp() {
     username: undefined,
     password: undefined,
   });
+  const [signupButtonState, disableSignupButton] = React.useState(false);
 
   const handleSubmit = event => {
     event.preventDefault();
+    disableSignupButton(true);
     const data = new FormData(event.currentTarget);
     const username = data.get("username").trim();
     const email = data.get("email").trim();
@@ -226,6 +228,7 @@ export default function SignUp() {
                     </Grid>
                   </Grid>
                   <Button
+                    disabled={signupButtonState}
                     type="submit"
                     fullWidth
                     variant="contained"
