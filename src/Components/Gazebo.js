@@ -39,14 +39,14 @@ const Aruco = props => {
   texture.wrapS = texture.wrapT = RepeatWrapping;
   return (
     <mesh
-      rotation={[-Math.PI / 2, 0, 0]}
+      rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
       position={[
-        parseFloat(props.position[0]) * 10,
-        -0.86,
         parseFloat(props.position[1]) * 10,
+        -0.86,
+        parseFloat(props.position[0]) * 10,
       ]}
       receiveShadow>
-      <planeGeometry args={[3.3, 3.3]} />
+      <planeGeometry args={[4.4, 4.4]} />
       <meshStandardMaterial map={texture} />
     </mesh>
   );
