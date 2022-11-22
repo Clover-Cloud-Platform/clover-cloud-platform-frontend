@@ -33,9 +33,6 @@ function Copyright(props) {
 }
 
 export default function SignIn() {
-  if (localStorage.getItem("uid") || sessionStorage.getItem("uid")) {
-    window.location = "/instances";
-  }
   const [emailError, setEmailError] = React.useState(false);
   const [passwordError, setPasswordError] = React.useState(false);
   const [emailHelper, setEmailHelper] = React.useState("");
