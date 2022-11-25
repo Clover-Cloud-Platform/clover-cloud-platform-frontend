@@ -76,9 +76,11 @@ export default function SignUp() {
     const email = data.get("email").trim();
     const password = data.get("password");
     if (!emailRegex.test(email)) {
+      disableSignupButton(false);
       setEmailError(true);
       setEmailHelper("Invalid email");
     } else if (!passwordRegex.test(password)) {
+      disableSignupButton(false);
       setPasswordError(true);
       setPasswordHelper(
         "Password must contain minimum 6 characters, at least one letter and one number",
@@ -100,6 +102,7 @@ export default function SignUp() {
       });
       socket.on("SignUpRes", res => {
         if (res.error) {
+          disableSignupButton(false);
           setEmailError(true);
           setEmailHelper("There is already an account with this email");
         } else if (!res.error && res.code) {

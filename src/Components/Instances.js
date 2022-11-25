@@ -261,22 +261,24 @@ export default function Instances() {
         window.location.href = "/signin";
       }
       if (data.cont_list) {
+        const instanceNames = Object.keys(data.cont_list);
         //insert instances
         for (
           pushInstanceCounter;
           pushInstanceCounter < 2;
           pushInstanceCounter++
         ) {
-          if (data.cont_list[pushInstanceCounter]) {
-            names.push(data.cont_list[pushInstanceCounter]);
+          const name = instanceNames[pushInstanceCounter];
+          if (name) {
+            names.push(name);
             instanceList.push(
               <Instance
-                link={data.cont_codes[pushInstanceCounter]}
+                link={data.cont_list[name]}
                 init={true}
                 running={data.running[pushInstanceCounter]}
                 key={pushInstanceCounter}
                 num={pushInstanceCounter}
-                name={data.cont_list[pushInstanceCounter]}
+                name={name}
               />,
             );
             instanceCounter++;
