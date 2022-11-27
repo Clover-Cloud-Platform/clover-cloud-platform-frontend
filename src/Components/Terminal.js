@@ -49,8 +49,8 @@ export default function Terminal(props) {
       color = theme.palette.error.main;
     }
     return (
-      <Box width={"100%"} color={theme.palette.text.primary} display={"flex"}>
-        <Typography color={theme.palette.text.execDir} fontFamily={"Monospace"}>
+      <Box width={"100%"} color={"text.primary"} display={"flex"}>
+        <Typography color={"text.dir"} fontFamily={"Monospace"}>
           ~$
         </Typography>
         <Typography
@@ -74,14 +74,14 @@ export default function Terminal(props) {
     <ThemeProvider theme={theme}>
       <Box
         height={"100%"}
-        bgcolor={"#202327"}
+        bgcolor={"background.cloverMain"}
         p={"5px"}
         sx={{
           overflowY: "scroll",
         }}>
         <Box display={"flex"} flexDirection={"column-reverse"}>
           <Box display={"flex"}>
-            <Typography color={theme.palette.text.dir} fontFamily={"Monospace"}>
+            <Typography color={"text.dir"} fontFamily={"Monospace"}>
               ~$
             </Typography>
             <input

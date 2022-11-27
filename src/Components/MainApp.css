@@ -1,12 +1,25 @@
 .gutter-horizontal {
     height: 100%;
-    width: 1px;
-    background: #343434;
+    width: 4px;
+    background: #141415;
+    padding: 0 !important;
+    transition: width 200ms;
 }
 .gutter-vertical{
-    height: 1px;
-    background: #343434;
+    height: 4px;
+    background: #141415;
+    padding: 0 !important;
+    transition: height 200ms;
+}
+.gutter-horizontal:hover{
+    width: 5px;
+}
+.gutter-vertical:hover{
+    height: 5px;
 }
 .dragger{
     display: none;
+}
+.monaco-editor, .monaco-editor-background, .monaco-editor .inputarea.ime-input, .monaco-editor .margin {
+    background-color: #1c1b22 !important;
 }
