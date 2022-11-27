@@ -25,7 +25,7 @@ import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRigh
 import workEl from "./assets/work.svg";
 import workEl2 from "./assets/work.svg";
 import Fade from "@mui/material/Fade";
-import wavesHeader from "./assets/waves_header.svg";
+import wavesHeader from "./assets/wavesHeader.svg";
 
 //global theme for the whole app
 export const theme = createTheme({
