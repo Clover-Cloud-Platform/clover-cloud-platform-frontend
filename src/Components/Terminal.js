@@ -65,7 +65,6 @@ export default function Terminal(props) {
   };
 
   const handleRightClick = e => {
-    console.log("a");
     //TODO: create context menu with copy/paste functions and commands from history
     e.preventDefault();
   };

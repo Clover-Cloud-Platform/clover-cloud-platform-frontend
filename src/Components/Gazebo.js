@@ -1,5 +1,5 @@
 import React, {useRef, Suspense, useEffect} from "react";
-import {Html, OrbitControls, Sky, useProgress} from "@react-three/drei";
+import {Html, OrbitControls, Sky, useProgress, Svg} from "@react-three/drei";
 import {useLoader} from "@react-three/fiber";
 import {Canvas} from "@react-three/fiber";
 import {TextureLoader} from "three/src/loaders/TextureLoader";
@@ -30,25 +30,18 @@ const Clover = () => {
     </group>
   );
 };
-
 const Aruco = props => {
-  const texture = useLoader(
-    TextureLoader,
-    `data:image/png;base64, ${props.image}`,
-  );
-  texture.wrapS = texture.wrapT = RepeatWrapping;
   return (
-    <mesh
+    <Svg
+      src={`data:image/svg+xml;utf8,${props.image}`}
       rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
       position={[
-        parseFloat(props.position[1]) * 10,
+        parseFloat(props.position[1]) * 10 + 2.1,
         -0.86,
-        parseFloat(props.position[0]) * 10,
+        parseFloat(props.position[0]) * 10 - 2.1,
       ]}
-      receiveShadow>
-      <planeGeometry args={[4.4, 4.4]} />
-      <meshStandardMaterial map={texture} />
-    </mesh>
+      scale={[0.88 * 0.6, 0.88 * 0.6, 1]}
+    />
   );
 };
 
@@ -58,7 +51,7 @@ let arucoMarkersReceived = false;
 export default function Gazebo(props) {
   const [gazeboRunning, setGazebo] = React.useState(false);
 
-  const [arucoMarkers, setArucoMarkers] = React.useState();
+  const [arucoMarkers, setArucoMarkers] = React.useState([]);
 
   const runGazebo = e => {
     e.preventDefault();
@@ -69,13 +62,15 @@ export default function Gazebo(props) {
     socket.on("GazeboModels", models => {
       if (!arucoMarkersReceived) {
         for (let i = 0; i < models.length; i++) {
-          arucoMarkersGlobal.push(
-            <Aruco
-              position={models[i].position}
-              image={models[i].image}
-              key={i}
-            />,
-          );
+          if (arucoMarkersGlobal.length < models.length) {
+            arucoMarkersGlobal.push(
+              <Aruco
+                position={models[i].position}
+                image={models[i].image}
+                key={i}
+              />,
+            );
+          }
         }
         arucoMarkersReceived = true;
       }
@@ -83,11 +78,10 @@ export default function Gazebo(props) {
     const checkMarkers = setInterval(() => {
       if (arucoMarkersGlobal.length > 0) {
         setArucoMarkers(arucoMarkersGlobal);
-        console.log(arucoMarkers);
         clearInterval(checkMarkers);
       }
     }, 10);
-  }, [arucoMarkers]);
+  }, []);
 
   const Loader = () => {
     const {progress} = useProgress();
@@ -117,7 +111,11 @@ export default function Gazebo(props) {
         bgcolor={"background.cloverMain"}
         position={"relative"}>
         {gazeboRunning ? (
-          <Canvas dpr={[1, 2]} shadows camera={{position: [-3, 3, 5], fov: 90}}>
+          <Canvas
+            dpr={[1, 2]}
+            shadows
+            camera={{position: [-3, 3, 5], fov: 90}}
+            performance={{min: 0.5}}>
             <Suspense fallback={<Loader />}>
               <hemisphereLight
                 intensity={0.2}
