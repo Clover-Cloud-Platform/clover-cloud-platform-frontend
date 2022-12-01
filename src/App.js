@@ -15,7 +15,7 @@ import {ReactComponent as Logo} from "./assets/clover-cloud-platform-logo.svg";
 import ArrowCircleRightIcon from "@mui/icons-material/ArrowCircleRight";
 import PlayCircleOutlineRoundedIcon from "@mui/icons-material/PlayCircleOutlineRounded";
 import ccp from "./assets/ccp.png";
-import {Avatar, Link} from "@mui/material";
+import {Avatar, Card, CardContent, Grid, Link} from "@mui/material";
 import WorkspacesRoundedIcon from "@mui/icons-material/WorkspacesRounded";
 import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
 import ElectricBoltRoundedIcon from "@mui/icons-material/ElectricBoltRounded";
@@ -25,9 +25,11 @@ import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRigh
 import workEl from "./assets/work.svg";
 import workEl2 from "./assets/work.svg";
 import Fade from "@mui/material/Fade";
-import wavesHeader from "./assets/wavesHeader.svg";
+import {ReactComponent as FrontendIcon} from "./assets/frontend.svg";
+import {ReactComponent as BackendIcon} from "./assets/backend.svg";
+import {ReactComponent as HistoryIcon} from "./assets/history.svg";
 
-//global theme for the whole app
+//global theme for the app
 export const theme = createTheme({
   palette: {
     mode: "light",
@@ -223,7 +225,9 @@ const Tile = props => {
         maxWidth: "317px",
         mt: "60px",
       }}>
-      <Avatar alt={props.title} sx={{bgcolor: "#fff", width: 64, height: 64}}>
+      <Avatar
+        alt={props.title}
+        sx={{bgcolor: "primary.50", width: 64, height: 64}}>
         {props.icon}
       </Avatar>
       <Typography
@@ -243,6 +247,31 @@ const Tile = props => {
   );
 };
 
+const Repo = props => {
+  return (
+    <Card variant="outlined" sx={{height: "100%"}}>
+      <CardContent>
+        <Typography
+          sx={{fontSize: 12}}
+          fontWeight={500}
+          color="#73767a"
+          gutterBottom>
+          {props.name}
+        </Typography>
+        <Box
+          display={"flex"}
+          justifyContent={"space-between"}
+          alignItems={"center"}>
+          <Link href={props.link} variant="body2">
+            {props.repoName}
+          </Link>
+          {props.icon}
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
+
 export default function App() {
   return (
     <ThemeProvider theme={theme}>
@@ -252,7 +281,8 @@ export default function App() {
           <Box
             width={"85vw"}
             maxWidth={"1500px"}
-            m={"auto"}
+            ml={"auto"}
+            mr={"auto"}
             sx={{
               display: "flex",
               justifyContent: "space-between",
@@ -263,8 +293,9 @@ export default function App() {
             }}>
             <Box
               mt={"130px"}
+              mr={"10px"}
               maxWidth={"550px"}
-              sx={{"@media (max-width:900px)": {maxWidth: "100%"}}}>
+              sx={{"@media (max-width:900px)": {maxWidth: "100%", mr: 0}}}>
               <Button
                 href={"/signup"}
                 variant={"outlined"}
@@ -328,10 +359,14 @@ export default function App() {
               </Box>
             </Box>
             <Box
-              mt={"50px"}
+              mb={"-30px"}
               position={"relative"}
+              mt={"40px"}
               sx={{
-                "@media (min-width:900px)": {mt: "130px", maxWidth: "440px"},
+                "@media (min-width:900px)": {
+                  mt: "130px",
+                  maxWidth: "500px",
+                },
               }}>
               <img
                 src={ccp}
@@ -341,8 +376,11 @@ export default function App() {
                   cursor: "pointer",
                   width: "100%",
                   maxWidth: "100%",
-                  height: "100%",
-                  "@media (maxWidth:900px)": {maxWidth: "440px"},
+                  minWidth: "320px",
+                  height: "90vw",
+                  maxHeight: "500px",
+                  objectFit: "cover",
+                  boxShadow: "0 14px 15px -12px #767575",
                 }}
               />
               <PlayCircleOutlineRoundedIcon
@@ -361,18 +399,75 @@ export default function App() {
             </Box>
           </Box>
           <Box
-            width={"100%"}
-            mb={-1}
-            sx={{"@media (max-width:900px)": {display: "none"}}}>
-            <img
-              src={wavesHeader}
-              style={{width: "100%", height: "300px"}}
-              alt={""}
-            />
-          </Box>
-          <Box
             bgcolor={"primary.50"}
-            sx={{"@media (max-width:900px)": {mt: "70px"}}}>
+            pt={"40px"}
+            pb={"40px"}
+            sx={{"@media (max-width:900px)": {pt: "60px"}}}>
+            <Box width={"85vw"} maxWidth={"1500px"} ml={"auto"} mr={"auto"}>
+              <Typography
+                sx={{
+                  fontFamily: "Google Sans,Noto Sans,sans-serif",
+                  fontSize: "20px",
+                  color: "text.primary",
+                  "@media (max-width:900px)": {
+                    fontSize: "18px",
+                    textAlign: "center",
+                    width: "100%",
+                  },
+                }}>
+                Source code of the project
+              </Typography>
+              <Box pt={"3px"} mt={"20px"} bgcolor={"#e8eaed"}></Box>
+              <Grid
+                container
+                width={"70vw"}
+                maxWidth={"1200px"}
+                ml={"auto"}
+                mr={"auto"}
+                mt={"30px"}
+                spacing={2}>
+                <Grid item xs>
+                  <Repo
+                    name={"FRONTEND"}
+                    link={
+                      "https://github.com/Clover-Cloud-Platform/clover-cloud-platform-frontend"
+                    }
+                    repoName={
+                      "Clover-Cloud-Platform/clover-cloud-platform-frontend"
+                    }
+                    icon={
+                      <FrontendIcon style={{width: "80px", height: "80px"}} />
+                    }
+                  />
+                </Grid>
+                <Grid item xs>
+                  <Repo
+                    name={"BACKEND"}
+                    link={
+                      "https://github.com/Clover-Cloud-Platform/clover-cloud-platform-backend"
+                    }
+                    repoName={
+                      "Clover-Cloud-Platform/clover-cloud-platform-backend"
+                    }
+                    icon={
+                      <BackendIcon style={{width: "80px", height: "80px"}} />
+                    }
+                  />
+                </Grid>
+                <Grid item xs>
+                  <Repo
+                    name={"UPDATES HISTORY"}
+                    link={"https://github.com/CopterExpress/clover/pull/455"}
+                    repoName={"CopterExpress/clover/pull/455"}
+                    icon={
+                      <HistoryIcon style={{width: "48px", height: "80px"}} />
+                    }
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+          </Box>
+          <Box sx={{mt: "30px"}}>
             <Box
               width={"85vw"}
               maxWidth={"1500px"}
@@ -383,7 +478,7 @@ export default function App() {
                   flexDirection: "column",
                 },
               }}
-              pb={"30px"}
+              pb={"50px"}
               display={"flex"}
               alignItems={"center"}
               justifyContent={"center"}>
@@ -456,6 +551,7 @@ export default function App() {
             sx={{"@media (max-width:900px)": {pb: "70px"}}}>
             <Box
               sx={{
+                mt: "-1px",
                 position: "absolute",
                 top: 0,
                 left: 0,
@@ -476,7 +572,7 @@ export default function App() {
                 viewBox="0 0 1200 120"
                 preserveAspectRatio="none">
                 <path
-                  style={{fill: "#F5F3FF"}}
+                  style={{fill: "#FFFFFF"}}
                   d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
                   className="shape-fill"></path>
               </svg>
@@ -540,7 +636,7 @@ export default function App() {
             <Box
               sx={{
                 position: "absolute",
-                bottom: 0,
+                bottom: -1,
                 left: 0,
                 width: "100%",
                 overflow: "hidden",
@@ -575,7 +671,7 @@ export default function App() {
           </Box>
           <Box
             sx={{
-              mt: "50px",
+              mt: "120px",
               mb: "100px",
               ml: "auto",
               mr: "auto",
