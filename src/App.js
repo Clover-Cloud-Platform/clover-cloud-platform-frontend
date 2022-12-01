@@ -399,6 +399,7 @@ export default function App() {
             </Box>
           </Box>
           <Box
+            width={"100%"}
             bgcolor={"primary.50"}
             pt={"40px"}
             pb={"40px"}
@@ -418,14 +419,7 @@ export default function App() {
                 Source code of the project
               </Typography>
               <Box pt={"3px"} mt={"20px"} bgcolor={"#e8eaed"}></Box>
-              <Grid
-                container
-                width={"70vw"}
-                maxWidth={"1200px"}
-                ml={"auto"}
-                mr={"auto"}
-                mt={"30px"}
-                spacing={2}>
+              <Grid container mt={"30px"} spacing={2}>
                 <Grid item xs>
                   <Repo
                     name={"FRONTEND"}
