@@ -50,8 +50,19 @@ let arucoMarkersReceived = false;
 
 export default function Gazebo(props) {
   const [gazeboRunning, setGazebo] = React.useState(false);
+  const [runGazeboButtonState, disableRunGazebo] = React.useState(true);
 
   const [arucoMarkers, setArucoMarkers] = React.useState([]);
+
+  socket.emit("GetGazeboState", props.instanceID);
+  socket.on("GazeboStateRes", state => {
+    if (state) {
+      setGazebo(true);
+      socket.emit("RunGazebo", props.instanceID);
+    } else {
+      disableRunGazebo(false);
+    }
+  });
 
   const runGazebo = e => {
     e.preventDefault();
@@ -143,6 +154,7 @@ export default function Gazebo(props) {
           </Canvas>
         ) : (
           <Button
+            disabled={runGazeboButtonState}
             variant={"contained"}
             onClick={runGazebo}
             sx={{
