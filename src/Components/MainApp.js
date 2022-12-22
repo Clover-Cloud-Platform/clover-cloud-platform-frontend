@@ -20,6 +20,8 @@ import ExitToAppRoundedIcon from "@mui/icons-material/ExitToAppRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import {io} from "socket.io-client";
 import {useSearchParams} from "react-router-dom";
+import MenuItem from "@mui/material/MenuItem";
+import Menu from "@mui/material/Menu";
 
 const socket = io(process.env.REACT_APP_SERVER_LINK);
 
@@ -29,6 +31,7 @@ export default function MainApp() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [instanceName, setInstanceName] = React.useState("");
   const [username, setUsername] = React.useState("");
+  const [anchorElUser, setAnchorElUser] = React.useState(null);
   const instanceID = searchParams.get("id");
   if (!instanceID) {
     window.location.href = "/instances";
@@ -49,6 +52,13 @@ export default function MainApp() {
       instanceDataReceived = true;
     }
   });
+
+  const handleOpenUserMenu = event => {
+    setAnchorElUser(event.currentTarget);
+  };
+  const handleCloseUserMenu = () => {
+    setAnchorElUser(null);
+  };
   return (
     <ThemeProvider theme={theme}>
       <Box width={"100%"} height={"100vh"}>
@@ -101,7 +111,7 @@ export default function MainApp() {
               Search templates...
             </Button>
             <Tooltip title="Open user settings">
-              <IconButton sx={{p: 0}}>
+              <IconButton onClick={handleOpenUserMenu} sx={{p: 0}}>
                 <Avatar
                   sx={{
                     height: "32px",
@@ -112,6 +122,42 @@ export default function MainApp() {
                 </Avatar>
               </IconButton>
             </Tooltip>
+            <Menu
+              sx={{mt: "45px"}}
+              id="menu-appbar"
+              anchorEl={anchorElUser}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              open={Boolean(anchorElUser)}
+              onClose={handleCloseUserMenu}>
+              <MenuItem
+                onClick={handleCloseUserMenu}
+                style={{opacity: 1}}
+                disabled>
+                <Typography textAlign="center" color={"primary.500"}>
+                  {username}
+                </Typography>
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  localStorage.getItem("uid")
+                    ? localStorage.removeItem("uid")
+                    : sessionStorage.removeItem("uid");
+                  window.location.href = "/signin";
+                }}>
+                <ExitToAppRoundedIcon />
+                <Typography textAlign="center" ml={"8px"}>
+                  Log out
+                </Typography>
+              </MenuItem>
+            </Menu>
           </Box>
         </Box>
         <Box width={"100%"} style={{height: "calc(100% - 50px)"}}>
