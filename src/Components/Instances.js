@@ -181,7 +181,7 @@ export default function Instances() {
                 //reload page and display existing instances
                 setTimeout(() => {
                   window.location.reload();
-                }, 300);
+                }, 250);
               }}
               variant="outlined"
               size="small"
@@ -273,9 +273,9 @@ export default function Instances() {
             names.push(name);
             instanceList.push(
               <Instance
-                link={data.cont_list[name]}
+                link={data.cont_list[name][0]}
                 init={true}
-                running={data.running[pushInstanceCounter]}
+                running={data.cont_list[name][1]}
                 key={pushInstanceCounter}
                 num={pushInstanceCounter}
                 name={name}
@@ -322,7 +322,7 @@ export default function Instances() {
           key={key}
           num={key}
           name={name}
-          running={true}
+          running={false}
           init={false}
           link={""}
         />,
@@ -332,7 +332,7 @@ export default function Instances() {
           key={key}
           num={key}
           name={name}
-          running={true}
+          running={false}
           init={false}
           link={""}
         />,
@@ -372,7 +372,13 @@ export default function Instances() {
         }}>
         <Container maxWidth={"xl"}>
           <Box sx={{flexGrow: 1}}>
-            <AppBar position="fixed" sx={{bgcolor: "background.appBar"}}>
+            <AppBar
+              position="fixed"
+              sx={{
+                bgcolor: "background.appBar",
+                boxShadow:
+                  "0 3px 4px 0 rgba(0,0,0,.09),0 3px 3px -2px rgba(0,0,0,.12),0 1px 8px 0 rgba(0,0,0,.1)",
+              }}>
               <Toolbar>
                 <Box sx={{display: "flex", mr: 1, flexGrow: 1}}>
                   <FullLogo
