@@ -12,6 +12,7 @@ import Terminal from "./Terminal";
 import Gazebo from "./Gazebo";
 import WorkspaceAppBar from "./WorkspaceAppBar";
 import {useSearchParams} from "react-router-dom";
+import FileManager from "./FileManager";
 
 export default function MainApp() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -27,7 +28,9 @@ export default function MainApp() {
             direction={SplitDirection.Horizontal}
             draggerClassName={"dragger"}
             gutterClassName={"gutter-horizontal"}>
-            <Box height={"100%"} bgcolor={"background.cloverMain"}></Box>
+            <Box height={"100%"} bgcolor={"background.cloverMain"}>
+              <FileManager />
+            </Box>
             <Box height={"100%"} bgcolor={"#1e1e1e"}>
               <CodeEditor />
             </Box>

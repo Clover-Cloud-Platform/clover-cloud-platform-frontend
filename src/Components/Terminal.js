@@ -6,17 +6,25 @@ import {theme} from "../App";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import {Divider, ListItemIcon, ListItemText} from "@mui/material";
-import {ContentCopy, ContentCut, ContentPaste} from "@mui/icons-material";
+import {
+  ContentCopyRounded,
+  ContentCutRounded,
+  ContentPasteRounded,
+} from "@mui/icons-material";
 import TerminalRoundedIcon from "@mui/icons-material/TerminalRounded";
 import {io} from "socket.io-client";
+import {useEffect} from "react";
+import Button from "@mui/material/Button";
 
 const socket = io(process.env.REACT_APP_SERVER_LINK);
 
+let directorySet = false;
+
 export default function Terminal(props) {
-  const [output, setOutput] = React.useState([]);
   const [history, setHistory] = React.useState([]);
   const [historyKey, setHistoryKey] = React.useState(0);
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [directory, setDirectory] = React.useState("~");
   const open = Boolean(anchorEl);
 
   const HistoryItem = props => {
@@ -48,35 +56,49 @@ export default function Terminal(props) {
         <HistoryItem key={historyKey} command={commandTrimmed} />,
       );
       setHistory(newHistory);
-      setHistoryKey(prev => prev + 1);
       switch (commandTrimmed) {
         case "help":
-          setOutput([
-            <OutputElement key={historyKey}>
-              {`${commandTrimmed}\n  help  -- display a list of commands\n  clear -- clear console\n  use right-click or arrows ↑↓ to open context menu`}
-            </OutputElement>,
-            ...output,
-          ]);
+          document.getElementById(
+            "output",
+          ).innerHTML += `${commandTrimmed}\n  help  -- display a list of commands\n  clear -- clear console\n  use right-click or arrows ↑↓ to open context menu`;
           break;
         case "clear":
-          setOutput([]);
+          document.getElementById("output").innerHTML = "";
           break;
         default:
           socket.emit("ExecuteCommand", {
             command: commandTrimmed,
             instanceID: props.instanceID,
           });
-          socket.on("CommandOutput", commandOutput => {
-            setOutput([
-              <OutputElement key={historyKey} error={commandOutput.error}>
-                {commandOutput.output}
-              </OutputElement>,
-              ...output,
-            ]);
-          });
       }
     }
   };
+  useEffect(() => {
+    socket.emit("ExecuteCommand", {
+      command: "ls",
+      instanceID: props.instanceID,
+    });
+    socket.on("CommandOutput", commandOutput => {
+      console.log(commandOutput.id, commandOutput.output);
+      if (directorySet) {
+        document.getElementById("output").innerHTML +=
+          commandOutput.output.split("]0;")[0];
+      }
+      if (commandOutput.output.includes(props.instanceID)) {
+        setDirectory(
+          commandOutput.output
+            .split("$")[0]
+            .split("</b>:<b>")[1]
+            .split(">")[1]
+            .split("<")[0],
+        );
+        if (!directorySet) {
+          directorySet = true;
+        }
+      }
+      setHistoryKey(prev => prev + 1);
+    });
+  }, []);
 
   const handleKeyDown = e => {
     if (e.key === "Enter") {
@@ -87,27 +109,6 @@ export default function Terminal(props) {
         setAnchorEl(e.currentTarget);
       }
     }
-  };
-
-  const OutputElement = props => {
-    let color = theme.palette.primary["50"];
-    if (props.error) {
-      color = theme.palette.error.main;
-    }
-    return (
-      <Box width={"100%"} color={"text.primary"} display={"flex"}>
-        <Typography color={"text.dir"} fontFamily={"Monospace"}>
-          ~$
-        </Typography>
-        <Typography
-          color={color}
-          sx={{wordWrap: "break-word", whiteSpace: "pre-wrap"}}
-          fontFamily={"Monospace"}
-          ml={"4px"}>
-          {props.children}
-        </Typography>
-      </Box>
-    );
   };
 
   const handleRightClick = e => {
@@ -124,7 +125,6 @@ export default function Terminal(props) {
       <Box
         height={"100%"}
         bgcolor={"background.cloverMain"}
-        p={"5px"}
         sx={{
           overflowY: "scroll",
           scrollbarWidth: "thin",
@@ -140,10 +140,39 @@ export default function Terminal(props) {
             borderRadius: "4px",
           },
         }}>
+        <Box
+          position={"fixed"}
+          display={"flex"}
+          color={"primary.50"}
+          alignItems={"center"}
+          width={"100%"}
+          sx={{backdropFilter: "blur(5px)", bgcolor: "rgba(28,27,34,0.5)"}}>
+          <Typography variant={"overline"} color={"#7c8186"} ml={"10px"}>
+            Terminal
+          </Typography>
+          <Typography
+            variant={"overline"}
+            sx={{textDecoration: "underline", cursor: "pointer"}}
+            color={"#7c8186"}
+            ml={"10px"}
+            onClick={() => {
+              if (history[0]) {
+                socket.emit("ExecuteCommand", {
+                  command: `KillCurrentProcess;${history[0].props.command}`,
+                  instanceID: props.instanceID,
+                });
+              }
+            }}>
+            Kill current process
+          </Typography>
+        </Box>
         <Box display={"flex"} flexDirection={"column-reverse"}>
-          <Box display={"flex"}>
-            <Typography color={"text.dir"} fontFamily={"Monospace"}>
-              ~$
+          <Box display={"flex"} mb={"10px"}>
+            <Typography
+              color={"text.dir"}
+              fontFamily={"Monospace"}
+              whiteSpace={"nowrap"}>
+              {directory}$
             </Typography>
             <Menu
               anchorEl={anchorEl}
@@ -190,7 +219,10 @@ export default function Terminal(props) {
                   document.getElementById("terminal-input").value = "";
                 }}>
                 <ListItemIcon>
-                  <ContentCut fontSize="small" sx={{color: "primary.50"}} />
+                  <ContentCutRounded
+                    fontSize="small"
+                    sx={{color: "primary.50"}}
+                  />
                 </ListItemIcon>
                 <ListItemText>Cut</ListItemText>
                 <Typography variant="body2" color="text.secondary">
@@ -205,7 +237,10 @@ export default function Terminal(props) {
                   );
                 }}>
                 <ListItemIcon>
-                  <ContentCopy fontSize="small" sx={{color: "primary.50"}} />
+                  <ContentCopyRounded
+                    fontSize="small"
+                    sx={{color: "primary.50"}}
+                  />
                 </ListItemIcon>
                 <ListItemText>Copy</ListItemText>
                 <Typography variant="body2" color="text.secondary">
@@ -221,7 +256,10 @@ export default function Terminal(props) {
                     });
                   }}>
                   <ListItemIcon>
-                    <ContentPaste fontSize="small" sx={{color: "primary.50"}} />
+                    <ContentPasteRounded
+                      fontSize="small"
+                      sx={{color: "primary.50"}}
+                    />
                   </ListItemIcon>
                   <ListItemText>Paste</ListItemText>
                   <Typography variant="body2" color="text.secondary">
@@ -254,7 +292,20 @@ export default function Terminal(props) {
               }}
             />
           </Box>
-          {output}
+          <pre
+            id={"output"}
+            style={{
+              color: theme.palette.primary["50"],
+              fontFamily: "Monospace",
+              fontWeight: 400,
+              fontSize: "0.9rem",
+              lineHeight: 1.5,
+              letterSpacing: "0.00938em",
+              marginTop: "40px",
+              marginLeft: "4px",
+              marginRight: "4px",
+            }}
+          />
         </Box>
       </Box>
     </ThemeProvider>
