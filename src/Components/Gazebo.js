@@ -63,7 +63,7 @@ export default function Gazebo(props) {
     socket.on("GazeboStateRes", state => {
       if (state) {
         setGazebo(true);
-        socket.emit("RunGazebo", props.instanceID);
+        socket.emit("GetGazeboModels", props.instanceID);
       } else {
         disableRunGazebo(false);
       }
