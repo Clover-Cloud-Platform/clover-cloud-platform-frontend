@@ -14,14 +14,20 @@ import WorkspaceAppBar from "./WorkspaceAppBar";
 import {useSearchParams} from "react-router-dom";
 import FileManager from "./FileManager";
 
+export const workspaceTheme = theme;
+workspaceTheme.palette.mode = "dark";
+
 export default function MainApp() {
   const [searchParams, setSearchParams] = useSearchParams();
   const instanceID = searchParams.get("id");
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={workspaceTheme}>
       <Box width={"100%"} height={"100vh"}>
         <WorkspaceAppBar />
-        <Box width={"100%"} style={{height: "calc(100% - 50px)"}}>
+        <Box
+          width={"100%"}
+          style={{height: "calc(100% - 50px)"}}
+          bgcolor={"background.cloverMain"}>
           <ReactSplit
             minWidths={[60, 60, 60]}
             initialSizes={[20, 50, 40]}

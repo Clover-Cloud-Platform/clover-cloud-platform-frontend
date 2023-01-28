@@ -14,7 +14,6 @@ import {
 import TerminalRoundedIcon from "@mui/icons-material/TerminalRounded";
 import {io} from "socket.io-client";
 import {useEffect} from "react";
-import Button from "@mui/material/Button";
 
 const socket = io(process.env.REACT_APP_SERVER_LINK);
 
@@ -79,7 +78,6 @@ export default function Terminal(props) {
       instanceID: props.instanceID,
     });
     socket.on("CommandOutput", commandOutput => {
-      console.log(commandOutput.id, commandOutput.output);
       if (directorySet) {
         document.getElementById("output").innerHTML +=
           commandOutput.output.split("]0;")[0];

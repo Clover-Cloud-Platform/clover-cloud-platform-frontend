@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import {theme} from "../App";
+import {workspaceTheme} from "./MainApp";
 import {ThemeProvider} from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import ShareRoundedIcon from "@mui/icons-material/ShareRounded";
@@ -53,7 +53,7 @@ export default function WorkspaceAppBar() {
     setAnchorElUser(null);
   };
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={workspaceTheme}>
       <Box
         height={"50px"}
         bgcolor={"background.cloverAppBar"}
