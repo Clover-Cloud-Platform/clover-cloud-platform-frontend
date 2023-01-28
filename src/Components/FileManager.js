@@ -509,7 +509,7 @@ export default function FileManager() {
         <Box
           display={"flex"}
           gap={"7px"}
-          ml={`${props.level * 10}px`}
+          ml={`${props.level * 10 + 25}px`}
           alignItems={"center"}
           height={"30px"}
           width={"100%"}>
