@@ -21,7 +21,7 @@ import EditMenu from "./EditMenu";
 import TextField from "@mui/material/TextField";
 
 let mLevel = 0;
-export default function FileManager() {
+export default function FileManager({onDragToEditor}) {
   const [data, setData] = React.useState([
     {
       type: "folder",
@@ -160,7 +160,9 @@ export default function FileManager() {
         }
         return array;
       };
-      newSource = replacePath(newSource.children);
+      if (newSource.type === "folder") {
+        newSource = replacePath(newSource.children);
+      }
       const target_array = find_target_array(
         newData,
         obj => obj?.path === targetDir,
@@ -183,7 +185,7 @@ export default function FileManager() {
     const [inputValue, setInputValue] = React.useState("");
     const path = props.path;
     const [{canDrop, isOver}, drop] = useDrop(() => ({
-      accept: "file",
+      accept: ["file", "folder"],
       drop: () => ({name: path}),
       collect: monitor => ({
         isOver: monitor.isOver(),
@@ -192,7 +194,7 @@ export default function FileManager() {
     }));
     const [{isDragging}, drag] = useDrag(() => ({
       item: {path},
-      type: "file",
+      type: "folder",
       end: (item, monitor) => {
         const dropResult = monitor.getDropResult();
         if (item && dropResult) {
@@ -475,14 +477,22 @@ export default function FileManager() {
     const name = props.name;
     const path = props.path;
     const [showActions, setShowActions] = React.useState("none");
+    const [inputValue, setInputValue] = React.useState("");
     const [{isDragging}, drag] = useDrag(() => ({
       item: {path},
       type: "file",
       end: (item, monitor) => {
         const dropResult = monitor.getDropResult();
         if (item && dropResult) {
-          setFileTree(editTree(item.path, dropResult.name, "move"));
-          console.log(`dropped ${item.path} into ${dropResult.name}`);
+          if (dropResult.name === "CodeEditor") {
+            console.log("editor");
+            let name = item.path.split("/");
+            name = name[name.length - 1];
+            onDragToEditor(name);
+          } else {
+            setFileTree(editTree(item.path, dropResult.name, "move"));
+            console.log(`dropped ${item.path} into ${dropResult.name}`);
+          }
         }
       },
       collect: monitor => ({
@@ -490,6 +500,30 @@ export default function FileManager() {
         handlerId: monitor.getHandlerId(),
       }),
     }));
+
+    const [anchorElEdit, setAnchorElEdit] = React.useState(null);
+    const openEdit = Boolean(anchorElEdit);
+    const handleClickEdit = event => {
+      setInputValue("");
+      setAnchorElEdit(event.currentTarget);
+    };
+    const handleCloseEdit = () => {
+      setAnchorElEdit(null);
+    };
+    const editName = () => {
+      setFileTree(
+        editTree(
+          path,
+          path.slice(0, path.lastIndexOf("/")),
+          "edit",
+          inputValue,
+        ),
+      );
+    };
+
+    const deleteItem = () => {
+      setFileTree(editTree(path, "", "delete"));
+    };
     return (
       <Box
         position={"relative"}
@@ -539,6 +573,8 @@ export default function FileManager() {
           height={"30px"}
           display={showActions}>
           <EditOutlinedIcon
+            aria-haspopup="true"
+            onClick={handleClickEdit}
             sx={{
               fontSize: "18px",
               color: "rgba(176,177,178,0.5)",
@@ -546,12 +582,33 @@ export default function FileManager() {
             }}
           />
           <DeleteOutlinedIcon
+            onClick={deleteItem}
             sx={{
               fontSize: "18px",
               color: "rgba(176,177,178,0.5)",
               "&:hover": {color: "#b0b1b2"},
             }}
           />
+          <EditMenu
+            anchorEl={anchorElEdit}
+            open={openEdit}
+            onClose={handleCloseEdit}>
+            <TextField
+              onChange={e => {
+                setInputValue(e.target.value);
+              }}
+              onKeyDown={k => {
+                if (k.key === "Enter") {
+                  editName();
+                  handleCloseEdit();
+                }
+              }}
+              placeholder={"New name"}
+              size="small"
+              variant={"standard"}
+              sx={{input: {color: "primary.50"}}}
+            />
+          </EditMenu>
         </Box>
       </Box>
     );
