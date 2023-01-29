@@ -62,12 +62,6 @@ export default function Gazebo(props) {
   const [cloverPosition, setCloverPosition] = React.useState([0, 0, 0]);
   const [cloverRotation, setCloverRotation] = React.useState([0, 0, 0]);
 
-  socket.on("CloverPosition", data => {
-    console.log(data.position, data.velocity);
-    setCloverPosition(data.position);
-    setCloverRotation(data.rotation);
-  });
-
   if (!stateRequested) {
     socket.emit("GetGazeboState", props.instanceID);
     stateRequested = true;
@@ -112,6 +106,13 @@ export default function Gazebo(props) {
       }
     }, 10);
   }, []);
+
+  socket.on("CloverPosition", data => {
+    console.log(data);
+    console.log(data.position, data.armed, data.rotation);
+    setCloverPosition(data.position);
+    setCloverRotation(data.rotation);
+  });
 
   const Loader = () => {
     const {progress} = useProgress();
