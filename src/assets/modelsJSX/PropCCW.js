@@ -10,8 +10,6 @@ export default function PropCCW(props) {
   return (
     <group {...props} dispose={null}>
       <mesh
-        castShadow
-        receiveShadow
         geometry={nodes.CCW.geometry}
         material={materials["!_CLEVER_CODE_MATERIAL.001"]}
         rotation={[0, 1.57, 0]}

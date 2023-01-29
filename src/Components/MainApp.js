@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import {theme} from "../App";
-import {ThemeProvider} from "@mui/material/styles";
+import {createTheme, ThemeProvider} from "@mui/material/styles";
 
 import ReactSplit, {SplitDirection} from "@devbookhq/splitter";
 
@@ -13,13 +13,34 @@ import Gazebo from "./Gazebo";
 import WorkspaceAppBar from "./WorkspaceAppBar";
 import {useSearchParams} from "react-router-dom";
 import FileManager from "./FileManager";
+import EditorFile from "./EditorFile";
 
-export const workspaceTheme = theme;
-workspaceTheme.palette.mode = "dark";
+export const workspaceTheme = createTheme({
+  palette: {
+    mode: "dark",
+    primary: theme.palette.primary,
+    background: theme.palette.background,
+    text: theme.palette.text,
+    success: theme.palette.success,
+    error: theme.palette.error,
+    warning: theme.palette.warning,
+  },
+});
+
+const filesBuffer = [];
 
 export default function MainApp() {
   const [searchParams, setSearchParams] = useSearchParams();
   const instanceID = searchParams.get("id");
+
+  const [editorFiles, setEditorFiles] = React.useState([]);
+
+  let filesKey = 0;
+  const dragToEditor = name => {
+    filesBuffer.push(<EditorFile key={filesKey} name={name} />);
+    setEditorFiles(filesBuffer);
+    filesKey++;
+  };
   return (
     <ThemeProvider theme={workspaceTheme}>
       <Box width={"100%"} height={"100vh"}>
@@ -35,10 +56,10 @@ export default function MainApp() {
             draggerClassName={"dragger"}
             gutterClassName={"gutter-horizontal"}>
             <Box height={"100%"} bgcolor={"background.cloverMain"}>
-              <FileManager />
+              <FileManager onDragToEditor={dragToEditor} />
             </Box>
             <Box height={"100%"} bgcolor={"#1e1e1e"}>
-              <CodeEditor />
+              <CodeEditor files={editorFiles} />
             </Box>
             <ReactSplit
               minHeights={[60, 60]}

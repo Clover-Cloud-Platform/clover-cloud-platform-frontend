@@ -10,8 +10,6 @@ export default function PropCW(props) {
   return (
     <group {...props} dispose={null}>
       <mesh
-        castShadow
-        receiveShadow
         geometry={nodes.CW.geometry}
         material={materials["!_CLEVER_CODE_MATERIAL.002"]}
         rotation={[0, 1.57, 0]}

@@ -11,20 +11,14 @@ export default function CloverBody(props) {
     <group {...props} dispose={null}>
       <group position={[0, -0.01, 0]} rotation={[Math.PI / 2, 0, -Math.PI / 2]}>
         <mesh
-          castShadow
-          receiveShadow
           geometry={nodes.Clover_41012.geometry}
           material={materials["!_CLEVER_CODE_MATERIAL"]}
         />
         <mesh
-          castShadow
-          receiveShadow
           geometry={nodes.Clover_41012_1.geometry}
           material={materials["!_LED_pattern"]}
         />
         <mesh
-          castShadow
-          receiveShadow
           geometry={nodes.Clover_41012_2.geometry}
           material={materials["!_carbon_fiber"]}
         />

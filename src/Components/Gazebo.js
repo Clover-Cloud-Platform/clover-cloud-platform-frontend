@@ -17,10 +17,14 @@ import {ThemeProvider} from "@mui/material/styles";
 
 const socket = io(process.env.REACT_APP_SERVER_LINK);
 
-const Clover = () => {
+const Clover = props => {
   const group = useRef();
   return (
-    <group ref={group} dispose={null}>
+    <group
+      ref={group}
+      dispose={null}
+      position={props.position}
+      rotation={props.rotation}>
       <CloverBody position={[0, 0, 0]} scale={[10, 10, 10]} />
       <CloverGuards position={[0, 0, 0]} scale={[10, 10, 10]} />
       <PropCW position={[-0.826, 0, 0.826]} scale={[10, 10, 10]} />
@@ -54,6 +58,15 @@ export default function Gazebo(props) {
   const [runGazeboButtonState, disableRunGazebo] = React.useState(true);
 
   const [arucoMarkers, setArucoMarkers] = React.useState([]);
+
+  const [cloverPosition, setCloverPosition] = React.useState([0, 0, 0]);
+  const [cloverRotation, setCloverRotation] = React.useState([0, 0, 0]);
+
+  socket.on("CloverPosition", data => {
+    console.log(data.position, data.velocity);
+    setCloverPosition(data.position);
+    setCloverRotation(data.rotation);
+  });
 
   if (!stateRequested) {
     socket.emit("GetGazeboState", props.instanceID);
@@ -130,7 +143,6 @@ export default function Gazebo(props) {
         {gazeboRunning ? (
           <Canvas
             dpr={[1, 2]}
-            shadows
             camera={{position: [-3, 3, 5], fov: 90}}
             performance={{min: 0.5}}>
             <Suspense fallback={<Loader />}>
@@ -139,19 +151,11 @@ export default function Gazebo(props) {
                 color="#f5f3ff"
                 groundColor="#a78bfa"
               />
-              <directionalLight
-                castShadow
-                shadow-mapSize={[2048, 2048]}
-                intensity={0.2}
-                position={[-200, 400, -200]}
-              />
+              <directionalLight intensity={0.2} position={[-200, 400, -200]} />
               <Sky />
-              <Clover />
+              <Clover position={cloverPosition} rotation={cloverRotation} />
               {arucoMarkers}
-              <mesh
-                rotation={[-Math.PI / 2, 0, 0]}
-                position={[0, -0.87, 0]}
-                receiveShadow>
+              <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.87, 0]}>
                 <planeGeometry args={[500, 500]} />
                 <meshStandardMaterial map={texture} />
               </mesh>

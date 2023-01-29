@@ -10,8 +10,6 @@ export default function CloverGuards(props) {
   return (
     <group {...props} dispose={null}>
       <mesh
-        castShadow
-        receiveShadow
         geometry={nodes.Transparent_parts.geometry}
         material={materials["!_Transparent (Polycarbonate+LED).001"]}
         position={[0, -0.01, 0]}
