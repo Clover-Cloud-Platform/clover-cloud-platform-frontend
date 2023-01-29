@@ -294,7 +294,8 @@ export default function Terminal(props) {
             id={"output"}
             style={{
               color: theme.palette.primary["50"],
-              fontFamily: "Monospace",
+              fontFamily:
+                "Menlo, Cascadia Code, Consolas, Liberation Mono, monospace",
               fontWeight: 400,
               fontSize: "0.9rem",
               lineHeight: 1.5,
