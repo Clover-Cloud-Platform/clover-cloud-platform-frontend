@@ -36,10 +36,41 @@ export default function MainApp() {
   const [editorFiles, setEditorFiles] = React.useState([]);
 
   let filesKey = 0;
-  const dragToEditor = name => {
-    filesBuffer.push(<EditorFile key={filesKey} name={name} />);
-    setEditorFiles(filesBuffer);
-    filesKey++;
+  const dragToEditor = path => {
+    let name = path.split("/");
+    name = name[name.length - 1];
+    let inEditor = false;
+    for (const i in filesBuffer) {
+      if (filesBuffer[i].props.path === path) {
+        inEditor = true;
+      }
+      if (filesBuffer[i].props.name === name) {
+        name = path.split("/");
+        name = `${name.at(-2)}/${name.at(-1)}`;
+      }
+    }
+    if (!inEditor) {
+      filesBuffer.push(
+        <EditorFile
+          key={filesKey}
+          name={name}
+          path={path}
+          onDelete={onDelete}
+        />,
+      );
+      setEditorFiles(filesBuffer);
+      filesKey++;
+    }
+  };
+
+  const onDelete = path => {
+    for (const i in filesBuffer) {
+      if (filesBuffer[i].props.path === path) {
+        filesBuffer.slice(i, 1);
+        setEditorFiles(filesBuffer);
+        break;
+      }
+    }
   };
   return (
     <ThemeProvider theme={workspaceTheme}>
@@ -55,8 +86,21 @@ export default function MainApp() {
             direction={SplitDirection.Horizontal}
             draggerClassName={"dragger"}
             gutterClassName={"gutter-horizontal"}>
-            <Box height={"100%"} bgcolor={"background.cloverMain"}>
-              <FileManager onDragToEditor={dragToEditor} />
+            <Box
+              height={"100%"}
+              bgcolor={"background.cloverMain"}
+              sx={{
+                overflowY: "scroll",
+                overflowX: "hidden",
+                scrollbarWidth: "none",
+                "&::-webkit-scrollbar": {
+                  display: "none",
+                },
+              }}>
+              <FileManager
+                onDragToEditor={dragToEditor}
+                instanceID={instanceID}
+              />
             </Box>
             <Box height={"100%"} bgcolor={"#1e1e1e"}>
               <CodeEditor files={editorFiles} />

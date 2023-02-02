@@ -31,7 +31,13 @@ export default function EditorFile(props) {
           }}>
           {props.name}
         </Typography>
-        <IconButton aria-label="close" size="small" sx={{ml: "4px"}}>
+        <IconButton
+          aria-label="close"
+          size="small"
+          sx={{ml: "4px"}}
+          onClick={() => {
+            props.onDelete(props.path);
+          }}>
           <CloseRoundedIcon fontSize="small" />
         </IconButton>
       </Box>

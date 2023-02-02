@@ -19,57 +19,24 @@ import {DndProvider, useDrag, useDrop} from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";
 import EditMenu from "./EditMenu";
 import TextField from "@mui/material/TextField";
+import {io} from "socket.io-client";
+const socket = io(process.env.REACT_APP_SERVER_LINK);
 
-let mLevel = 0;
-export default function FileManager({onDragToEditor}) {
-  const [data, setData] = React.useState([
-    {
-      type: "folder",
-      name: "FILES",
-      path: "/FILES",
-      children: [
-        {
-          type: "folder",
-          name: "catkin_ws",
-          path: "/FILES/catkin_ws",
-          children: [
-            {
-              type: "folder",
-              name: "src",
-              path: "/FILES/catkin_ws/src",
-              children: [
-                {
-                  type: "file",
-                  name: "test.py",
-                  path: "/FILES/catkin_ws/src/test.py",
-                },
-                {
-                  type: "folder",
-                  name: "clover",
-                  path: "/FILES/catkin_ws/src/clover",
-                  children: [
-                    {
-                      type: "file",
-                      name: "clover.world",
-                      path: "/FILES/catkin_ws/src/clover/clover.world",
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: "file",
-              name: "flight.py",
-              path: "/FILES/catkin_ws/flight.py",
-            },
-          ],
-        },
-        {type: "file", name: "package.json", path: "/FILES/package.json"},
-      ],
-    },
-  ]);
-
+let filesReceived = false;
+let data = [];
+export default function FileManager({onDragToEditor, instanceID}) {
   const [fileTree, setFileTree] = React.useState();
+
+  useEffect(() => {
+    socket.emit("GetFiles", instanceID);
+  }, []);
+  socket.on("Files", files => {
+    if (!filesReceived) {
+      data = files;
+      setFileTree(<FileTree data={files} />);
+      filesReceived = true;
+    }
+  });
 
   const [openErrorFile, setOpenErrorFile] = React.useState(false);
   const [openErrorFolder, setOpenErrorFolder] = React.useState(false);
@@ -139,12 +106,6 @@ export default function FileManager({onDragToEditor}) {
         }
       } else {
         target_array.push(source_object);
-        target_array.sort((a, b) =>
-          a.name < b.name ? 1 : b.name < a.name ? -1 : 0,
-        );
-        target_array.sort((a, b) =>
-          a.type === "file" ? 1 : b.type === "folder" ? -1 : 0,
-        );
       }
     } else if (operation === "edit") {
       let newSource = source_object;
@@ -168,19 +129,12 @@ export default function FileManager({onDragToEditor}) {
         obj => obj?.path === targetDir,
       );
       target_array.push(source_object);
-      target_array.sort((a, b) =>
-        a.name < b.name ? 1 : b.name < a.name ? -1 : 0,
-      );
-      target_array.sort((a, b) =>
-        a.type === "file" ? 1 : b.type === "folder" ? -1 : 0,
-      );
     }
-    mLevel = 0;
     return <FileTree data={newData} />;
   };
 
   const Directory = props => {
-    const [open, setOpen] = React.useState(true);
+    const [open, setOpen] = React.useState(false);
     const [showActions, setShowActions] = React.useState("none");
     const [inputValue, setInputValue] = React.useState("");
     const path = props.path;
@@ -486,9 +440,7 @@ export default function FileManager({onDragToEditor}) {
         if (item && dropResult) {
           if (dropResult.name === "CodeEditor") {
             console.log("editor");
-            let name = item.path.split("/");
-            name = name[name.length - 1];
-            onDragToEditor(name);
+            onDragToEditor(item.path);
           } else {
             setFileTree(editTree(item.path, dropResult.name, "move"));
             console.log(`dropped ${item.path} into ${dropResult.name}`);
@@ -615,14 +567,17 @@ export default function FileManager({onDragToEditor}) {
   };
 
   const FileTree = ({data}) => {
-    mLevel++;
+    let level;
+    if (data[0]) {
+      level = data[0].path.split("/").length - 1;
+    }
     return data.map(item => {
       if (item) {
         if (item.type === "file") {
           return (
             <File
               name={item.name}
-              level={mLevel}
+              level={level}
               key={item.path}
               path={item.path}
             />
@@ -632,7 +587,7 @@ export default function FileManager({onDragToEditor}) {
           return (
             <Directory
               name={item.name}
-              level={mLevel}
+              level={level}
               key={item.path}
               path={item.path}>
               <FileTree data={item.children} />
@@ -642,10 +597,6 @@ export default function FileManager({onDragToEditor}) {
       }
     });
   };
-  mLevel = 0;
-  useEffect(() => {
-    setFileTree(<FileTree data={data} />);
-  }, []);
 
   return (
     <ThemeProvider theme={workspaceTheme}>

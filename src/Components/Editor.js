@@ -30,6 +30,9 @@ export default function CodeEditor({files}) {
             sx={{
               overflowX: "scroll",
               scrollbarWidth: "none",
+              "&::-webkit-scrollbar": {
+                display: "none",
+              },
             }}
             display={"flex"}
             alignItems={"center"}>

@@ -27,10 +27,26 @@ const Clover = props => {
       rotation={props.rotation}>
       <CloverBody position={[0, 0, 0]} scale={[10, 10, 10]} />
       <CloverGuards position={[0, 0, 0]} scale={[10, 10, 10]} />
-      <PropCW position={[-0.826, 0, 0.826]} scale={[10, 10, 10]} />
-      <PropCCW position={[0.826, 0, 0.826]} scale={[10, 10, 10]} />
-      <PropCW position={[0.826, 0, -0.826]} scale={[10, 10, 10]} />
-      <PropCCW position={[-0.826, 0, -0.826]} scale={[10, 10, 10]} />
+      <PropCW
+        position={[-0.826, 0, 0.826]}
+        scale={[10, 10, 10]}
+        rotation={[0, -props.propRotation, 0]}
+      />
+      <PropCCW
+        position={[0.826, 0, 0.826]}
+        scale={[10, 10, 10]}
+        rotation={[0, props.propRotation, 0]}
+      />
+      <PropCW
+        position={[0.826, 0, -0.826]}
+        scale={[10, 10, 10]}
+        rotation={[0, -props.propRotation, 0]}
+      />
+      <PropCCW
+        position={[-0.826, 0, -0.826]}
+        scale={[10, 10, 10]}
+        rotation={[0, props.propRotation, 0]}
+      />
     </group>
   );
 };
@@ -52,6 +68,7 @@ const Aruco = props => {
 const arucoMarkersGlobal = [];
 let arucoMarkersReceived = false;
 let stateRequested = false;
+let propRotating = false;
 
 export default function Gazebo(props) {
   const [gazeboRunning, setGazebo] = React.useState(false);
@@ -61,7 +78,31 @@ export default function Gazebo(props) {
 
   const [cloverPosition, setCloverPosition] = React.useState([0, 0, 0]);
   const [cloverRotation, setCloverRotation] = React.useState([0, 0, 0]);
+  const [propRotation, setPropRotation] = React.useState(0);
 
+  socket.on("CloverPosition", data => {
+    const pos = [
+      data.position[0] * 10,
+      data.position[1] * 10,
+      data.position[2] * 10,
+    ];
+    if (data.armed) {
+      setPropRotation(prev => prev + 0.1);
+    }
+    if (
+      !(
+        Math.abs(data.position[0] - cloverPosition[0]) > 4 ||
+        Math.abs(data.position[1] - cloverPosition[1]) > 4 ||
+        Math.abs(data.position[2] - cloverPosition[2]) > 4
+      )
+    ) {
+      setCloverPosition(pos);
+    }
+    setCloverRotation(data.rotation);
+  });
+  socket.on("DebugOutput", data => {
+    console.log(data);
+  });
   if (!stateRequested) {
     socket.emit("GetGazeboState", props.instanceID);
     stateRequested = true;
@@ -107,13 +148,6 @@ export default function Gazebo(props) {
     }, 10);
   }, []);
 
-  socket.on("CloverPosition", data => {
-    console.log(data);
-    console.log(data.position, data.armed, data.rotation);
-    setCloverPosition(data.position);
-    setCloverRotation(data.rotation);
-  });
-
   const Loader = () => {
     const {progress} = useProgress();
     return (
@@ -154,7 +188,11 @@ export default function Gazebo(props) {
               />
               <directionalLight intensity={0.2} position={[-200, 400, -200]} />
               <Sky />
-              <Clover position={cloverPosition} rotation={cloverRotation} />
+              <Clover
+                position={cloverPosition}
+                rotation={cloverRotation}
+                propRotation={propRotation}
+              />
               {arucoMarkers}
               <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.87, 0]}>
                 <planeGeometry args={[500, 500]} />
