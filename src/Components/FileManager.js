@@ -153,6 +153,11 @@ export default function FileManager({onDragToEditor, instanceID}) {
         const dropResult = monitor.getDropResult();
         if (item && dropResult) {
           if (item.path !== dropResult.name) {
+            socket.emit("MoveItem", {
+              source: item.path,
+              target: dropResult.name,
+              instanceID: instanceID,
+            });
             setFileTree(editTree(item.path, dropResult.name, "move"));
             console.log(`dropped ${item.path} into ${dropResult.name}`);
           }
@@ -201,6 +206,10 @@ export default function FileManager({onDragToEditor, instanceID}) {
           inputValue.trim(),
           `${path}/${inputValue.trim()}`,
         );
+        socket.emit("CreateNewFile", {
+          path: `${path}/${inputValue.trim()}`,
+          instanceID: instanceID,
+        });
         setFileTree(
           editTree(
             {
@@ -221,6 +230,10 @@ export default function FileManager({onDragToEditor, instanceID}) {
           inputValue.trim(),
           `${path}/${inputValue.trim()}`,
         );
+        socket.emit("CreateNewDirectory", {
+          path: `${path}/${inputValue.trim()}`,
+          instanceID: instanceID,
+        });
         setFileTree(
           editTree(
             {
@@ -236,17 +249,23 @@ export default function FileManager({onDragToEditor, instanceID}) {
       }
     };
     const editName = () => {
+      socket.emit("EditName", {
+        path: path,
+        newName: inputValue.trim(),
+        instanceID: instanceID,
+      });
       setFileTree(
         editTree(
           path,
           path.slice(0, path.lastIndexOf("/")),
           "edit",
-          inputValue,
+          inputValue.trim(),
         ),
       );
     };
 
     const deleteItem = () => {
+      socket.emit("DeleteItem", {path: path, instanceID: instanceID});
       setFileTree(editTree(path, "", "delete"));
     };
     return (
@@ -442,6 +461,11 @@ export default function FileManager({onDragToEditor, instanceID}) {
             console.log("editor");
             onDragToEditor(item.path);
           } else {
+            socket.emit("MoveItem", {
+              source: item.path,
+              target: dropResult.name,
+              instanceID: instanceID,
+            });
             setFileTree(editTree(item.path, dropResult.name, "move"));
             console.log(`dropped ${item.path} into ${dropResult.name}`);
           }
@@ -463,17 +487,23 @@ export default function FileManager({onDragToEditor, instanceID}) {
       setAnchorElEdit(null);
     };
     const editName = () => {
+      socket.emit("EditName", {
+        path: path,
+        newName: inputValue.trim(),
+        instanceID: instanceID,
+      });
       setFileTree(
         editTree(
           path,
           path.slice(0, path.lastIndexOf("/")),
           "edit",
-          inputValue,
+          inputValue.trim(),
         ),
       );
     };
 
     const deleteItem = () => {
+      socket.emit("DeleteItem", {path: path, instanceID: instanceID});
       setFileTree(editTree(path, "", "delete"));
     };
     return (

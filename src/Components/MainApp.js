@@ -66,11 +66,11 @@ export default function MainApp() {
   const onDelete = path => {
     for (const i in filesBuffer) {
       if (filesBuffer[i].props.path === path) {
-        filesBuffer.slice(i, 1);
-        setEditorFiles(filesBuffer);
+        filesBuffer.splice(i, 1);
         break;
       }
     }
+    setEditorFiles([...filesBuffer]);
   };
   return (
     <ThemeProvider theme={workspaceTheme}>
