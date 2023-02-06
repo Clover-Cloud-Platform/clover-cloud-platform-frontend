@@ -31,6 +31,7 @@ export default function FileManager({onDragToEditor, instanceID}) {
     socket.emit("GetFiles", instanceID);
   }, []);
   socket.on("Files", files => {
+    console.log(files);
     if (!filesReceived) {
       data = files;
       setFileTree(<FileTree data={files} />);
@@ -265,7 +266,7 @@ export default function FileManager({onDragToEditor, instanceID}) {
     };
 
     const deleteItem = () => {
-      socket.emit("DeleteItem", {path: path, instanceID: instanceID});
+      socket.emit("DeleteDirectory", {path: path, instanceID: instanceID});
       setFileTree(editTree(path, "", "delete"));
     };
     return (
@@ -503,7 +504,7 @@ export default function FileManager({onDragToEditor, instanceID}) {
     };
 
     const deleteItem = () => {
-      socket.emit("DeleteItem", {path: path, instanceID: instanceID});
+      socket.emit("DeleteFile", {path: path, instanceID: instanceID});
       setFileTree(editTree(path, "", "delete"));
     };
     return (
