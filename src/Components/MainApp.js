@@ -82,7 +82,7 @@ export default function MainApp() {
           bgcolor={"background.cloverMain"}>
           <ReactSplit
             minWidths={[60, 60, 60]}
-            initialSizes={[20, 50, 40]}
+            initialSizes={[20, 45, 35]}
             direction={SplitDirection.Horizontal}
             draggerClassName={"dragger"}
             gutterClassName={"gutter-horizontal"}>
