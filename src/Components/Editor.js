@@ -7,8 +7,14 @@ import {DndProvider, useDrag, useDrop} from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";
 import {Divider} from "@mui/material";
 import {useHorizontalScroll} from "./HorizontalScroll";
+import {io} from "socket.io-client";
+import langMap from "language-map";
+
+const socket = io(process.env.REACT_APP_SERVER_LINK);
 
 export default function CodeEditor({files}) {
+  const [editorValue, setEditorValue] = React.useState("");
+  const [editorLang, setEditorLang] = React.useState("plaintext");
   const FileView = props => {
     const [{canDrop, isOver}, drop] = useDrop(() => ({
       accept: "file",
@@ -21,10 +27,23 @@ export default function CodeEditor({files}) {
 
     const scrollRef = useHorizontalScroll();
 
+    socket.on("FileContent", file => {
+      setEditorValue(file.content);
+      let lang = Object.entries(langMap).filter(
+        lang =>
+          lang[1].extensions &&
+          lang[1].extensions.includes(`.${file.path.split(".").at(-1)}`),
+      )[0][1].aceMode;
+      if (lang.includes("_")) {
+        lang = lang.split("_")[1];
+      }
+      setEditorLang(lang);
+    });
     return (
       <>
         <Box ref={drop} height={"50px"} bgcolor={"background.cloverMain"}>
           <Box
+            mt={"4px"}
             height={"50px"}
             ref={scrollRef}
             sx={{
@@ -52,7 +71,8 @@ export default function CodeEditor({files}) {
       <Editor
         theme={"vs-dark"}
         height="calc(100% - 50px)"
-        defaultLanguage="python"
+        value={editorValue}
+        language={editorLang}
         options={{
           minimap: {
             enabled: false,

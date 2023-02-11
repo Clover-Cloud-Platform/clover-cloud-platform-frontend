@@ -14,6 +14,8 @@ import WorkspaceAppBar from "./WorkspaceAppBar";
 import {useSearchParams} from "react-router-dom";
 import FileManager from "./FileManager";
 import EditorFile from "./EditorFile";
+import {io} from "socket.io-client";
+const socket = io(process.env.REACT_APP_SERVER_LINK);
 
 export const workspaceTheme = createTheme({
   palette: {
@@ -56,9 +58,12 @@ export default function MainApp() {
           name={name}
           path={path}
           onDelete={onDelete}
+          onOpen={onOpen}
+          onMove={onMove}
+          active={true}
         />,
       );
-      setEditorFiles(filesBuffer);
+      onOpen(path);
       filesKey++;
     }
   };
@@ -66,12 +71,75 @@ export default function MainApp() {
   const onDelete = path => {
     for (const i in filesBuffer) {
       if (filesBuffer[i].props.path === path) {
+        if (
+          filesBuffer[i].props.active &&
+          (filesBuffer[i - 1] || filesBuffer.length > 1)
+        ) {
+          setTimeout(() => {
+            if (filesBuffer[i - 1]) {
+              onOpen(filesBuffer[i - 1].props.path);
+            } else {
+              onOpen(filesBuffer[i].props.path);
+            }
+          }, 1);
+        }
         filesBuffer.splice(i, 1);
+        setEditorFiles([...filesBuffer]);
         break;
       }
     }
+  };
+
+  const onOpen = path => {
+    for (const i in filesBuffer) {
+      if (filesBuffer[i].props.path === path) {
+        if (!filesBuffer[i].props.active) {
+          filesBuffer[i] = (
+            <EditorFile
+              key={filesBuffer[i].key}
+              name={filesBuffer[i].props.name}
+              path={filesBuffer[i].props.path}
+              onDelete={onDelete}
+              onOpen={onOpen}
+              onMove={onMove}
+              active={true}
+            />
+          );
+        }
+      } else {
+        if (filesBuffer[i].props.active) {
+          filesBuffer[i] = (
+            <EditorFile
+              key={filesBuffer[i].key}
+              name={filesBuffer[i].props.name}
+              path={filesBuffer[i].props.path}
+              onDelete={onDelete}
+              onOpen={onOpen}
+              onMove={onMove}
+              active={false}
+            />
+          );
+        }
+      }
+    }
+    setEditorFiles([...filesBuffer]);
+    console.log("get content", path);
+    socket.emit("GetFileContent", {path: path, instanceID: instanceID});
+  };
+
+  const onMove = (source, target) => {
+    const src = filesBuffer.indexOf(
+      filesBuffer.filter(file => file.props.path === source)[0],
+    );
+    const tgt = filesBuffer.indexOf(
+      filesBuffer.filter(file => file.props.path === target)[0],
+    );
+    const tgtCopy = filesBuffer[tgt];
+    filesBuffer[tgt] = filesBuffer[src];
+    filesBuffer[src] = tgtCopy;
     setEditorFiles([...filesBuffer]);
   };
+
   return (
     <ThemeProvider theme={workspaceTheme}>
       <Box width={"100%"} height={"100vh"}>

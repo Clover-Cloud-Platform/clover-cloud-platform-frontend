@@ -31,7 +31,6 @@ export default function FileManager({onDragToEditor, instanceID}) {
     socket.emit("GetFiles", instanceID);
   }, []);
   socket.on("Files", files => {
-    console.log(files);
     if (!filesReceived) {
       data = files;
       setFileTree(<FileTree data={files} />);
