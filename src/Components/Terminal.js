@@ -26,6 +26,17 @@ export default function Terminal(props) {
   const [directory, setDirectory] = React.useState("~");
   const open = Boolean(anchorEl);
 
+  if (localStorage.getItem("prevCmd")) {
+    socket.emit("ExecuteCommand", {
+      command: {
+        type: "kill",
+        cmd: JSON.parse(localStorage.getItem("prevCmd")),
+      },
+      instanceID: props.instanceID,
+    });
+    localStorage.removeItem("prevCmd");
+  }
+
   const HistoryItem = props => {
     return (
       <MenuItem
@@ -59,14 +70,14 @@ export default function Terminal(props) {
         case "help":
           document.getElementById(
             "output",
-          ).innerHTML += `${commandTrimmed}\n  help  -- display a list of commands\n  clear -- clear console\n  use right-click or arrows ↑↓ to open context menu`;
+          ).innerHTML += `${commandTrimmed}\n  help  -- display a list of built-in commands\n  clear -- clear console\n  use right-click or arrows ↑↓ to open context menu`;
           break;
         case "clear":
           document.getElementById("output").innerHTML = "";
           break;
         default:
           socket.emit("ExecuteCommand", {
-            command: commandTrimmed,
+            command: {type: "command", cmd: commandTrimmed},
             instanceID: props.instanceID,
           });
       }
@@ -74,7 +85,7 @@ export default function Terminal(props) {
   };
   useEffect(() => {
     socket.emit("ExecuteCommand", {
-      command: "ls",
+      command: {type: "command", cmd: "ls"},
       instanceID: props.instanceID,
     });
     socket.on("CommandOutput", commandOutput => {
@@ -96,6 +107,16 @@ export default function Terminal(props) {
       }
       setHistoryKey(prev => prev + 1);
     });
+    window.onunload = () => {
+      if (history.length > 0) {
+        localStorage.setItem(
+          "prevCmd",
+          JSON.stringify(
+            history.map(command => (command = command.props.command)),
+          ),
+        );
+      }
+    };
   }, []);
 
   const handleKeyDown = e => {
@@ -154,9 +175,14 @@ export default function Terminal(props) {
             color={"#7c8186"}
             ml={"10px"}
             onClick={() => {
-              if (history[0]) {
+              if (history.length > 0) {
                 socket.emit("ExecuteCommand", {
-                  command: `KillCurrentProcess;${history[0].props.command}`,
+                  command: {
+                    type: "kill",
+                    cmd: history.map(
+                      command => (command = command.props.command),
+                    ),
+                  },
                   instanceID: props.instanceID,
                 });
               }
