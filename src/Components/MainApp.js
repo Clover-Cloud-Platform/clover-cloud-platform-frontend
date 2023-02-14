@@ -48,6 +48,7 @@ export default function MainApp() {
     for (const i in filesBuffer) {
       if (filesBuffer[i].props.path === path) {
         inEditor = true;
+        break;
       }
       if (filesBuffer[i].props.name === name) {
         name = path.split("/");
@@ -68,6 +69,8 @@ export default function MainApp() {
       );
       onOpen(path);
       filesKey++;
+    } else {
+      onOpen(path);
     }
   };
 
@@ -87,6 +90,9 @@ export default function MainApp() {
           }, 1);
         }
         filesBuffer.splice(i, 1);
+        if (filesBuffer.length === 0) {
+          setEditorValue("");
+        }
         setEditorFiles([...filesBuffer]);
         break;
       }
