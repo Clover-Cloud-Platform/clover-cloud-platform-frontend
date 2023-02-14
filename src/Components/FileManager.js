@@ -523,13 +523,16 @@ export default function FileManager({onDragToEditor, instanceID}) {
           cursor: "pointer",
         }}>
         <Box
+          onClick={() => {
+            onDragToEditor(path);
+          }}
           display={"flex"}
           gap={"7px"}
-          ml={`${props.level * 10 + 25}px`}
           alignItems={"center"}
           height={"30px"}
           width={"100%"}>
           <img
+            style={{marginLeft: `${props.level * 10 + 25}px`}}
             src={getMaterialFileIcon(name)}
             alt={name}
             width="18px"

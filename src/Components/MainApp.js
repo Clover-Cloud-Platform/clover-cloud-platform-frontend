@@ -15,6 +15,7 @@ import {useSearchParams} from "react-router-dom";
 import FileManager from "./FileManager";
 import EditorFile from "./EditorFile";
 import {io} from "socket.io-client";
+import langMap from "language-map";
 const socket = io(process.env.REACT_APP_SERVER_LINK);
 
 export const workspaceTheme = createTheme({
@@ -36,6 +37,8 @@ export default function MainApp() {
   const instanceID = searchParams.get("id");
 
   const [editorFiles, setEditorFiles] = React.useState([]);
+  const [editorValue, setEditorValue] = React.useState("");
+  const [editorLang, setEditorLang] = React.useState("plaintext");
 
   let filesKey = 0;
   const dragToEditor = path => {
@@ -125,6 +128,18 @@ export default function MainApp() {
     setEditorFiles([...filesBuffer]);
     console.log("get content", path);
     socket.emit("GetFileContent", {path: path, instanceID: instanceID});
+    socket.on("FileContent", file => {
+      setEditorValue(file.content);
+      let lang = Object.entries(langMap).filter(
+        lang =>
+          lang[1].extensions &&
+          lang[1].extensions.includes(`.${file.path.split(".").at(-1)}`),
+      )[0][1].aceMode;
+      if (lang.includes("_")) {
+        lang = lang.split("_")[1];
+      }
+      setEditorLang(lang);
+    });
   };
 
   const onMove = (source, target) => {
@@ -171,7 +186,11 @@ export default function MainApp() {
               />
             </Box>
             <Box height={"100%"} bgcolor={"#1e1e1e"}>
-              <CodeEditor files={editorFiles} />
+              <CodeEditor
+                files={editorFiles}
+                language={editorLang}
+                value={editorValue}
+              />
             </Box>
             <ReactSplit
               minHeights={[60, 60]}

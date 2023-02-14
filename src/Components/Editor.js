@@ -12,9 +12,7 @@ import langMap from "language-map";
 
 const socket = io(process.env.REACT_APP_SERVER_LINK);
 
-export default function CodeEditor({files}) {
-  const [editorValue, setEditorValue] = React.useState("");
-  const [editorLang, setEditorLang] = React.useState("plaintext");
+export default function CodeEditor({files, language, value}) {
   const FileView = props => {
     const [{canDrop, isOver}, drop] = useDrop(() => ({
       accept: "file",
@@ -26,19 +24,6 @@ export default function CodeEditor({files}) {
     }));
 
     const scrollRef = useHorizontalScroll();
-
-    socket.on("FileContent", file => {
-      setEditorValue(file.content);
-      let lang = Object.entries(langMap).filter(
-        lang =>
-          lang[1].extensions &&
-          lang[1].extensions.includes(`.${file.path.split(".").at(-1)}`),
-      )[0][1].aceMode;
-      if (lang.includes("_")) {
-        lang = lang.split("_")[1];
-      }
-      setEditorLang(lang);
-    });
     return (
       <>
         <Box ref={drop} height={"50px"} bgcolor={"background.cloverMain"}>
@@ -71,8 +56,8 @@ export default function CodeEditor({files}) {
       <Editor
         theme={"vs-dark"}
         height="calc(100% - 50px)"
-        value={editorValue}
-        language={editorLang}
+        value={value}
+        language={language}
         options={{
           minimap: {
             enabled: false,
