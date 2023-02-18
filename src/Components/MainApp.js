@@ -231,6 +231,7 @@ export default function MainApp() {
                   files={editorFiles}
                   language={editorLang}
                   value={editorValue}
+                  instanceID={instanceID}
                 />
               ) : (
                 <DndProvider backend={HTML5Backend}>

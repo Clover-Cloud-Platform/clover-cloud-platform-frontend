@@ -7,8 +7,10 @@ import {DndProvider, useDrag, useDrop} from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";
 import {CircularProgress, Divider} from "@mui/material";
 import {useHorizontalScroll} from "./HorizontalScroll";
+import {io} from "socket.io-client";
+const socket = io(process.env.REACT_APP_SERVER_LINK);
 
-export default function CodeEditor({files, language, value}) {
+export default function CodeEditor({files, language, value, instanceID}) {
   const FileView = props => {
     const [{canDrop, isOver}, drop] = useDrop(() => ({
       accept: "file",
@@ -68,6 +70,13 @@ export default function CodeEditor({files, language, value}) {
       </DndProvider>
       <Editor
         loading={<Preloader />}
+        onChange={val => {
+          socket.emit("WriteFile", {
+            path: files.filter(el => el.props.active)[0].props.path,
+            value: val,
+            instanceID: instanceID,
+          });
+        }}
         theme={"vs-dark"}
         height="calc(100% - 50px)"
         value={value}
