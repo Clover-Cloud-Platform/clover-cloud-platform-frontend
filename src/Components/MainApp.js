@@ -16,6 +16,10 @@ import FileManager from "./FileManager";
 import EditorFile from "./EditorFile";
 import {io} from "socket.io-client";
 import langMap from "language-map";
+import Typography from "@mui/material/Typography";
+import {DndProvider, useDrop} from "react-dnd";
+import {HTML5Backend} from "react-dnd-html5-backend";
+
 const socket = io(process.env.REACT_APP_SERVER_LINK);
 
 export const workspaceTheme = createTheme({
@@ -39,9 +43,38 @@ export default function MainApp() {
   const [editorFiles, setEditorFiles] = React.useState([]);
   const [editorValue, setEditorValue] = React.useState("");
   const [editorLang, setEditorLang] = React.useState("plaintext");
+  const [openEditor, setOpenEditor] = React.useState(false);
+
+  const EditorStartWindow = () => {
+    const [{canDrop, isOver}, drop] = useDrop(() => ({
+      accept: "file",
+      drop: () => ({name: "CodeEditor"}),
+      collect: monitor => ({
+        isOver: monitor.isOver(),
+        canDrop: monitor.canDrop(),
+      }),
+    }));
+
+    return (
+      <Box
+        ref={drop}
+        bgcolor={isOver && canDrop ? "#16161c" : "background.cloverMain"}
+        height={"100%"}
+        display={"flex"}
+        alignItems={"center"}
+        justifyContent={"center"}>
+        <Typography variant={"overline"} color={"#7c8186"}>
+          drop a file here to edit it
+        </Typography>
+      </Box>
+    );
+  };
 
   let filesKey = 0;
   const dragToEditor = path => {
+    if (!openEditor) {
+      setOpenEditor(true);
+    }
     let name = path.split("/");
     name = name[name.length - 1];
     let inEditor = false;
@@ -92,6 +125,7 @@ export default function MainApp() {
         filesBuffer.splice(i, 1);
         if (filesBuffer.length === 0) {
           setEditorValue("");
+          setOpenEditor(false);
         }
         setEditorFiles([...filesBuffer]);
         break;
@@ -192,11 +226,17 @@ export default function MainApp() {
               />
             </Box>
             <Box height={"100%"} bgcolor={"#1e1e1e"}>
-              <CodeEditor
-                files={editorFiles}
-                language={editorLang}
-                value={editorValue}
-              />
+              {openEditor ? (
+                <CodeEditor
+                  files={editorFiles}
+                  language={editorLang}
+                  value={editorValue}
+                />
+              ) : (
+                <DndProvider backend={HTML5Backend}>
+                  <EditorStartWindow />
+                </DndProvider>
+              )}
             </Box>
             <ReactSplit
               minHeights={[60, 60]}
