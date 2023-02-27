@@ -10,8 +10,8 @@
     "@monaco-editor/react": "^4.4.6",
     "@mui/icons-material": "^5.8.4",
     "@mui/material": "^5.11.6",
-    "@react-three/drei": "^9.38.2",
-    "@react-three/fiber": "^8.9.0",
+    "@react-three/drei": "^9.56.27",
+    "@react-three/fiber": "^8.11.5",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^13.5.0",
@@ -26,7 +26,8 @@
     "react-scripts": "5.0.1",
     "socket.io-client": "^4.5.2",
     "three": "^0.146.0",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "zustand": "^4.3.3"
   },
   "scripts": {
     "start": "doppler run -- react-scripts start",

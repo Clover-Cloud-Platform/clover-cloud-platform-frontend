@@ -178,10 +178,20 @@ export default function Instances() {
                 });
                 //hide instance
                 setContainer(false);
-                //reload page and display existing instances
-                setTimeout(() => {
-                  window.location.reload();
-                }, 250);
+                //update list of instances
+                instanceList.splice(
+                  instanceList.indexOf(
+                    instanceList.filter(i => i.props.name === props.name)[0],
+                  ),
+                  1,
+                );
+                setInstances([...instanceList]);
+                const newInstanceNames = instanceNames;
+                newInstanceNames.splice(
+                  newInstanceNames.indexOf(props.name),
+                  1,
+                );
+                setInstanceNames([...newInstanceNames]);
               }}
               variant="outlined"
               size="small"
@@ -364,7 +374,7 @@ export default function Instances() {
         <></>
       )}
       <Box
-        bgcolor={"#f8f6f9"}
+        bgcolor={"#fff"}
         sx={{
           display: "flex",
           height: "100vh",

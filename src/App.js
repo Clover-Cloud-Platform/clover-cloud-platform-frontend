@@ -28,6 +28,7 @@ import Fade from "@mui/material/Fade";
 import {ReactComponent as FrontendIcon} from "./assets/frontend.svg";
 import {ReactComponent as BackendIcon} from "./assets/backend.svg";
 import {ReactComponent as HistoryIcon} from "./assets/history.svg";
+import {Link as RouterLink} from "react-router-dom";
 
 //global theme for the app
 export const theme = createTheme({
@@ -151,10 +152,10 @@ const ResponsiveAppBar = () => {
                 }}>
                 <Typography textAlign="center">Contact us</Typography>
               </MenuItem>
-              <MenuItem key={"Login"} href={"/signin"}>
+              <MenuItem key={"Login"} component={RouterLink} to={"/signin"}>
                 <Typography textAlign="center">{"Login"}</Typography>
               </MenuItem>
-              <MenuItem key={"Sign Up"} onClick={handleCloseNavMenu}>
+              <MenuItem key={"Sign Up"} component={RouterLink} to={"/signup"}>
                 <Typography textAlign="center">{"Sign Up"}</Typography>
               </MenuItem>
             </Menu>
@@ -189,7 +190,8 @@ const ResponsiveAppBar = () => {
           </Box>
           <Button
             key={"Login"}
-            href={"/signin"}
+            component={RouterLink}
+            to={"/signin"}
             sx={{
               my: 2,
               display: "block",
@@ -200,7 +202,8 @@ const ResponsiveAppBar = () => {
           <Button
             variant={"outlined"}
             key={"Sign Up"}
-            href={"/signup"}
+            component={RouterLink}
+            to={"/signup"}
             sx={{
               my: 2,
               display: "block",
@@ -297,7 +300,8 @@ export default function App() {
               maxWidth={"550px"}
               sx={{"@media (max-width:900px)": {maxWidth: "100%", mr: 0}}}>
               <Button
-                href={"/signup"}
+                component={RouterLink}
+                to={"/signup"}
                 variant={"outlined"}
                 endIcon={<ArrowCircleRightIcon />}
                 sx={{
@@ -332,7 +336,8 @@ export default function App() {
               </Typography>
               <Box mt={"32px"}>
                 <Button
-                  href={"/signup"}
+                  component={RouterLink}
+                  to={"/signup"}
                   variant={"contained"}
                   size={"large"}
                   sx={{
@@ -719,7 +724,8 @@ export default function App() {
                 drone simulation.
               </Typography>
               <Button
-                href={"/signup"}
+                component={RouterLink}
+                to={"/signup"}
                 sx={{
                   "@media (max-width:900px)": {
                     width: "100%",
