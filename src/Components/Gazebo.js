@@ -94,6 +94,12 @@ export default function Gazebo(props) {
 
   const [mode, setMode] = React.useState("play");
 
+  const [cubeEditMode, setCubeEditMode] = React.useState("translate");
+
+  const handleCubeEditModeChange = (event, newMode) => {
+    setCubeEditMode(newMode);
+  };
+
   const ArucoPreview = props => {
     const [arucoImg, setArucoImg] = React.useState(
       props.type === "svg"
@@ -210,11 +216,15 @@ export default function Gazebo(props) {
           clickOnAruco(props.image, props.position, "svg");
         }}
         onPointerOver={() => {
-          if (globalMode === "edit") {
+          if (globalMode === "edit" && !target) {
             setHovered(true);
           }
         }}
-        onPointerOut={() => setHovered(false)}
+        onPointerOut={() => {
+          if (!target) {
+            setHovered(false);
+          }
+        }}
         src={`data:image/svg+xml;utf8,${props.image}`}
         rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
         position={[
@@ -237,11 +247,15 @@ export default function Gazebo(props) {
           clickOnAruco(props.image, props.position, "png");
         }}
         onPointerOver={() => {
-          if (globalMode === "edit") {
+          if (globalMode === "edit" && !target) {
             setHovered(true);
           }
         }}
-        onPointerOut={() => setHovered(false)}
+        onPointerOut={() => {
+          if (!target) {
+            setHovered(false);
+          }
+        }}
         rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
         position={[
           parseFloat(props.position[1]) * 10,
@@ -397,8 +411,8 @@ export default function Gazebo(props) {
                 </Box>
                 <Box
                   position={"absolute"}
-                  top={0}
-                  left={0}
+                  top={"4px"}
+                  left={"4px"}
                   sx={{zIndex: "99"}}
                   display={"flex"}
                   gap={"10px"}
@@ -440,6 +454,32 @@ export default function Gazebo(props) {
                         aria-label="add cube"
                         onClick={addCube}>
                         <AddRoundedIcon />
+                      </ToggleButton>
+                    </ToggleButtonGroup>
+                  ) : (
+                    <></>
+                  )}
+                </Box>
+                <Box
+                  position={"absolute"}
+                  top={"4px"}
+                  right={"4px"}
+                  zIndex={99}>
+                  {target && mode === "edit" ? (
+                    <ToggleButtonGroup
+                      size={"small"}
+                      value={cubeEditMode}
+                      exclusive
+                      onChange={handleCubeEditModeChange}
+                      aria-label="cube edit mode">
+                      <ToggleButton value="translate" aria-label="translate">
+                        <OpenWithRoundedIcon />
+                      </ToggleButton>
+                      <ToggleButton value="rotate" aria-label="rotate">
+                        <AutorenewRoundedIcon />
+                      </ToggleButton>
+                      <ToggleButton value="scale" aria-label="scale">
+                        <AspectRatioRoundedIcon />
                       </ToggleButton>
                     </ToggleButtonGroup>
                   ) : (
@@ -493,7 +533,17 @@ export default function Gazebo(props) {
                   <meshStandardMaterial map={texture} />
                 </mesh>
                 {target && (
-                  <TransformControls object={target} mode={"translate"} />
+                  <TransformControls
+                    object={target}
+                    mode={cubeEditMode}
+                    onMouseUp={() => {
+                      console.log(
+                        target.position,
+                        target.rotation,
+                        target.scale,
+                      );
+                    }}
+                  />
                 )}
                 <OrbitControls makeDefault />
               </Suspense>
