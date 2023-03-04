@@ -19,8 +19,7 @@ import {DndProvider, useDrag, useDrop} from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";
 import EditMenu from "./EditMenu";
 import TextField from "@mui/material/TextField";
-import {io} from "socket.io-client";
-const socket = io(process.env.REACT_APP_SERVER_LINK);
+import {socket} from "./Instances";
 
 let filesReceived = false;
 let data = [];

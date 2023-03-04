@@ -14,13 +14,11 @@ import WorkspaceAppBar from "./WorkspaceAppBar";
 import {useSearchParams} from "react-router-dom";
 import FileManager from "./FileManager";
 import EditorFile from "./EditorFile";
-import {io} from "socket.io-client";
 import langMap from "language-map";
 import Typography from "@mui/material/Typography";
 import {DndProvider, useDrop} from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";
-
-const socket = io(process.env.REACT_APP_SERVER_LINK);
+import {socket} from "./Instances";
 
 export const workspaceTheme = createTheme({
   palette: {
@@ -44,6 +42,7 @@ export default function MainApp() {
   const [editorValue, setEditorValue] = React.useState("");
   const [editorLang, setEditorLang] = React.useState("plaintext");
   const [openEditor, setOpenEditor] = React.useState(false);
+  const [activeFile, setActiveFile] = React.useState("");
 
   const EditorStartWindow = () => {
     const [{canDrop, isOver}, drop] = useDrop(() => ({
@@ -170,15 +169,24 @@ export default function MainApp() {
     socket.emit("GetFileContent", {path: path, instanceID: instanceID});
     socket.on("FileContent", file => {
       setEditorValue(file.content);
-      let lang = Object.entries(langMap).filter(
-        lang =>
-          lang[1].extensions &&
-          lang[1].extensions.includes(`.${file.path.split(".").at(-1)}`),
-      )[0][1].aceMode;
-      if (lang.includes("_")) {
-        lang = lang.split("_")[1];
+      let lang;
+      if (!file.path.split("/").at(-1).includes(".")) {
+        lang = "plaintext";
+      } else {
+        lang = Object.entries(langMap).filter(
+          lang =>
+            lang[1].extensions &&
+            lang[1].extensions.includes(`.${file.path.split(".").at(-1)}`),
+        )[0][1].aceMode;
+        if (lang.includes("_")) {
+          lang = lang.split("_")[1];
+        }
+        if (lang === "text") {
+          lang = "plaintext";
+        }
       }
       setEditorLang(lang);
+      setActiveFile(file.path);
     });
   };
 
@@ -229,6 +237,7 @@ export default function MainApp() {
               {openEditor ? (
                 <CodeEditor
                   files={editorFiles}
+                  activeFile={activeFile}
                   language={editorLang}
                   value={editorValue}
                   instanceID={instanceID}

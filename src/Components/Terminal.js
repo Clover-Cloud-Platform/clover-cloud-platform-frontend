@@ -12,10 +12,8 @@ import {
   ContentPasteRounded,
 } from "@mui/icons-material";
 import TerminalRoundedIcon from "@mui/icons-material/TerminalRounded";
-import {io} from "socket.io-client";
 import {useEffect} from "react";
-
-const socket = io(process.env.REACT_APP_SERVER_LINK);
+import {socket} from "./Instances";
 
 let directorySet = false;
 

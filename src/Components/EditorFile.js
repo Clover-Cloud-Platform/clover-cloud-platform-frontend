@@ -35,7 +35,7 @@ export default function EditorFile(props) {
       handlerId: monitor.getHandlerId(),
     }),
   }));
-  const [overDelete, setOverDelete] = React.useState(false);
+  const [overActions, setOverActions] = React.useState(false);
 
   return (
     <ThemeProvider theme={workspaceTheme}>
@@ -44,7 +44,7 @@ export default function EditorFile(props) {
         alignItems={"center"}
         position={"relative"}
         onClick={() => {
-          if (!overDelete) {
+          if (!overActions) {
             props.onOpen(props.path);
           }
         }}
@@ -85,10 +85,10 @@ export default function EditorFile(props) {
             size="small"
             sx={{ml: "4px", mr: "8px"}}
             onMouseOver={() => {
-              setOverDelete(true);
+              setOverActions(true);
             }}
             onMouseOut={() => {
-              setOverDelete(false);
+              setOverActions(false);
             }}
             onClick={() => {
               props.onDelete(props.path);

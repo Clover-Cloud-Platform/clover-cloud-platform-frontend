@@ -3,14 +3,22 @@ import Editor from "@monaco-editor/react";
 import Box from "@mui/material/Box";
 import {workspaceTheme} from "./MainApp";
 import {ThemeProvider} from "@mui/material/styles";
-import {DndProvider, useDrag, useDrop} from "react-dnd";
+import {DndProvider, useDrop} from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";
 import {CircularProgress, Divider} from "@mui/material";
 import {useHorizontalScroll} from "./HorizontalScroll";
-import {io} from "socket.io-client";
-const socket = io(process.env.REACT_APP_SERVER_LINK);
+import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
+import IconButton from "@mui/material/IconButton";
 
-export default function CodeEditor({files, language, value, instanceID}) {
+import {socket} from "./Instances";
+
+export default function CodeEditor({
+  files,
+  language,
+  value,
+  instanceID,
+  activeFile,
+}) {
   const FileView = props => {
     const [{canDrop, isOver}, drop] = useDrop(() => ({
       accept: "file",
@@ -65,14 +73,44 @@ export default function CodeEditor({files, language, value, instanceID}) {
 
   return (
     <ThemeProvider theme={workspaceTheme}>
-      <DndProvider backend={HTML5Backend}>
-        <FileView files={files} />
-      </DndProvider>
+      <Box display={"flex"}>
+        <Box
+          sx={{flexGrow: 1}}
+          style={{width: `calc(100% / 2)`}}
+          bgcolor={"background.cloverMain"}>
+          <DndProvider backend={HTML5Backend}>
+            <FileView files={files} />
+          </DndProvider>
+        </Box>
+        <Box
+          display={"flex"}
+          alignItems={"center"}
+          justifyContent={"center"}
+          overflow={"hidden"}
+          width={language === "python" ? "50px" : "0px"}
+          sx={{flexGrow: 0, transition: "width 0.3s"}}
+          bgcolor={"background.cloverMain"}>
+          <IconButton
+            aria-label="run"
+            color={"success"}
+            onClick={() => {
+              socket.emit("ExecuteCommand", {
+                command: {
+                  type: "command",
+                  cmd: `python3 ~${activeFile}`,
+                },
+                instanceID: instanceID,
+              });
+            }}>
+            <PlayArrowRoundedIcon />
+          </IconButton>
+        </Box>
+      </Box>
       <Editor
         loading={<Preloader />}
         onChange={val => {
           socket.emit("WriteFile", {
-            path: files.filter(el => el.props.active)[0].props.path,
+            path: activeFile,
             value: val,
             instanceID: instanceID,
           });

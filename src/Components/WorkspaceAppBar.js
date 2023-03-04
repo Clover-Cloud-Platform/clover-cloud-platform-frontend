@@ -10,13 +10,11 @@ import IconButton from "@mui/material/IconButton";
 import Avatar from "@mui/material/Avatar";
 import ExitToAppRoundedIcon from "@mui/icons-material/ExitToAppRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
-import {io} from "socket.io-client";
+import {socket} from "./Instances";
 import {useSearchParams} from "react-router-dom";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 import Box from "@mui/material/Box";
-
-const socket = io(process.env.REACT_APP_SERVER_LINK);
 
 let instanceDataReceived = false;
 

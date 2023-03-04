@@ -1,5 +1,12 @@
 import React, {useRef, Suspense, useEffect} from "react";
-import {OrbitControls, Sky, Svg} from "@react-three/drei";
+import {
+  OrbitControls,
+  Sky,
+  Svg,
+  useCursor,
+  TransformControls,
+  Box as BoxDrei,
+} from "@react-three/drei";
 import {useLoader} from "@react-three/fiber";
 import {Canvas} from "@react-three/fiber";
 import {TextureLoader} from "three/src/loaders/TextureLoader";
@@ -10,7 +17,7 @@ import PropCW from "../assets/modelsJSX/PropCW";
 import PropCCW from "../assets/modelsJSX/PropCCW";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import {io} from "socket.io-client";
+import {socket} from "./Instances";
 import {CircularProgress, Paper} from "@mui/material";
 import {theme} from "../App";
 import {ThemeProvider} from "@mui/material/styles";
@@ -21,8 +28,15 @@ import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import RestartAltRoundedIcon from "@mui/icons-material/RestartAltRounded";
 import Typography from "@mui/material/Typography";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import {create} from "zustand";
+import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
+import AspectRatioRoundedIcon from "@mui/icons-material/AspectRatioRounded";
+import OpenWithRoundedIcon from "@mui/icons-material/OpenWithRounded";
 
-const socket = io(process.env.REACT_APP_SERVER_LINK);
+const useStore = create(set => ({
+  target: null,
+  setTarget: target => set({target}),
+}));
 
 const Clover = props => {
   const group = useRef();
@@ -62,6 +76,7 @@ const arucoMarkersGlobal = [];
 let arucoMarkersReceived = false;
 let stateRequested = false;
 let globalMode = "play";
+let cubeKey = 0;
 
 export default function Gazebo(props) {
   const [gazeboRunning, setGazebo] = React.useState(false);
@@ -74,6 +89,8 @@ export default function Gazebo(props) {
   const [propRotation, setPropRotation] = React.useState(0);
   const [telem, setTelem] = React.useState(false);
   const [editArucoComponent, setEditArucoComponent] = React.useState();
+  const [cubes, setCubes] = React.useState([]);
+  const {target, setTarget} = useStore();
 
   const [mode, setMode] = React.useState("play");
 
@@ -186,10 +203,7 @@ export default function Gazebo(props) {
 
   const Aruco = props => {
     const [hovered, setHovered] = React.useState(false);
-
-    useEffect(() => {
-      document.body.style.cursor = hovered ? "pointer" : "auto";
-    }, [hovered]);
+    useCursor(hovered);
     return (
       <Svg
         onClick={() => {
@@ -216,10 +230,7 @@ export default function Gazebo(props) {
   const PngMarker = props => {
     const marker = useLoader(TextureLoader, props.image);
     const [hovered, setHovered] = React.useState(false);
-
-    useEffect(() => {
-      document.body.style.cursor = hovered ? "pointer" : "auto";
-    }, [hovered]);
+    useCursor(hovered);
     return (
       <mesh
         onClick={() => {
@@ -243,8 +254,40 @@ export default function Gazebo(props) {
     );
   };
 
+  const Cube = props => {
+    const [hovered, setHovered] = React.useState(false);
+    const setTarget = useStore(state => state.setTarget);
+    useCursor(hovered);
+    return (
+      <BoxDrei
+        {...props}
+        onClick={e => {
+          if (globalMode === "edit") {
+            setTarget(e.object);
+          }
+        }}
+        onPointerOver={() => {
+          if (globalMode === "edit") {
+            setHovered(true);
+          }
+        }}
+        onPointerOut={() => setHovered(false)}>
+        <meshStandardMaterial color="grey" />
+      </BoxDrei>
+    );
+  };
+
+  const addCube = () => {
+    setCubes([
+      ...cubes,
+      <Cube position={[10, 5 - 0.87, 0]} args={[10, 10, 10]} key={cubeKey} />,
+    ]);
+    cubeKey++;
+  };
+
   const handleModeChange = (event, newMode) => {
     if (newMode === "play") {
+      setTarget(null);
       console.log("play mode");
     } else if (newMode === "edit") {
       console.log("edit mode");
@@ -387,19 +430,21 @@ export default function Gazebo(props) {
                       <RestartAltRoundedIcon />
                     </ToggleButton>
                   </ToggleButtonGroup>
-                  <ToggleButtonGroup
-                    exclusive
-                    size="small"
-                    aria-label="add cube">
-                    <ToggleButton
-                      value="add cube"
-                      aria-label="add cube"
-                      onClick={() => {
-                        console.log("add cube");
-                      }}>
-                      <AddRoundedIcon />
-                    </ToggleButton>
-                  </ToggleButtonGroup>
+                  {mode === "edit" ? (
+                    <ToggleButtonGroup
+                      exclusive
+                      size="small"
+                      aria-label="add cube">
+                      <ToggleButton
+                        value="add cube"
+                        aria-label="add cube"
+                        onClick={addCube}>
+                        <AddRoundedIcon />
+                      </ToggleButton>
+                    </ToggleButtonGroup>
+                  ) : (
+                    <></>
+                  )}
                 </Box>
               </>
             ) : (
@@ -418,6 +463,7 @@ export default function Gazebo(props) {
               </Box>
             )}
             <Canvas
+              onPointerMissed={() => setTarget(null)}
               frameloop="demand"
               dpr={[1, 2]}
               camera={{
@@ -441,11 +487,15 @@ export default function Gazebo(props) {
                   propRotation={propRotation}
                 />
                 {arucoMarkers}
+                {cubes}
                 <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.87, 0]}>
                   <planeGeometry args={[500, 500]} />
                   <meshStandardMaterial map={texture} />
                 </mesh>
-                <OrbitControls />
+                {target && (
+                  <TransformControls object={target} mode={"translate"} />
+                )}
+                <OrbitControls makeDefault />
               </Suspense>
             </Canvas>
           </Box>
