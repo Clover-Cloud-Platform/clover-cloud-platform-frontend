@@ -21,7 +21,7 @@ export default function Terminal(props) {
   const [history, setHistory] = React.useState([]);
   const [historyKey, setHistoryKey] = React.useState(0);
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [directory, setDirectory] = React.useState("~");
+  const [directory, setDirectory] = React.useState("");
   const open = Boolean(anchorEl);
 
   if (localStorage.getItem("prevCmd")) {
@@ -82,12 +82,14 @@ export default function Terminal(props) {
     }
   };
   useEffect(() => {
-    socket.emit("ExecuteCommand", {
-      command: {type: "command", cmd: "ls"},
-      instanceID: props.instanceID,
-    });
+    if (!directorySet) {
+      socket.emit("ExecuteCommand", {
+        command: {type: "command", cmd: "ls"},
+        instanceID: props.instanceID,
+      });
+    }
     socket.on("CommandOutput", commandOutput => {
-      if (directorySet) {
+      if (document.getElementById("directory").value !== "$" && directorySet) {
         document.getElementById("output").innerHTML +=
           commandOutput.output.split("]0;")[0];
       }
@@ -189,8 +191,10 @@ export default function Terminal(props) {
           </Typography>
         </Box>
         <Box display={"flex"} flexDirection={"column-reverse"}>
-          <Box display={"flex"} mb={"10px"}>
+          <Box display={"flex"} mb={"10px"} alignItems={"center"}>
             <Typography
+              ml={"2px"}
+              id={"directory"}
               color={"text.dir"}
               fontFamily={"Monospace"}
               whiteSpace={"nowrap"}>
