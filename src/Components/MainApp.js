@@ -33,6 +33,7 @@ export const workspaceTheme = createTheme({
 });
 
 const filesBuffer = [];
+let activeFileGlobal = "";
 
 export default function MainApp() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -97,6 +98,7 @@ export default function MainApp() {
           onOpen={onOpen}
           onMove={onMove}
           active={true}
+          saved={true}
         />,
       );
       onOpen(path);
@@ -145,6 +147,7 @@ export default function MainApp() {
               onOpen={onOpen}
               onMove={onMove}
               active={true}
+              saved={filesBuffer[i].props.saved}
             />
           );
         }
@@ -159,6 +162,7 @@ export default function MainApp() {
               onOpen={onOpen}
               onMove={onMove}
               active={false}
+              saved={filesBuffer[i].props.saved}
             />
           );
         }
@@ -187,6 +191,7 @@ export default function MainApp() {
       }
       setEditorLang(lang);
       setActiveFile(file.path);
+      activeFileGlobal = file.path;
     });
   };
 
@@ -203,6 +208,32 @@ export default function MainApp() {
     setEditorFiles([...filesBuffer]);
   };
 
+  const changeSavedState = (save, actFile = activeFileGlobal) => {
+    if (actFile === activeFileGlobal) {
+      for (const i in filesBuffer) {
+        if (filesBuffer[i].props.path === activeFileGlobal) {
+          filesBuffer[i] = (
+            <EditorFile
+              key={filesBuffer[i].key}
+              name={filesBuffer[i].props.name}
+              path={filesBuffer[i].props.path}
+              onDelete={onDelete}
+              onOpen={onOpen}
+              onMove={onMove}
+              active={filesBuffer[i].props.active}
+              saved={save}
+            />
+          );
+        }
+      }
+      setEditorFiles([...filesBuffer]);
+    }
+  };
+
+  const getActiveFile = () => {
+    return activeFileGlobal;
+  };
+
   return (
     <ThemeProvider theme={workspaceTheme}>
       <Box width={"100%"} height={"100vh"}>
@@ -212,7 +243,7 @@ export default function MainApp() {
           style={{height: "calc(100% - 50px)"}}
           bgcolor={"background.cloverMain"}>
           <ReactSplit
-            minWidths={[60, 60, 60]}
+            minWidths={[160, 200, 320]}
             initialSizes={[20, 45, 35]}
             direction={SplitDirection.Horizontal}
             draggerClassName={"dragger"}
@@ -241,6 +272,8 @@ export default function MainApp() {
                   language={editorLang}
                   value={editorValue}
                   instanceID={instanceID}
+                  changeSavedState={changeSavedState}
+                  getActiveFile={getActiveFile}
                 />
               ) : (
                 <DndProvider backend={HTML5Backend}>
@@ -249,7 +282,7 @@ export default function MainApp() {
               )}
             </Box>
             <ReactSplit
-              minHeights={[60, 60]}
+              minHeights={[300, 150]}
               direction={SplitDirection.Vertical}
               draggerClassName={"dragger"}
               gutterClassName={"gutter-vertical"}>

@@ -11,6 +11,7 @@ import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import IconButton from "@mui/material/IconButton";
 
 import {socket} from "./Instances";
+import {useEffect} from "react";
 
 export default function CodeEditor({
   files,
@@ -18,7 +19,15 @@ export default function CodeEditor({
   value,
   instanceID,
   activeFile,
+  changeSavedState,
+  getActiveFile,
 }) {
+  const [localSavedState, setLocalSavedState] = React.useState(true);
+
+  useEffect(() => {
+    setLocalSavedState(true);
+  }, [activeFile]);
+
   const FileView = props => {
     const [{canDrop, isOver}, drop] = useDrop(() => ({
       accept: "file",
@@ -71,6 +80,30 @@ export default function CodeEditor({
     );
   };
 
+  const editorMount = (editor, monaco) => {
+    editor.addAction({
+      id: "save-file-action-id",
+      label: "Save",
+      keybindings: [
+        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+        monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS),
+      ],
+      precondition: null,
+      keybindingContext: null,
+      contextMenuGroupId: "navigation",
+      contextMenuOrder: 1.5,
+      run: function (ed) {
+        setLocalSavedState(true);
+        socket.emit("WriteFile", {
+          path: getActiveFile(),
+          value: ed.getValue(),
+          instanceID: instanceID,
+        });
+        changeSavedState(true);
+      },
+    });
+  };
+
   return (
     <ThemeProvider theme={workspaceTheme}>
       <Box display={"flex"}>
@@ -108,12 +141,13 @@ export default function CodeEditor({
       </Box>
       <Editor
         loading={<Preloader />}
-        onChange={val => {
-          socket.emit("WriteFile", {
-            path: activeFile,
-            value: val,
-            instanceID: instanceID,
-          });
+        onMount={editorMount}
+        onChange={() => {
+          if (localSavedState) {
+            changeSavedState(false, activeFile);
+            console.log(1);
+          }
+          setLocalSavedState(false);
         }}
         theme={"vs-dark"}
         height="calc(100% - 50px)"

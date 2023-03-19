@@ -8,6 +8,7 @@ import IconButton from "@mui/material/IconButton";
 import {workspaceTheme} from "./MainApp";
 import {ThemeProvider} from "@mui/material/styles";
 import {useDrag, useDrop} from "react-dnd";
+import CircleIcon from "@mui/icons-material/Circle";
 
 export default function EditorFile(props) {
   const path = props.path;
@@ -81,6 +82,7 @@ export default function EditorFile(props) {
             {props.name}
           </Typography>
           <IconButton
+            disabled={!props.saved}
             aria-label="close"
             size="small"
             sx={{ml: "4px", mr: "8px"}}
@@ -93,7 +95,11 @@ export default function EditorFile(props) {
             onClick={() => {
               props.onDelete(props.path);
             }}>
-            <CloseRoundedIcon fontSize="small" />
+            {props.saved ? (
+              <CloseRoundedIcon sx={{fontSize: "1.2rem"}} />
+            ) : (
+              <CircleIcon sx={{fontSize: "0.6rem", p: "0.3rem"}} />
+            )}
           </IconButton>
         </Box>
         <Box
