@@ -6,8 +6,9 @@ import {
   useCursor,
   TransformControls,
   Box as BoxDrei,
+  useHelper,
 } from "@react-three/drei";
-import {useLoader} from "@react-three/fiber";
+import {useLoader, useThree} from "@react-three/fiber";
 import {Canvas} from "@react-three/fiber";
 import {TextureLoader} from "three/src/loaders/TextureLoader";
 import {RepeatWrapping} from "three";
@@ -18,26 +19,82 @@ import PropCCW from "../assets/modelsJSX/PropCCW";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import {socket} from "./Instances";
-import {CircularProgress, Paper} from "@mui/material";
+import {
+  CircularProgress,
+  FormControl,
+  FormLabel,
+  Paper,
+  Radio,
+  RadioGroup,
+} from "@mui/material";
 import {theme} from "../App";
 import {ThemeProvider} from "@mui/material/styles";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
-import RestartAltRoundedIcon from "@mui/icons-material/RestartAltRounded";
+import StopRoundedIcon from "@mui/icons-material/StopRounded";
 import Typography from "@mui/material/Typography";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import {create} from "zustand";
 import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
 import AspectRatioRoundedIcon from "@mui/icons-material/AspectRatioRounded";
 import OpenWithRoundedIcon from "@mui/icons-material/OpenWithRounded";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import {RectAreaLightHelper} from "three/examples/jsm/helpers/RectAreaLightHelper";
+import * as THREE from "three";
 
 const useStore = create(set => ({
   target: null,
   setTarget: target => set({target}),
 }));
 
+let arucoMarkersGlobal = [];
+let cubesGlobal = [];
+let arucoMarkersReceived = false;
+let stateRequested = false;
+let globalMode = "play";
+let cubeKey = 0;
+
+const Leds = ({count = 58, temp = new THREE.Object3D()}) => {
+  const ref = useRef();
+  useEffect(() => {
+    for (let i = 0; i < count; i++) {
+      temp.position.set(
+        0.817 * Math.cos((360 / 58) * i * (Math.PI / 180)),
+        -0.275,
+        0.817 * Math.sin((360 / 58) * i * (Math.PI / 180)),
+      );
+      temp.rotation.set(0, Math.PI / 2 - (360 / 58) * i * (Math.PI / 180), 0);
+      temp.updateMatrix();
+      ref.current.setMatrixAt(i, temp.matrix);
+      ref.current.setColorAt(i, new THREE.Color("black"));
+    }
+    ref.current.instanceMatrix.needsUpdate = true;
+    ref.current.instanceColor.needsUpdate = true;
+    socket.on("LedState", state => {
+      if (ref.current) {
+        for (let i = 0; i < state.length; i++) {
+          ref.current.setColorAt(
+            i,
+            new THREE.Color(
+              Number(state[i][0]) / 255,
+              Number(state[i][1]) / 255,
+              Number(state[i][2]) / 255,
+            ),
+          );
+        }
+        ref.current.instanceColor.needsUpdate = true;
+      }
+    });
+  }, []);
+  return (
+    <instancedMesh ref={ref} args={[null, null, count]}>
+      <boxGeometry args={[0.06, 0.06, 0.015]} />
+      <meshBasicMaterial />
+    </instancedMesh>
+  );
+};
 const Clover = props => {
   const group = useRef();
   return (
@@ -68,17 +125,13 @@ const Clover = props => {
         scale={[10, 10, 10]}
         rotation={[0, props.propRotation, 0]}
       />
+      <Leds />
     </group>
   );
 };
 
-const arucoMarkersGlobal = [];
-let arucoMarkersReceived = false;
-let stateRequested = false;
-let globalMode = "play";
-let cubeKey = 0;
-
 export default function Gazebo(props) {
+  const instanceID = props.instanceID;
   const [gazeboRunning, setGazebo] = React.useState(false);
   const [runGazeboButtonState, disableRunGazebo] = React.useState(true);
 
@@ -107,6 +160,7 @@ export default function Gazebo(props) {
         : props.image,
     );
     const [fileType, setFileType] = React.useState(props.type);
+    const [size, setSize] = React.useState(props.size);
     const inputArucoRef = useRef();
     const handleArucoUpload = () => {
       inputArucoRef.current?.click();
@@ -133,7 +187,7 @@ export default function Gazebo(props) {
         <Box
           position={"relative"}
           width={"200px"}
-          height={"240px"}
+          height={"290px"}
           display={"flex"}
           pl={"4px"}
           pr={"4px"}
@@ -144,7 +198,7 @@ export default function Gazebo(props) {
             alignItems={"center"}
             mt={"8px"}>
             <Typography color={"primary.50"} variant={"overline"}>
-              Aruco marker
+              marker
             </Typography>
             <img
               onClick={handleArucoUpload}
@@ -162,7 +216,61 @@ export default function Gazebo(props) {
               style={{display: "none"}}
             />
           </Box>
-          <Typography color={"primary.50"} variant={"overline"} mt={"25px"}>
+          <Box mt={"15px"}>
+            <FormControl>
+              <FormLabel id="size-select">
+                <Typography color={"primary.50"} variant={"overline"}>
+                  Size
+                </Typography>
+              </FormLabel>
+              <RadioGroup
+                value={size}
+                onChange={e => {
+                  setSize(e.target.value);
+                }}
+                row
+                aria-labelledby="size-select"
+                name="size-select-options">
+                <FormControlLabel
+                  value={0.33}
+                  sx={{
+                    color: "primary.50",
+                  }}
+                  control={
+                    <Radio
+                      size="small"
+                      sx={{
+                        color: "primary.50",
+                        "&.Mui-checked": {
+                          color: "primary.50",
+                        },
+                      }}
+                    />
+                  }
+                  label="0.33"
+                />
+                <FormControlLabel
+                  value={0.22}
+                  sx={{
+                    color: "primary.50",
+                  }}
+                  control={
+                    <Radio
+                      size="small"
+                      sx={{
+                        color: "primary.50",
+                        "&.Mui-checked": {
+                          color: "primary.50",
+                        },
+                      }}
+                    />
+                  }
+                  label="0.22"
+                />
+              </RadioGroup>
+            </FormControl>
+          </Box>
+          <Typography color={"primary.50"} variant={"overline"} mt={"15px"}>
             Position: x: {props.position[0]}, y: {props.position[1]}
           </Typography>
           <Box position={"absolute"} right={"4px"} bottom={"8px"}>
@@ -176,12 +284,16 @@ export default function Gazebo(props) {
                 arucoMarkersGlobal[arucoMarkersGlobal.indexOf(marker)] =
                   fileType === "svg" ? (
                     <Aruco
+                      name={props.name}
+                      size={size}
                       position={props.position}
                       image={arucoImg.split("data:image/svg+xml;utf8,")[1]}
                       key={marker.key}
                     />
                   ) : (
                     <PngMarker
+                      name={props.name}
+                      size={size}
                       position={props.position}
                       image={arucoImg}
                       key={marker.key}
@@ -190,6 +302,14 @@ export default function Gazebo(props) {
                 setArucoMarkers([...arucoMarkersGlobal]);
                 setArucoImg(null);
                 setEditArucoComponent(null);
+                socket.emit("EditMarker", {
+                  instanceID: instanceID,
+                  aruco_name: props.name,
+                  image: fileType === "svg" ? null : arucoImg.text(),
+                  type: fileType,
+                  size: size,
+                  position: props.position,
+                });
               }}>
               ok
             </Button>
@@ -199,40 +319,49 @@ export default function Gazebo(props) {
     );
   };
 
-  const clickOnAruco = (image, position, type) => {
+  const clickOnAruco = (image, position, type, size, name) => {
     if (globalMode === "edit") {
       setEditArucoComponent(
-        <ArucoPreview image={image} position={position} type={type} />,
+        <ArucoPreview
+          name={name}
+          image={image}
+          position={position}
+          type={type}
+          size={size}
+        />,
       );
     }
   };
 
+  //aruco size: ((0.22|0.33) / 0.33) * 0.88 * 0.6
   const Aruco = props => {
     const [hovered, setHovered] = React.useState(false);
     useCursor(hovered);
     return (
       <Svg
         onClick={() => {
-          clickOnAruco(props.image, props.position, "svg");
+          clickOnAruco(
+            props.image,
+            props.position,
+            "svg",
+            props.size,
+            props.name,
+          );
         }}
         onPointerOver={() => {
-          if (globalMode === "edit" && !target) {
+          if (globalMode === "edit") {
             setHovered(true);
           }
         }}
-        onPointerOut={() => {
-          if (!target) {
-            setHovered(false);
-          }
-        }}
+        onPointerOut={() => setHovered(false)}
         src={`data:image/svg+xml;utf8,${props.image}`}
         rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
         position={[
-          parseFloat(props.position[1]) * 10 + 2.1,
+          parseFloat(props.position[1]) * 10 + 2.1 * (props.size / 0.33),
           -0.86,
-          parseFloat(props.position[0]) * 10 - 2.1,
+          parseFloat(props.position[0]) * 10 - 2.1 * (props.size / 0.33),
         ]}
-        scale={[0.88 * 0.6, 0.88 * 0.6, 1]}
+        scale={[(props.size / 0.33) * 0.528, (props.size / 0.33) * 0.528, 1]}
       />
     );
   };
@@ -244,25 +373,26 @@ export default function Gazebo(props) {
     return (
       <mesh
         onClick={() => {
-          clickOnAruco(props.image, props.position, "png");
+          clickOnAruco(props.image, props.position, "png", props.size);
         }}
         onPointerOver={() => {
-          if (globalMode === "edit" && !target) {
+          if (globalMode === "edit") {
             setHovered(true);
           }
         }}
-        onPointerOut={() => {
-          if (!target) {
-            setHovered(false);
-          }
-        }}
+        onPointerOut={() => setHovered(false)}
         rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
         position={[
           parseFloat(props.position[1]) * 10,
           -0.86,
           parseFloat(props.position[0]) * 10,
         ]}>
-        <planeGeometry args={[8 * 0.88 * 0.6, 8 * 0.88 * 0.6]} />
+        <planeGeometry
+          args={[
+            (props.size / 0.33) * 0.528 * 8,
+            (props.size / 0.33) * 0.528 * 8,
+          ]}
+        />
         <meshStandardMaterial map={marker} />
       </mesh>
     );
@@ -286,15 +416,22 @@ export default function Gazebo(props) {
           }
         }}
         onPointerOut={() => setHovered(false)}>
-        <meshStandardMaterial color="grey" />
+        <meshStandardMaterial color={props.color.toLowerCase()} />
       </BoxDrei>
     );
   };
 
   const addCube = () => {
+    socket.emit("AddCube", props.instanceID);
     setCubes([
       ...cubes,
-      <Cube position={[10, 5 - 0.87, 0]} args={[10, 10, 10]} key={cubeKey} />,
+      <Cube
+        position={[10, 5 - 0.87, 0]}
+        args={[10, 10, 10]}
+        color={"gray"}
+        key={cubeKey}
+        oId={cubeKey}
+      />,
     ]);
     cubeKey++;
   };
@@ -323,27 +460,22 @@ export default function Gazebo(props) {
         setPropRotation(prev => prev + 0.7);
       }
     }
-    if (
-      !(
-        Math.abs(data.position[0] - cloverPosition[0]) > 4 ||
-        Math.abs(data.position[1] - cloverPosition[1]) > 4 ||
-        Math.abs(data.position[2] - cloverPosition[2]) > 4
-      )
-    ) {
-      setCloverPosition(pos);
-    }
-    setCloverRotation([-data.rotation[0], data.rotation[1], -data.rotation[2]]);
+    setCloverPosition(pos);
+    setCloverRotation([data.rotation[1], data.rotation[2], data.rotation[0]]);
     if (!telem) {
       setTelem(true);
     }
   });
-  socket.on("DebugOutput", data => {
-    console.log(data);
-  });
+
+  //socket.on("DebugOutput", data => {
+  //  console.log(data);
+  //});
+
   if (!stateRequested) {
     socket.emit("GetGazeboState", props.instanceID);
     stateRequested = true;
   }
+
   useEffect(() => {
     socket.on("GazeboStateRes", state => {
       if (state) {
@@ -362,17 +494,56 @@ export default function Gazebo(props) {
   };
   useEffect(() => {
     socket.on("GazeboModels", models => {
+      console.log(models);
       if (!arucoMarkersReceived) {
-        for (let i = 0; i < models.length; i++) {
-          if (arucoMarkersGlobal.length < models.length) {
-            arucoMarkersGlobal.push(
-              <Aruco
-                position={models[i].position}
-                image={models[i].image}
+        for (let i = 0; i < models.aruco_map.length; i++) {
+          if (arucoMarkersGlobal.length < models.aruco_map.length) {
+            if (models.aruco_map[i].aruco_type === "svg") {
+              arucoMarkersGlobal.push(
+                <Aruco
+                  name={models.aruco_map[i].aruco_name}
+                  size={parseFloat(models.aruco_map[i].aruco_size)}
+                  position={models.aruco_map[i].position}
+                  image={models.aruco_map[i].image}
+                  key={i}
+                />,
+              );
+            } else {
+              <PngMarker
+                name={models.aruco_map[i].aruco_name}
+                size={parseFloat(models.aruco_map[i].aruco_size)}
+                position={models.aruco_map[i].position}
+                image={models.aruco_map[i].image}
                 key={i}
-              />,
-            );
+              />;
+            }
           }
+        }
+
+        for (let oId in models.user_objects) {
+          cubesGlobal.push(
+            <Cube
+              position={[
+                models.user_objects[oId].position[0] * 10,
+                models.user_objects[oId].position[1] * 10 - 0.87,
+                models.user_objects[oId].position[2] * 10,
+              ]}
+              rotation={[
+                models.user_objects[oId].rotation[1],
+                models.user_objects[oId].rotation[2],
+                models.user_objects[oId].rotation[0],
+              ]}
+              args={[
+                models.user_objects[oId].size[0] * 10,
+                models.user_objects[oId].size[1] * 10,
+                models.user_objects[oId].size[2] * 10,
+              ]}
+              oId={cubeKey}
+              color={models.user_objects[oId].color}
+              key={cubeKey}
+            />,
+          );
+          cubeKey++;
         }
         arucoMarkersReceived = true;
       }
@@ -380,6 +551,7 @@ export default function Gazebo(props) {
     const checkMarkers = setInterval(() => {
       if (arucoMarkersGlobal.length > 0) {
         setArucoMarkers(arucoMarkersGlobal);
+        setCubes(cubesGlobal);
         clearInterval(checkMarkers);
       }
     }, 10);
@@ -439,9 +611,12 @@ export default function Gazebo(props) {
                       value="restart"
                       aria-label="restart"
                       onClick={() => {
-                        console.log("restart gazebo");
+                        socket.emit("StopGazebo", props.instanceID);
+                        setTimeout(() => {
+                          window.location.reload();
+                        }, 20);
                       }}>
-                      <RestartAltRoundedIcon />
+                      <StopRoundedIcon />
                     </ToggleButton>
                   </ToggleButtonGroup>
                   {mode === "edit" ? (
@@ -526,8 +701,8 @@ export default function Gazebo(props) {
                   rotation={cloverRotation}
                   propRotation={propRotation}
                 />
-                {arucoMarkers}
-                {cubes}
+                <group dispose={null}>{arucoMarkers}</group>
+                <group dispose={null}>{cubes}</group>
                 <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.87, 0]}>
                   <planeGeometry args={[500, 500]} />
                   <meshStandardMaterial map={texture} />
@@ -537,6 +712,29 @@ export default function Gazebo(props) {
                     object={target}
                     mode={cubeEditMode}
                     onMouseUp={() => {
+                      socket.emit("EditCube", {
+                        model_id: String(target.oId),
+                        position: [
+                          target.position.x / 10,
+                          (target.position.y + 0.87) / 10,
+                          target.position.z / 10,
+                        ],
+                        rotation: [
+                          target.rotation.x,
+                          target.rotation.z,
+                          target.rotation.y,
+                        ],
+                        size: [
+                          (target.scale.x * target.geometry.parameters.height) /
+                            10,
+                          (target.scale.y * target.geometry.parameters.depth) /
+                            10,
+                          (target.scale.z * target.geometry.parameters.width) /
+                            10,
+                        ],
+                        color: target.color,
+                        instanceID: props.instanceID,
+                      });
                       console.log(
                         target.position,
                         target.rotation,
