@@ -43,6 +43,8 @@ import OpenWithRoundedIcon from "@mui/icons-material/OpenWithRounded";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import {RectAreaLightHelper} from "three/examples/jsm/helpers/RectAreaLightHelper";
 import * as THREE from "three";
+import generateAruco from "./arucogen";
+import GenerateArucoDialog from "./GenerateArucoDialog";
 
 const useStore = create(set => ({
   target: null,
@@ -161,21 +163,34 @@ export default function Gazebo(props) {
     );
     const [fileType, setFileType] = React.useState(props.type);
     const [size, setSize] = React.useState(props.size);
+    const [posX, setPosX] = React.useState(props.position[0]);
+    const [posY, setPosY] = React.useState(props.position[1]);
+    const [openGenArucoDialog, setOpenGenArucoDialog] = React.useState(false);
+    const [markerId, setMarkerId] = React.useState(
+      Number(props.name.split("_").at(-1)),
+    );
+
     const inputArucoRef = useRef();
     const handleArucoUpload = () => {
       inputArucoRef.current?.click();
     };
     const handleArucoFileChange = e => {
-      if (!e.target.files) {
+      if (!e.target.files || e.target.files[0].type !== "image/png") {
         return;
-      }
-      if (
-        e.target.files[0].type === "image/svg+xml" ||
-        e.target.files[0].type === "image/png"
-      ) {
-        setFileType(e.target.files[0].type === "image/svg+xml" ? "svg" : "png");
+      } else {
+        setFileType("png");
         setArucoImg(URL.createObjectURL(e.target.files[0]));
       }
+    };
+
+    const handleCloseGenArucoDialog = () => {
+      setOpenGenArucoDialog(false);
+    };
+    const generateMarker = id => {
+      setMarkerId(id);
+      setOpenGenArucoDialog(false);
+      setFileType("svg");
+      setArucoImg(`data:image/svg+xml;utf8,${generateAruco(id).outerHTML}`);
     };
     return (
       <Paper
@@ -186,11 +201,11 @@ export default function Gazebo(props) {
         }}>
         <Box
           position={"relative"}
-          width={"200px"}
-          height={"290px"}
+          width={"220px"}
+          height={"340px"}
           display={"flex"}
-          pl={"4px"}
-          pr={"4px"}
+          pl={"6px"}
+          pr={"6px"}
           flexDirection={"column"}>
           <Box
             display={"flex"}
@@ -198,7 +213,9 @@ export default function Gazebo(props) {
             alignItems={"center"}
             mt={"8px"}>
             <Typography color={"primary.50"} variant={"overline"}>
-              marker
+              {props.type === "svg"
+                ? `aruco marker #${markerId}`
+                : "png marker"}
             </Typography>
             <img
               onClick={handleArucoUpload}
@@ -209,11 +226,35 @@ export default function Gazebo(props) {
               style={{borderRadius: "4px", cursor: "pointer"}}
             />
             <input
-              accept="image/png, image/svg+xml"
+              accept="image/png"
               type="file"
               ref={inputArucoRef}
               onChange={handleArucoFileChange}
               style={{display: "none"}}
+            />
+          </Box>
+          <Box mt={"15px"}>
+            <Button
+              fullWidth
+              size={"small"}
+              sx={{color: "primary.50"}}
+              onClick={() => {
+                setOpenGenArucoDialog(true);
+              }}>
+              Generate Aruco marker
+            </Button>
+            <Button
+              fullWidth
+              sx={{color: "primary.50"}}
+              size={"small"}
+              onClick={handleArucoUpload}>
+              Upload PNG marker
+            </Button>
+            <GenerateArucoDialog
+              value={markerId}
+              open={openGenArucoDialog}
+              handleClose={handleCloseGenArucoDialog}
+              generateMarker={generateMarker}
             />
           </Box>
           <Box mt={"15px"}>
@@ -271,7 +312,36 @@ export default function Gazebo(props) {
             </FormControl>
           </Box>
           <Typography color={"primary.50"} variant={"overline"} mt={"15px"}>
-            Position: x: {props.position[0]}, y: {props.position[1]}
+            Position:{" "}
+            <input
+              style={{
+                border: "none",
+                backgroundColor: "transparent",
+                color: theme.palette.primary["50"],
+                width: "40px",
+                outline: "none",
+              }}
+              placeholder={"X"}
+              color={theme.palette.primary["50"]}
+              value={posX}
+              onChange={e => {
+                setPosX(e.target.value);
+              }}
+            />
+            <input
+              style={{
+                border: "none",
+                backgroundColor: "transparent",
+                color: theme.palette.primary["50"],
+                width: "40px",
+                outline: "none",
+              }}
+              placeholder={"Y"}
+              value={posY}
+              onChange={e => {
+                setPosY(e.target.value);
+              }}
+            />
           </Typography>
           <Box position={"absolute"} right={"4px"} bottom={"8px"}>
             {" "}
@@ -286,7 +356,7 @@ export default function Gazebo(props) {
                     <Aruco
                       name={props.name}
                       size={size}
-                      position={props.position}
+                      position={[posX, posY]}
                       image={arucoImg.split("data:image/svg+xml;utf8,")[1]}
                       key={marker.key}
                     />
@@ -294,7 +364,7 @@ export default function Gazebo(props) {
                     <PngMarker
                       name={props.name}
                       size={size}
-                      position={props.position}
+                      position={[posX, posY]}
                       image={arucoImg}
                       key={marker.key}
                     />
@@ -308,7 +378,7 @@ export default function Gazebo(props) {
                   image: fileType === "svg" ? null : arucoImg.text(),
                   type: fileType,
                   size: size,
-                  position: props.position,
+                  position: [posX, posY],
                 });
               }}>
               ok

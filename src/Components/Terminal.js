@@ -109,6 +109,7 @@ export default function Terminal(props) {
     });
     window.onunload = () => {
       if (history.length > 0) {
+        socket.emit("StopGazebo", props.instanceID);
         localStorage.setItem(
           "prevCmd",
           JSON.stringify(
