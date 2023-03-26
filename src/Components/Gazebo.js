@@ -1,16 +1,15 @@
-import React, {useRef, Suspense, useEffect} from "react";
+import React, {Suspense, useEffect, useRef} from "react";
 import {
+  Box as BoxDrei,
   OrbitControls,
   Sky,
   Svg,
-  useCursor,
   TransformControls,
-  Box as BoxDrei,
-  useHelper,
+  useCursor,
 } from "@react-three/drei";
-import {useLoader, useThree} from "@react-three/fiber";
-import {Canvas} from "@react-three/fiber";
+import {Canvas, useLoader} from "@react-three/fiber";
 import {TextureLoader} from "three/src/loaders/TextureLoader";
+import * as THREE from "three";
 import {RepeatWrapping} from "three";
 import CloverBody from "../assets/modelsJSX/CloverBody";
 import CloverGuards from "../assets/modelsJSX/CloverGuards";
@@ -41,10 +40,9 @@ import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
 import AspectRatioRoundedIcon from "@mui/icons-material/AspectRatioRounded";
 import OpenWithRoundedIcon from "@mui/icons-material/OpenWithRounded";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import {RectAreaLightHelper} from "three/examples/jsm/helpers/RectAreaLightHelper";
-import * as THREE from "three";
 import generateAruco from "./arucogen";
 import GenerateArucoDialog from "./GenerateArucoDialog";
+import {CirclePicker} from "react-color";
 
 const useStore = create(set => ({
   target: null,
@@ -54,9 +52,9 @@ const useStore = create(set => ({
 let arucoMarkersGlobal = [];
 let cubesGlobal = [];
 let arucoMarkersReceived = false;
-let stateRequested = false;
 let globalMode = "play";
 let cubeKey = 0;
+let telemGlobal = false;
 
 const Leds = ({count = 58, temp = new THREE.Object3D()}) => {
   const ref = useRef();
@@ -73,7 +71,9 @@ const Leds = ({count = 58, temp = new THREE.Object3D()}) => {
       ref.current.setColorAt(i, new THREE.Color("black"));
     }
     ref.current.instanceMatrix.needsUpdate = true;
-    ref.current.instanceColor.needsUpdate = true;
+    setTimeout(() => {
+      ref.current.instanceColor.needsUpdate = true;
+    }, 1);
     socket.on("LedState", state => {
       if (ref.current) {
         for (let i = 0; i < state.length; i++) {
@@ -135,10 +135,7 @@ const Clover = props => {
 export default function Gazebo(props) {
   const instanceID = props.instanceID;
   const [gazeboRunning, setGazebo] = React.useState(false);
-  const [runGazeboButtonState, disableRunGazebo] = React.useState(true);
-
   const [arucoMarkers, setArucoMarkers] = React.useState([]);
-
   const [cloverPosition, setCloverPosition] = React.useState([0, 0, 0]);
   const [cloverRotation, setCloverRotation] = React.useState([0, 0, 0]);
   const [propRotation, setPropRotation] = React.useState(0);
@@ -182,7 +179,6 @@ export default function Gazebo(props) {
         setArucoImg(URL.createObjectURL(e.target.files[0]));
       }
     };
-
     const handleCloseGenArucoDialog = () => {
       setOpenGenArucoDialog(false);
     };
@@ -486,22 +482,33 @@ export default function Gazebo(props) {
           }
         }}
         onPointerOut={() => setHovered(false)}>
-        <meshStandardMaterial color={props.color.toLowerCase()} />
+        <meshStandardMaterial
+          color={new THREE.Color(props.color.toLowerCase())}
+        />
       </BoxDrei>
     );
   };
 
   const addCube = () => {
     socket.emit("AddCube", props.instanceID);
+    cubesGlobal.push({
+      position: [10, 5 - 0.87, 0],
+      rotation: [0, 0, 0],
+      args: [10, 10, 10],
+      color: "gray",
+      oId: cubeKey,
+    });
     setCubes([
-      ...cubes,
-      <Cube
-        position={[10, 5 - 0.87, 0]}
-        args={[10, 10, 10]}
-        color={"gray"}
-        key={cubeKey}
-        oId={cubeKey}
-      />,
+      ...cubesGlobal.map(cube => (
+        <Cube
+          position={cube.position}
+          rotation={cube.rotation}
+          args={cube.args}
+          color={cube.color}
+          key={cube.oId}
+          oId={cube.oId}
+        />
+      )),
     ]);
     cubeKey++;
   };
@@ -518,6 +525,10 @@ export default function Gazebo(props) {
   };
 
   socket.on("CloverPosition", data => {
+    if (!telemGlobal) {
+      setTelem(true);
+      telemGlobal = true;
+    }
     const pos = [
       data.position[0] * 10,
       data.position[1] * 10,
@@ -532,34 +543,22 @@ export default function Gazebo(props) {
     }
     setCloverPosition(pos);
     setCloverRotation([data.rotation[1], data.rotation[2], data.rotation[0]]);
-    if (!telem) {
-      setTelem(true);
-    }
   });
+
+  useEffect(() => {
+    if (telem !== telemGlobal) {
+      setTelem(telemGlobal);
+    }
+  }, [telemGlobal]);
 
   //socket.on("DebugOutput", data => {
   //  console.log(data);
   //});
 
-  if (!stateRequested) {
-    socket.emit("GetGazeboState", props.instanceID);
-    stateRequested = true;
-  }
-
-  useEffect(() => {
-    socket.on("GazeboStateRes", state => {
-      if (state) {
-        setGazebo(true);
-        socket.emit("GetGazeboModels", props.instanceID);
-      } else {
-        disableRunGazebo(false);
-      }
-    });
-  });
-
   const runGazebo = e => {
     e.preventDefault();
     setGazebo(true);
+    socket.emit("GetGazeboModels", props.instanceID);
     socket.emit("RunGazebo", props.instanceID);
   };
   useEffect(() => {
@@ -591,40 +590,43 @@ export default function Gazebo(props) {
         }
 
         for (let oId in models.user_objects) {
-          cubesGlobal.push(
-            <Cube
-              position={[
-                models.user_objects[oId].position[0] * 10,
-                models.user_objects[oId].position[1] * 10 - 0.87,
-                models.user_objects[oId].position[2] * 10,
-              ]}
-              rotation={[
-                models.user_objects[oId].rotation[1],
-                models.user_objects[oId].rotation[2],
-                models.user_objects[oId].rotation[0],
-              ]}
-              args={[
-                models.user_objects[oId].size[0] * 10,
-                models.user_objects[oId].size[1] * 10,
-                models.user_objects[oId].size[2] * 10,
-              ]}
-              oId={cubeKey}
-              color={models.user_objects[oId].color}
-              key={cubeKey}
-            />,
-          );
+          cubesGlobal.push({
+            position: [
+              models.user_objects[oId].position[1] * 10,
+              models.user_objects[oId].position[2] * 10 - 0.87,
+              models.user_objects[oId].position[0] * 10,
+            ],
+            rotation: [
+              models.user_objects[oId].rotation[1],
+              models.user_objects[oId].rotation[2],
+              models.user_objects[oId].rotation[0],
+            ],
+            args: [
+              models.user_objects[oId].size[0] * 10,
+              models.user_objects[oId].size[1] * 10,
+              models.user_objects[oId].size[2] * 10,
+            ],
+            color: models.user_objects[oId].color,
+            oId: cubeKey,
+          });
           cubeKey++;
         }
+        setArucoMarkers([...arucoMarkersGlobal]);
+        setCubes([
+          ...cubesGlobal.map(cube => (
+            <Cube
+              position={cube.position}
+              rotation={cube.rotation}
+              args={cube.args}
+              color={cube.color}
+              key={cube.oId}
+              oId={cube.oId}
+            />
+          )),
+        ]);
         arucoMarkersReceived = true;
       }
     });
-    const checkMarkers = setInterval(() => {
-      if (arucoMarkersGlobal.length > 0) {
-        setArucoMarkers(arucoMarkersGlobal);
-        setCubes(cubesGlobal);
-        clearInterval(checkMarkers);
-      }
-    }, 10);
   }, []);
 
   const texture = useLoader(TextureLoader, "/models/floor.jpg");
@@ -683,8 +685,19 @@ export default function Gazebo(props) {
                       onClick={() => {
                         socket.emit("StopGazebo", props.instanceID);
                         setTimeout(() => {
-                          window.location.reload();
-                        }, 20);
+                          setMode("play");
+                          setTarget(null);
+                          setArucoMarkers([]);
+                          setCubes([]);
+                          arucoMarkersGlobal = [];
+                          cubesGlobal = [];
+                          arucoMarkersReceived = false;
+                          globalMode = "play";
+                          cubeKey = 0;
+                          setTelem(false);
+                          telemGlobal = false;
+                          setGazebo(false);
+                        }, 200);
                       }}>
                       <StopRoundedIcon />
                     </ToggleButton>
@@ -711,22 +724,96 @@ export default function Gazebo(props) {
                   right={"4px"}
                   zIndex={99}>
                   {target && mode === "edit" ? (
-                    <ToggleButtonGroup
-                      size={"small"}
-                      value={cubeEditMode}
-                      exclusive
-                      onChange={handleCubeEditModeChange}
-                      aria-label="cube edit mode">
-                      <ToggleButton value="translate" aria-label="translate">
-                        <OpenWithRoundedIcon />
-                      </ToggleButton>
-                      <ToggleButton value="rotate" aria-label="rotate">
-                        <AutorenewRoundedIcon />
-                      </ToggleButton>
-                      <ToggleButton value="scale" aria-label="scale">
-                        <AspectRatioRoundedIcon />
-                      </ToggleButton>
-                    </ToggleButtonGroup>
+                    <>
+                      <ToggleButtonGroup
+                        size={"small"}
+                        value={cubeEditMode}
+                        exclusive
+                        onChange={handleCubeEditModeChange}
+                        aria-label="cube edit mode">
+                        <ToggleButton value="translate" aria-label="translate">
+                          <OpenWithRoundedIcon />
+                        </ToggleButton>
+                        <ToggleButton value="rotate" aria-label="rotate">
+                          <AutorenewRoundedIcon />
+                        </ToggleButton>
+                        <ToggleButton value="scale" aria-label="scale">
+                          <AspectRatioRoundedIcon />
+                        </ToggleButton>
+                      </ToggleButtonGroup>
+                      <CirclePicker
+                        onChange={color => {
+                          socket.emit("EditCube", {
+                            model_id: String(target.oId),
+                            position: [
+                              target.position.z / 10,
+                              target.position.x / 10,
+                              (target.position.y + 0.87) / 10,
+                            ],
+                            rotation: [
+                              target.rotation.z,
+                              target.rotation.x,
+                              target.rotation.y,
+                            ],
+                            size: [
+                              (target.scale.x *
+                                target.geometry.parameters.depth) /
+                                10,
+                              (target.scale.y *
+                                target.geometry.parameters.height) /
+                                10,
+                              (target.scale.z *
+                                target.geometry.parameters.width) /
+                                10,
+                            ],
+                            color: color.hex,
+                            instanceID: props.instanceID,
+                          });
+                          cubesGlobal[target.oId].color = color.hex;
+                          cubesGlobal[target.oId].position = [
+                            target.position.x,
+                            target.position.y,
+                            target.position.z,
+                          ];
+                          cubesGlobal[target.oId].rotation = [
+                            target.rotation.x,
+                            target.rotation.y,
+                            target.rotation.z,
+                          ];
+                          cubesGlobal[target.oId].args = [
+                            cubesGlobal[target.oId].args[0] * target.scale.x,
+                            cubesGlobal[target.oId].args[1] * target.scale.y,
+                            cubesGlobal[target.oId].args[2] * target.scale.z,
+                          ];
+                          setCubes([
+                            ...cubesGlobal.map(cube => (
+                              <Cube
+                                position={cube.position}
+                                rotation={cube.rotation}
+                                args={cube.args}
+                                color={cube.color}
+                                key={cube.oId}
+                                oId={cube.oId}
+                              />
+                            )),
+                          ]);
+                          setTarget(cubes[target.oId]);
+                        }}
+                        circleSize={18}
+                        circleSpacing={8}
+                        colors={[
+                          "#0000ff",
+                          "#ff0000",
+                          "#00ff00",
+                          "#777777",
+                          "#000000",
+                          "#ffffff",
+                          "#ffff00",
+                          "#ffa500",
+                          "#a020f0",
+                        ]}
+                      />
+                    </>
                   ) : (
                     <></>
                   )}
@@ -782,22 +869,37 @@ export default function Gazebo(props) {
                     object={target}
                     mode={cubeEditMode}
                     onMouseUp={() => {
+                      cubesGlobal[target.oId].position = [
+                        target.position.x,
+                        target.position.y,
+                        target.position.z,
+                      ];
+                      cubesGlobal[target.oId].rotation = [
+                        target.rotation.x,
+                        target.rotation.y,
+                        target.rotation.z,
+                      ];
+                      cubesGlobal[target.oId].args = [
+                        cubesGlobal[target.oId].args[0] * target.scale.x,
+                        cubesGlobal[target.oId].args[1] * target.scale.y,
+                        cubesGlobal[target.oId].args[2] * target.scale.z,
+                      ];
                       socket.emit("EditCube", {
                         model_id: String(target.oId),
                         position: [
+                          target.position.z / 10,
                           target.position.x / 10,
                           (target.position.y + 0.87) / 10,
-                          target.position.z / 10,
                         ],
                         rotation: [
-                          target.rotation.x,
                           target.rotation.z,
+                          target.rotation.x,
                           target.rotation.y,
                         ],
                         size: [
-                          (target.scale.x * target.geometry.parameters.height) /
+                          (target.scale.x * target.geometry.parameters.depth) /
                             10,
-                          (target.scale.y * target.geometry.parameters.depth) /
+                          (target.scale.y * target.geometry.parameters.height) /
                             10,
                           (target.scale.z * target.geometry.parameters.width) /
                             10,
@@ -805,11 +907,6 @@ export default function Gazebo(props) {
                         color: target.color,
                         instanceID: props.instanceID,
                       });
-                      console.log(
-                        target.position,
-                        target.rotation,
-                        target.scale,
-                      );
                     }}
                   />
                 )}
@@ -819,7 +916,6 @@ export default function Gazebo(props) {
           </Box>
         ) : (
           <Button
-            disabled={runGazeboButtonState}
             variant={"contained"}
             onClick={runGazebo}
             sx={{
