@@ -148,6 +148,13 @@ export default function Gazebo(props) {
 
   const [cubeEditMode, setCubeEditMode] = React.useState("translate");
 
+  const [stopGazeboButton, setStopGazeboButton] = React.useState(true);
+  const [runGazeboButton, setRunGazeboButton] = React.useState(false);
+
+  socket.on("GazeboStopped", () => {
+    setRunGazeboButton(false);
+  });
+
   const handleCubeEditModeChange = (event, newMode) => {
     setCubeEditMode(newMode);
   };
@@ -548,6 +555,9 @@ export default function Gazebo(props) {
   useEffect(() => {
     if (telem !== telemGlobal) {
       setTelem(telemGlobal);
+      if (telemGlobal) {
+        setTimeout(() => setStopGazeboButton(false), 1000);
+      }
     }
   }, [telemGlobal]);
 
@@ -680,6 +690,7 @@ export default function Gazebo(props) {
                     size="small"
                     aria-label="restart">
                     <ToggleButton
+                      disabled={stopGazeboButton}
                       value="restart"
                       aria-label="restart"
                       onClick={() => {
@@ -697,6 +708,7 @@ export default function Gazebo(props) {
                           setTelem(false);
                           telemGlobal = false;
                           setGazebo(false);
+                          setRunGazeboButton(true);
                         }, 200);
                       }}>
                       <StopRoundedIcon />
@@ -743,6 +755,36 @@ export default function Gazebo(props) {
                       </ToggleButtonGroup>
                       <CirclePicker
                         onChange={color => {
+                          let colorGazebo = "";
+                          switch (color.hex) {
+                            case "#0504ff":
+                              colorGazebo = "Blue";
+                              break;
+                            case "#fe0405":
+                              colorGazebo = "Red";
+                              break;
+                            case "#04ff04":
+                              colorGazebo = "Green";
+                              break;
+                            case "#838383":
+                              colorGazebo = "Gray";
+                              break;
+                            case "#020202":
+                              colorGazebo = "Black";
+                              break;
+                            case "#ffffff":
+                              colorGazebo = "White";
+                              break;
+                            case "#ffff00":
+                              colorGazebo = "Yellow";
+                              break;
+                            case "#ff9a0e":
+                              colorGazebo = "Orange";
+                              break;
+                            case "#ff04ff":
+                              colorGazebo = "Purple";
+                              break;
+                          }
                           socket.emit("EditCube", {
                             model_id: String(target.oId),
                             position: [
@@ -766,7 +808,8 @@ export default function Gazebo(props) {
                                 target.geometry.parameters.width) /
                                 10,
                             ],
-                            color: color.hex,
+                            color: colorGazebo,
+                            colorHex: color.hex,
                             instanceID: props.instanceID,
                           });
                           cubesGlobal[target.oId].color = color.hex;
@@ -802,15 +845,15 @@ export default function Gazebo(props) {
                         circleSize={18}
                         circleSpacing={8}
                         colors={[
-                          "#0000ff",
-                          "#ff0000",
-                          "#00ff00",
-                          "#777777",
-                          "#000000",
+                          "#0504ff",
+                          "#fe0405",
+                          "#04ff04",
+                          "#838383",
+                          "#020202",
                           "#ffffff",
                           "#ffff00",
-                          "#ffa500",
-                          "#a020f0",
+                          "#ff9a0e",
+                          "#ff04ff",
                         ]}
                       />
                     </>
@@ -916,6 +959,7 @@ export default function Gazebo(props) {
           </Box>
         ) : (
           <Button
+            disabled={runGazeboButton}
             variant={"contained"}
             onClick={runGazebo}
             sx={{

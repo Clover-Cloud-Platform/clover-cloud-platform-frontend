@@ -74,8 +74,6 @@ export default function MainApp() {
       </Box>
     );
   };
-
-  let filesKey = 0;
   const dragToEditor = path => {
     if (!openEditor) {
       setOpenEditor(true);
@@ -96,7 +94,7 @@ export default function MainApp() {
     if (!inEditor) {
       filesBuffer.push(
         <EditorFile
-          key={filesKey}
+          key={path}
           name={name}
           path={path}
           onDelete={onDelete}
@@ -107,7 +105,6 @@ export default function MainApp() {
         />,
       );
       onOpen(path);
-      filesKey++;
     } else {
       onOpen(path);
     }
@@ -321,7 +318,7 @@ export default function MainApp() {
                 draggerClassName={"dragger"}
                 gutterClassName={"gutter-vertical"}>
                 <Gazebo instanceID={instanceID} />
-                <Terminal instanceID={instanceID} />
+                <Terminal instanceID={instanceID} onOpen={dragToEditor} />
               </ReactSplit>
             </ReactSplit>
           </Box>

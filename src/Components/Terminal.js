@@ -1,4 +1,5 @@
 import * as React from "react";
+import {useEffect} from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {ThemeProvider} from "@mui/material/styles";
@@ -12,7 +13,6 @@ import {
   ContentPasteRounded,
 } from "@mui/icons-material";
 import TerminalRoundedIcon from "@mui/icons-material/TerminalRounded";
-import {useEffect} from "react";
 import {socket} from "./Instances";
 
 let directorySet = false;
@@ -64,20 +64,26 @@ export default function Terminal(props) {
         <HistoryItem key={historyKey} command={commandTrimmed} />,
       );
       setHistory(newHistory);
-      switch (commandTrimmed) {
-        case "help":
-          document.getElementById(
-            "output",
-          ).innerHTML += `${commandTrimmed}\n  help  -- display a list of built-in commands\n  clear -- clear console\n  use right-click or arrows ↑↓ to open context menu`;
-          break;
-        case "clear":
-          document.getElementById("output").innerHTML = "";
-          break;
-        default:
-          socket.emit("ExecuteCommand", {
-            command: {type: "command", cmd: commandTrimmed},
-            instanceID: props.instanceID,
-          });
+      if (commandTrimmed === "help") {
+        document.getElementById(
+          "output",
+        ).innerHTML += `${commandTrimmed}\n  help  -- display a list of built-in commands\n  clear -- clear console\n  use right-click or arrows ↑↓ to open context menu`;
+      } else if (commandTrimmed === "clear") {
+        document.getElementById("output").innerHTML = "";
+      } else if (commandTrimmed.split(" ")[0] === "open") {
+        const filePath = commandTrimmed.split(" ")[1];
+        if (filePath[0] !== "/") {
+          props.onOpen(
+            `../../${directory.replace("~", "home/ubuntu")}/${filePath}`,
+          );
+        } else {
+          props.onOpen(`../..${filePath}`);
+        }
+      } else {
+        socket.emit("ExecuteCommand", {
+          command: {type: "command", cmd: commandTrimmed},
+          instanceID: props.instanceID,
+        });
       }
     }
   };

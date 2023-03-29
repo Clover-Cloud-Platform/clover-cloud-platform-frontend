@@ -1,4 +1,5 @@
 import * as React from "react";
+import {useEffect} from "react";
 import Editor from "@monaco-editor/react";
 import Box from "@mui/material/Box";
 import {workspaceTheme} from "./MainApp";
@@ -11,7 +12,6 @@ import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import IconButton from "@mui/material/IconButton";
 
 import {socket} from "./Instances";
-import {useEffect} from "react";
 
 export default function CodeEditor({
   files,
@@ -130,7 +130,7 @@ export default function CodeEditor({
               socket.emit("ExecuteCommand", {
                 command: {
                   type: "command",
-                  cmd: `python3 ~${activeFile}`,
+                  cmd: `python3 /home/ubuntu/${activeFile}`,
                 },
                 instanceID: instanceID,
               });
@@ -145,7 +145,6 @@ export default function CodeEditor({
         onChange={() => {
           if (localSavedState) {
             changeSavedState(false, activeFile);
-            console.log(1);
           }
           setLocalSavedState(false);
         }}
