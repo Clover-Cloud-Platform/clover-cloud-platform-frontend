@@ -23,7 +23,11 @@ import {socket} from "./Instances";
 
 let filesReceived = false;
 let data = [];
-export default function FileManager({onDragToEditor, instanceID}) {
+export default function FileManager({
+  onDragToEditor,
+  instanceID,
+  onLoadManager,
+}) {
   const [fileTree, setFileTree] = React.useState();
 
   useEffect(() => {
@@ -34,6 +38,7 @@ export default function FileManager({onDragToEditor, instanceID}) {
       data = files;
       setFileTree(<FileTree data={files} />);
       filesReceived = true;
+      onLoadManager();
     }
   });
 

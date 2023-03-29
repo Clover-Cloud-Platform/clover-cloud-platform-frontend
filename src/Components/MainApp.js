@@ -19,6 +19,8 @@ import Typography from "@mui/material/Typography";
 import {DndProvider, useDrop} from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";
 import {socket} from "./Instances";
+import {CircularProgress} from "@mui/material";
+import {ReactComponent as Logo} from "../assets/clover-cloud-platform-logo.svg";
 
 export const workspaceTheme = createTheme({
   palette: {
@@ -44,6 +46,9 @@ export default function MainApp() {
   const [editorLang, setEditorLang] = React.useState("plaintext");
   const [openEditor, setOpenEditor] = React.useState(false);
   const [activeFile, setActiveFile] = React.useState("");
+
+  const [preloaderOpacity, setPreloaderOpacity] = React.useState(1);
+  const [preloader, setPreloader] = React.useState(true);
 
   const EditorStartWindow = () => {
     const [{canDrop, isOver}, drop] = useDrop(() => ({
@@ -234,8 +239,35 @@ export default function MainApp() {
     return activeFileGlobal;
   };
 
+  const onLoadManager = () => {
+    setPreloaderOpacity(0);
+    setTimeout(() => {
+      setPreloader(false);
+    }, 225);
+  };
+
   return (
     <ThemeProvider theme={workspaceTheme}>
+      {preloader ? (
+        <Box
+          style={{
+            transition: "opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms",
+            opacity: preloaderOpacity,
+          }}
+          position={"fixed"}
+          height={"100vh"}
+          zIndex={99999}
+          bgcolor={"background.cloverMain"}
+          width={"100%"}
+          display={"flex"}
+          justifyContent={"center"}
+          alignItems={"center"}>
+          <CircularProgress size={"60px"} sx={{position: "absolute"}} />
+          <Logo width={"40px"} />
+        </Box>
+      ) : (
+        <></>
+      )}
       <Box width={"100%"} height={"100vh"}>
         <WorkspaceAppBar />
         <Box
@@ -262,6 +294,7 @@ export default function MainApp() {
               <FileManager
                 onDragToEditor={dragToEditor}
                 instanceID={instanceID}
+                onLoadManager={onLoadManager}
               />
             </Box>
             <Box height={"100%"} bgcolor={"#1e1e1e"}>
