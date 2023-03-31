@@ -522,7 +522,7 @@ export default function Gazebo(props) {
       position: [10, 5 - 0.87, 0],
       rotation: [0, 0, 0],
       args: [10, 10, 10],
-      color: "gray",
+      color: "#838383",
       oId: cubeKey,
     });
     setCubes([
@@ -664,6 +664,38 @@ export default function Gazebo(props) {
   const texture = useLoader(TextureLoader, "/models/floor.jpg");
   texture.wrapS = texture.wrapT = RepeatWrapping;
   texture.repeat.set(10, 10);
+
+  const hexToGazebo = color => {
+    switch (color) {
+      case "#0504ff":
+        return "Blue";
+        break;
+      case "#fe0405":
+        return "Red";
+        break;
+      case "#04ff04":
+        return "Green";
+        break;
+      case "#838383":
+        return "Gray";
+        break;
+      case "#020202":
+        return "Black";
+        break;
+      case "#ffffff":
+        return "White";
+        break;
+      case "#ffff00":
+        return "Yellow";
+        break;
+      case "#ff9a0e":
+        return "Orange";
+        break;
+      case "#ff04ff":
+        return "Purple";
+        break;
+    }
+  };
   return (
     <ThemeProvider theme={theme}>
       <Box
@@ -777,36 +809,7 @@ export default function Gazebo(props) {
                       </ToggleButtonGroup>
                       <CirclePicker
                         onChange={color => {
-                          let colorGazebo = "";
-                          switch (color.hex) {
-                            case "#0504ff":
-                              colorGazebo = "Blue";
-                              break;
-                            case "#fe0405":
-                              colorGazebo = "Red";
-                              break;
-                            case "#04ff04":
-                              colorGazebo = "Green";
-                              break;
-                            case "#838383":
-                              colorGazebo = "Gray";
-                              break;
-                            case "#020202":
-                              colorGazebo = "Black";
-                              break;
-                            case "#ffffff":
-                              colorGazebo = "White";
-                              break;
-                            case "#ffff00":
-                              colorGazebo = "Yellow";
-                              break;
-                            case "#ff9a0e":
-                              colorGazebo = "Orange";
-                              break;
-                            case "#ff04ff":
-                              colorGazebo = "Purple";
-                              break;
-                          }
+                          let colorGazebo = hexToGazebo(color.hex);
                           socket.emit("EditCube", {
                             model_id: String(target.oId),
                             position: [
@@ -969,7 +972,8 @@ export default function Gazebo(props) {
                           (target.scale.z * target.geometry.parameters.width) /
                             10,
                         ],
-                        color: target.color,
+                        color: hexToGazebo(target.color),
+                        colorHex: target.color,
                         instanceID: props.instanceID,
                       });
                     }}
