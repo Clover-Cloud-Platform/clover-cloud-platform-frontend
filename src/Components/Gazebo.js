@@ -173,6 +173,7 @@ export default function Gazebo(props) {
     const [markerId, setMarkerId] = React.useState(
       Number(props.name.split("_").at(-1)),
     );
+    const [fileContent, setFileContent] = React.useState();
 
     const inputArucoRef = useRef();
     const handleArucoUpload = () => {
@@ -184,6 +185,13 @@ export default function Gazebo(props) {
       } else {
         setFileType("png");
         setArucoImg(URL.createObjectURL(e.target.files[0]));
+        const reader = new FileReader();
+        reader.onload = () => {
+          setFileContent(
+            reader.result.replace("data:", "").replace(/^.+,/, ""),
+          );
+        };
+        reader.readAsDataURL(e.target.files[0]);
       }
     };
     const handleCloseGenArucoDialog = () => {
@@ -378,7 +386,12 @@ export default function Gazebo(props) {
                 socket.emit("EditMarker", {
                   instanceID: instanceID,
                   aruco_name: props.name,
-                  image: fileType === "svg" ? null : arucoImg.text(),
+                  image:
+                    fileType === "svg"
+                      ? null
+                      : fileContent
+                      ? fileContent
+                      : null,
                   type: fileType,
                   size: size,
                   position: [posX, posY],
@@ -440,13 +453,17 @@ export default function Gazebo(props) {
   };
 
   const PngMarker = props => {
-    const marker = useLoader(TextureLoader, props.image);
+    let image = props.image;
+    if (!image.includes("blob:") && !image.includes("data:")) {
+      image = `data:image/png;base64, ${image.slice(2, image.length - 1)}`;
+    }
+    const marker = useLoader(TextureLoader, image);
     const [hovered, setHovered] = React.useState(false);
     useCursor(hovered);
     return (
       <mesh
         onClick={() => {
-          clickOnAruco(props.image, props.position, "png", props.size);
+          clickOnAruco(image, props.position, "png", props.size, props.name);
         }}
         onPointerOver={() => {
           if (globalMode === "edit") {
@@ -588,13 +605,15 @@ export default function Gazebo(props) {
                 />,
               );
             } else {
-              <PngMarker
-                name={models.aruco_map[i].aruco_name}
-                size={parseFloat(models.aruco_map[i].aruco_size)}
-                position={models.aruco_map[i].position}
-                image={models.aruco_map[i].image}
-                key={i}
-              />;
+              arucoMarkersGlobal.push(
+                <PngMarker
+                  name={models.aruco_map[i].aruco_name}
+                  size={parseFloat(models.aruco_map[i].aruco_size)}
+                  position={models.aruco_map[i].position}
+                  image={models.aruco_map[i].image}
+                  key={i}
+                />,
+              );
             }
           }
         }
