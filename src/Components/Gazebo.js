@@ -638,7 +638,7 @@ export default function Gazebo(props) {
               models.user_objects[oId].size[1] * 10,
               models.user_objects[oId].size[2] * 10,
             ],
-            color: models.user_objects[oId].color,
+            color: models.user_objects[oId].colorHex,
             oId: cubeKey,
           });
           cubeKey++;
