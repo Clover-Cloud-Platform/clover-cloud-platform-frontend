@@ -173,6 +173,7 @@ export default function Gazebo(props) {
     const [markerId, setMarkerId] = React.useState(
       Number(props.name.split("_").at(-1)),
     );
+    const [genArucoId, setGenArucoId] = React.useState(null);
     const [fileContent, setFileContent] = React.useState();
 
     const inputArucoRef = useRef();
@@ -199,6 +200,7 @@ export default function Gazebo(props) {
     };
     const generateMarker = id => {
       setMarkerId(id);
+      setGenArucoId(String(id));
       setOpenGenArucoDialog(false);
       setFileType("svg");
       setArucoImg(`data:image/svg+xml;utf8,${generateAruco(id).outerHTML}`);
@@ -386,6 +388,7 @@ export default function Gazebo(props) {
                 socket.emit("EditMarker", {
                   instanceID: instanceID,
                   aruco_name: props.name,
+                  marker_id: genArucoId,
                   image:
                     fileType === "svg"
                       ? null
