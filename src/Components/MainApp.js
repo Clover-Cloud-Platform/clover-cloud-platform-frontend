@@ -49,6 +49,8 @@ export default function MainApp() {
 
   const [preloaderOpacity, setPreloaderOpacity] = React.useState(1);
   const [preloader, setPreloader] = React.useState(true);
+  const [splitSizesX, setSplitSizesX] = React.useState([20, 45, 35]);
+  const [splitSizesY, setSplitSizesY] = React.useState([50, 50]);
 
   const EditorStartWindow = () => {
     const [{canDrop, isOver}, drop] = useDrop(() => ({
@@ -274,10 +276,13 @@ export default function MainApp() {
             bgcolor={"background.cloverMain"}>
             <ReactSplit
               minWidths={[160, 200, 320]}
-              initialSizes={[20, 45, 35]}
+              initialSizes={splitSizesX}
               direction={SplitDirection.Horizontal}
               draggerClassName={"dragger"}
-              gutterClassName={"gutter-horizontal"}>
+              gutterClassName={"gutter-horizontal"}
+              onResizeFinished={(pairIdx, newSizes) => {
+                setSplitSizesX(newSizes);
+              }}>
               <Box
                 height={"100%"}
                 bgcolor={"background.cloverMain"}
@@ -314,6 +319,10 @@ export default function MainApp() {
               </Box>
               <ReactSplit
                 minHeights={[300, 150]}
+                initialSizes={splitSizesY}
+                onResizeFinished={(pairIdx, newSizes) => {
+                  setSplitSizesY(newSizes);
+                }}
                 direction={SplitDirection.Vertical}
                 draggerClassName={"dragger"}
                 gutterClassName={"gutter-vertical"}>
