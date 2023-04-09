@@ -1,21 +1,15 @@
 .gutter-horizontal {
     height: 100%;
-    width: 4px;
+    width: 5px;
     background: #141415;
     padding: 0 !important;
     transition: width 200ms;
 }
 .gutter-vertical{
-    height: 4px;
+    height: 5px;
     background: #141415;
     padding: 0 !important;
     transition: height 200ms;
-}
-.gutter-horizontal:hover{
-    width: 5px;
-}
-.gutter-vertical:hover{
-    height: 5px;
 }
 .dragger{
     display: none;

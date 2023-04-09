@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useEffect} from "react";
+import {useEffect, useRef} from "react";
 import Editor from "@monaco-editor/react";
 import Box from "@mui/material/Box";
 import {workspaceTheme} from "./MainApp";
@@ -80,7 +80,9 @@ export default function CodeEditor({
     );
   };
 
+  const editorRef = useRef();
   const editorMount = (editor, monaco) => {
+    editorRef.current = editor;
     editor.addAction({
       id: "save-file-action-id",
       label: "Save",
@@ -127,6 +129,13 @@ export default function CodeEditor({
             aria-label="run"
             color={"success"}
             onClick={() => {
+              setLocalSavedState(true);
+              socket.emit("WriteFile", {
+                path: getActiveFile(),
+                value: editorRef.current.getValue(),
+                instanceID: instanceID,
+              });
+              changeSavedState(true);
               socket.emit("ExecuteCommand", {
                 command: {
                   type: "command",
@@ -145,8 +154,8 @@ export default function CodeEditor({
         onChange={() => {
           if (localSavedState) {
             changeSavedState(false, activeFile);
+            setLocalSavedState(false);
           }
-          setLocalSavedState(false);
         }}
         theme={"vs-dark"}
         height="calc(100% - 50px)"

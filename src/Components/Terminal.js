@@ -67,7 +67,7 @@ export default function Terminal(props) {
       if (commandTrimmed === "help") {
         document.getElementById(
           "output",
-        ).innerHTML += `${commandTrimmed}\n  help  -- display a list of built-in commands\n  clear -- clear console\n  use right-click or arrows ↑↓ to open context menu`;
+        ).innerHTML += `${commandTrimmed}\n  help -- display a list of built-in commands\n  clear -- clear console\n  open [file path] -- open file in the editor\n  use right-click or arrows ↑↓ to open context menu`;
       } else if (commandTrimmed === "clear") {
         document.getElementById("output").innerHTML = "";
       } else if (commandTrimmed.split(" ")[0] === "open") {
