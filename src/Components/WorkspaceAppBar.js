@@ -59,7 +59,7 @@ export default function WorkspaceAppBar() {
         justifyContent={"space-between"}
         alignItems={"center"}>
         <Box display={"flex"} gap={"15px"} ml={"10px"}>
-          <Tooltip title="Back to dashboard">
+          <Tooltip title="Back to dashboard" disableInteractive>
             <IconButton aria-label="exit" color="primary" href={"/instances"}>
               <ExitToAppRoundedIcon sx={{transform: "rotate(180deg)"}} />
             </IconButton>
@@ -100,7 +100,7 @@ export default function WorkspaceAppBar() {
             size={"small"}>
             Search templates...
           </Button>
-          <Tooltip title="Open user settings">
+          <Tooltip title="Open user settings" disableInteractive>
             <IconButton onClick={handleOpenUserMenu} sx={{p: 0}}>
               <Avatar
                 sx={{

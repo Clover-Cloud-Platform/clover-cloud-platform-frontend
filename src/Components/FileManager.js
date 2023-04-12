@@ -648,7 +648,9 @@ export default function FileManager({
           <Typography variant={"overline"} color={"#7c8186"}>
             workspace
           </Typography>
-          <Tooltip title={"Revert instance to its initial state"}>
+          <Tooltip
+            title={"Revert instance to its initial state"}
+            disableInteractive>
             <SettingsBackupRestoreRoundedIcon
               fontSize={"small"}
               sx={{
