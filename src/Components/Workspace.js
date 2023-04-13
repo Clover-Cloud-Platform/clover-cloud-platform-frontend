@@ -1,11 +1,8 @@
 import * as React from "react";
-
 import {theme} from "../App";
 import {createTheme, ThemeProvider} from "@mui/material/styles";
-
 import ReactSplit, {SplitDirection} from "@devbookhq/splitter";
-
-import Box from "@mui/material/Box";
+import {Box, CircularProgress, Typography} from "@mui/material";
 import CodeEditor from "./Editor";
 import "./MainApp.css";
 import Terminal from "./Terminal";
@@ -15,13 +12,12 @@ import {useSearchParams} from "react-router-dom";
 import FileManager from "./FileManager";
 import EditorFile from "./EditorFile";
 import langMap from "language-map";
-import Typography from "@mui/material/Typography";
 import {DndProvider, useDrop} from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";
 import {socket} from "./Instances";
-import {CircularProgress} from "@mui/material";
 import {ReactComponent as Logo} from "../assets/clover-cloud-platform-logo.svg";
 
+// Define new theme
 export const workspaceTheme = createTheme({
   palette: {
     mode: "dark",
@@ -37,21 +33,21 @@ export const workspaceTheme = createTheme({
 const filesBuffer = [];
 let activeFileGlobal = "";
 
-export default function MainApp() {
+// Function that renders the workspace component
+export default function Workspace() {
   const [searchParams, setSearchParams] = useSearchParams();
   const instanceID = searchParams.get("id");
-
   const [editorFiles, setEditorFiles] = React.useState([]);
   const [editorValue, setEditorValue] = React.useState("");
   const [editorLang, setEditorLang] = React.useState("plaintext");
   const [openEditor, setOpenEditor] = React.useState(false);
   const [activeFile, setActiveFile] = React.useState("");
-
   const [preloaderOpacity, setPreloaderOpacity] = React.useState(1);
   const [preloader, setPreloader] = React.useState(true);
   const [splitSizesX, setSplitSizesX] = React.useState([20, 45, 35]);
   const [splitSizesY, setSplitSizesY] = React.useState([50, 50]);
 
+  // Editor start window where you can drop files
   const EditorStartWindow = () => {
     const [{canDrop, isOver}, drop] = useDrop(() => ({
       accept: "file",
@@ -76,6 +72,8 @@ export default function MainApp() {
       </Box>
     );
   };
+
+  // A function that moves a file to the editor
   const dragToEditor = path => {
     if (!openEditor) {
       setOpenEditor(true);
@@ -112,6 +110,7 @@ export default function MainApp() {
     }
   };
 
+  // A function that closes a file in the editor
   const onDelete = path => {
     for (const i in filesBuffer) {
       if (filesBuffer[i].props.path === path) {
@@ -138,6 +137,7 @@ export default function MainApp() {
     }
   };
 
+  // A function that opens a file in the editor
   const onOpen = path => {
     for (const i in filesBuffer) {
       if (filesBuffer[i].props.path === path) {
@@ -173,10 +173,13 @@ export default function MainApp() {
       }
     }
     setEditorFiles([...filesBuffer]);
-    console.log("get content", path);
+    // Get file content
     socket.emit("GetFileContent", {path: path, instanceID: instanceID});
+    // Receive content
     socket.on("FileContent", file => {
+      // Set value
       setEditorValue(file.content);
+      // Set language for the editor
       let lang;
       if (!file.path.split("/").at(-1).includes(".")) {
         lang = "plaintext";
@@ -199,6 +202,7 @@ export default function MainApp() {
     });
   };
 
+  // A function that allows users to move files in the editor
   const onMove = (source, target) => {
     const src = filesBuffer.indexOf(
       filesBuffer.filter(file => file.props.path === source)[0],
@@ -212,6 +216,7 @@ export default function MainApp() {
     setEditorFiles([...filesBuffer]);
   };
 
+  // A function that changes saved/unsaved state of the file
   const changeSavedState = (save, actFile = activeFileGlobal) => {
     if (actFile === activeFileGlobal) {
       for (const i in filesBuffer) {
@@ -238,6 +243,7 @@ export default function MainApp() {
     return activeFileGlobal;
   };
 
+  // Hide preloader
   const onLoadManager = () => {
     setPreloaderOpacity(0);
     setTimeout(() => {
@@ -245,6 +251,7 @@ export default function MainApp() {
     }, 225);
   };
 
+  // Return the workspace component
   return (
     <div style={{backgroundColor: "#1c1b22"}}>
       <ThemeProvider theme={workspaceTheme}>

@@ -1,16 +1,22 @@
+// Importing necessary modules and components
 import * as React from "react";
 import {useEffect} from "react";
-import {workspaceTheme} from "./MainApp";
+import {workspaceTheme} from "./Workspace";
 import {ThemeProvider} from "@mui/material/styles";
 import {
   getMaterialFileIcon,
   getMaterialFolderIcon,
 } from "file-extension-icon-js";
-import Box from "@mui/material/Box";
+import {
+  Alert,
+  Box,
+  Snackbar,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import SettingsBackupRestoreRoundedIcon from "@mui/icons-material/SettingsBackupRestoreRounded";
-import Typography from "@mui/material/Typography";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
-import {Alert, Snackbar, Tooltip} from "@mui/material";
 import CreateNewFolderOutlinedIcon from "@mui/icons-material/CreateNewFolderOutlined";
 import NoteAddOutlinedIcon from "@mui/icons-material/NoteAddOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -18,7 +24,6 @@ import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import {DndProvider, useDrag, useDrop} from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";
 import EditMenu from "./EditMenu";
-import TextField from "@mui/material/TextField";
 import {socket} from "./Instances";
 
 let filesReceived = false;
@@ -45,8 +50,11 @@ export default function FileManager({
   const [openErrorFile, setOpenErrorFile] = React.useState(false);
   const [openErrorFolder, setOpenErrorFolder] = React.useState(false);
 
+  // A function to edit the tree data by adding, modifying or deleting the nodes
   const editTree = (source, targetDir, operation, newName = "") => {
     const newData = data;
+
+    // Traverse function to execute a function on each node of the object recursively
     function traverse(o, fn) {
       for (const k in o) {
         const res = fn.apply(this, [o, k]);
@@ -59,6 +67,8 @@ export default function FileManager({
         }
       }
     }
+
+    // splice_source function to remove the node from the tree
     const splice_source = (obj, predicate) =>
       traverse(obj, (o, k) => {
         let m_index = -1;
@@ -68,11 +78,14 @@ export default function FileManager({
         return m_index !== -1 ? o[k].splice(m_index, 1)[0] : false;
       });
 
+    // find_target_array function to get the children of the folder where the node has to be moved or edited
     const find_target_array = (obj, predicate) =>
       traverse(obj, (o, k) => (predicate(o, k) ? o.children : false));
 
     let source_object;
     let move = true;
+
+    // Getting the source object
     if (typeof source === "string") {
       source_object = splice_source(newData, obj => obj?.path === source);
       if (!source_object) {
@@ -85,6 +98,8 @@ export default function FileManager({
       source_object = source;
       move = false;
     }
+
+    // Moving the source node to the target directory if the operation is move
     if (operation === "move") {
       const target_array = find_target_array(
         newData,
@@ -102,6 +117,7 @@ export default function FileManager({
           )[0])
       ) {
         if (!move) {
+          // Displaying error message if a file or folder with the same name exists already in the target folder
           if (source_object.type === "file") {
             setOpenErrorFile(true);
           } else {
@@ -109,6 +125,7 @@ export default function FileManager({
           }
         }
       } else {
+        // If we need to move the node, push source object in the target array
         target_array.push(source_object);
       }
     } else if (operation === "edit") {
@@ -116,6 +133,8 @@ export default function FileManager({
       const oldPath = source_object.path;
       newSource.name = newName;
       newSource.path = `${targetDir}/${newName}`;
+
+      // Replacing the old path with the new path for each node in children of the folder if the node is a folder
       const replacePath = array => {
         for (const i in array) {
           array[i].path = array[i].path.replace(oldPath, newSource.path);
@@ -134,14 +153,18 @@ export default function FileManager({
       );
       target_array.push(source_object);
     }
+    // Return new file tree
     return <FileTree data={newData} />;
   };
 
+  // Directory node in the file tree
   const Directory = props => {
     const [open, setOpen] = React.useState(false);
     const [showActions, setShowActions] = React.useState("none");
     const [inputValue, setInputValue] = React.useState("");
     const path = props.path;
+
+    // Create react-dnd refs to make the component draggable and droppable
     const [{canDrop, isOver}, drop] = useDrop(() => ({
       accept: ["file", "folder"],
       drop: () => ({name: path}),
@@ -157,13 +180,13 @@ export default function FileManager({
         const dropResult = monitor.getDropResult();
         if (item && dropResult) {
           if (item.path !== dropResult.name) {
+            // Send MoveItem request to the server and edit file tree
             socket.emit("MoveItem", {
               source: item.path,
               target: dropResult.name,
               instanceID: instanceID,
             });
             setFileTree(editTree(item.path, dropResult.name, "move"));
-            console.log(`dropped ${item.path} into ${dropResult.name}`);
           }
         }
       },
@@ -177,6 +200,8 @@ export default function FileManager({
 
     const [anchorElAddFile, setAnchorElAddFile] = React.useState(null);
     const openAddFile = Boolean(anchorElAddFile);
+
+    // Handle add/edit events
     const handleClickAddFile = event => {
       setInputValue("");
       setAnchorElAddFile(event.currentTarget);
@@ -203,13 +228,9 @@ export default function FileManager({
       setAnchorElEdit(null);
     };
 
+    // Function for adding new file node to the file tree
     const addNewFile = () => {
       if (inputValue.trim() !== "") {
-        console.log(
-          "new file",
-          inputValue.trim(),
-          `${path}/${inputValue.trim()}`,
-        );
         socket.emit("CreateNewFile", {
           path: `${path}/${inputValue.trim()}`,
           instanceID: instanceID,
@@ -227,13 +248,10 @@ export default function FileManager({
         );
       }
     };
+
+    // Function for adding new directory node to the file tree
     const addNewDir = () => {
       if (inputValue.trim() !== "") {
-        console.log(
-          "new dir",
-          inputValue.trim(),
-          `${path}/${inputValue.trim()}`,
-        );
         socket.emit("CreateNewDirectory", {
           path: `${path}/${inputValue.trim()}`,
           instanceID: instanceID,
@@ -252,6 +270,8 @@ export default function FileManager({
         );
       }
     };
+
+    // Function for editing the name of the node
     const editName = () => {
       socket.emit("EditName", {
         path: path,
@@ -268,10 +288,13 @@ export default function FileManager({
       );
     };
 
+    // Function for deleting the node from the file tree
     const deleteItem = () => {
       socket.emit("DeleteDirectory", {path: path, instanceID: instanceID});
       setFileTree(editTree(path, "", "delete"));
     };
+
+    // Return the directory node
     return (
       <>
         <Box
@@ -450,11 +473,14 @@ export default function FileManager({
     );
   };
 
+  // File node
   const File = props => {
     const name = props.name;
     const path = props.path;
     const [showActions, setShowActions] = React.useState("none");
     const [inputValue, setInputValue] = React.useState("");
+
+    // Making the component draggable
     const [{isDragging}, drag] = useDrag(() => ({
       item: {path},
       type: "file",
@@ -462,7 +488,6 @@ export default function FileManager({
         const dropResult = monitor.getDropResult();
         if (item && dropResult) {
           if (dropResult.name === "CodeEditor") {
-            console.log("editor");
             onDragToEditor(item.path);
           } else {
             socket.emit("MoveItem", {
@@ -471,7 +496,6 @@ export default function FileManager({
               instanceID: instanceID,
             });
             setFileTree(editTree(item.path, dropResult.name, "move"));
-            console.log(`dropped ${item.path} into ${dropResult.name}`);
           }
         }
       },
@@ -483,6 +507,8 @@ export default function FileManager({
 
     const [anchorElEdit, setAnchorElEdit] = React.useState(null);
     const openEdit = Boolean(anchorElEdit);
+
+    // Handle edit/delete events
     const handleClickEdit = event => {
       setInputValue("");
       setAnchorElEdit(event.currentTarget);
@@ -510,6 +536,8 @@ export default function FileManager({
       socket.emit("DeleteFile", {path: path, instanceID: instanceID});
       setFileTree(editTree(path, "", "delete"));
     };
+
+    // Return the file node component
     return (
       <Box
         position={"relative"}
@@ -603,6 +631,7 @@ export default function FileManager({
     );
   };
 
+  // FileTree recursive component
   const FileTree = ({data}) => {
     let level;
     if (data[0]) {
@@ -635,6 +664,7 @@ export default function FileManager({
     });
   };
 
+  // Return the file manager
   return (
     <ThemeProvider theme={workspaceTheme}>
       <Box display={"flex"} flexDirection={"column"}>

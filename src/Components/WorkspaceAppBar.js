@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import {workspaceTheme} from "./MainApp";
+import {workspaceTheme} from "./Workspace";
 import {ThemeProvider} from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import ShareRoundedIcon from "@mui/icons-material/ShareRounded";

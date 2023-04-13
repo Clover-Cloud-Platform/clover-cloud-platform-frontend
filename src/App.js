@@ -1,21 +1,29 @@
+// Importing necessary modules and components
 import * as React from "react";
 import {createTheme, ThemeProvider} from "@mui/material/styles";
-import Box from "@mui/material/Box";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
-import Menu from "@mui/material/Menu";
+import {
+  AppBar,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Container,
+  Fade,
+  Grid,
+  IconButton,
+  Link,
+  Menu,
+  MenuItem,
+  Toolbar,
+  Typography,
+} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import Container from "@mui/material/Container";
-import Button from "@mui/material/Button";
-import MenuItem from "@mui/material/MenuItem";
 import {ReactComponent as FullLogo} from "./assets/clover-cloud-platform-logo-full.svg";
 import {ReactComponent as Logo} from "./assets/clover-cloud-platform-logo.svg";
 import ArrowCircleRightIcon from "@mui/icons-material/ArrowCircleRight";
 import PlayCircleOutlineRoundedIcon from "@mui/icons-material/PlayCircleOutlineRounded";
 import ccp from "./assets/ccp.png";
-import {Avatar, Card, CardContent, Grid, Link} from "@mui/material";
 import WorkspacesRoundedIcon from "@mui/icons-material/WorkspacesRounded";
 import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
 import ElectricBoltRoundedIcon from "@mui/icons-material/ElectricBoltRounded";
@@ -24,7 +32,6 @@ import {ReactComponent as HowItWorks} from "./assets/hiw.svg";
 import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRightRounded";
 import workEl from "./assets/work.svg";
 import workEl2 from "./assets/work.svg";
-import Fade from "@mui/material/Fade";
 import {ReactComponent as FrontendIcon} from "./assets/frontend.svg";
 import {ReactComponent as BackendIcon} from "./assets/backend.svg";
 import {ReactComponent as HistoryIcon} from "./assets/history.svg";
@@ -71,19 +78,21 @@ export const theme = createTheme({
   },
 });
 
+// Defining a functional component ResponsiveAppBar for creating an app bar and navigation menu
 const ResponsiveAppBar = () => {
+  // Setting states for anchorElNav and appBar
   const [anchorElNav, setAnchorElNav] = React.useState(null);
+  const [appBar, setAppBar] = React.useState(false);
 
+  // Setting functions to open and close navigation menu
   const handleOpenNavMenu = event => {
     setAnchorElNav(event.currentTarget);
   };
-
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
   };
 
-  const [appBar, setAppBar] = React.useState(false);
-
+  // Setting function to set the state of appBar based on window scroll Y-axis position
   onscroll = () => {
     if (window.scrollY > 0) {
       setAppBar(true);
@@ -92,6 +101,7 @@ const ResponsiveAppBar = () => {
     }
   };
 
+  // Render AppBar and navigation menu
   return (
     <AppBar
       position="fixed"
@@ -217,6 +227,7 @@ const ResponsiveAppBar = () => {
   );
 };
 
+// Component for showing project features
 const Tile = props => {
   return (
     <Box
@@ -250,6 +261,7 @@ const Tile = props => {
   );
 };
 
+// Component for displaying project repos
 const Repo = props => {
   return (
     <Card variant="outlined" sx={{height: "100%"}}>
@@ -275,6 +287,7 @@ const Repo = props => {
   );
 };
 
+// export App and render it
 export default function App() {
   return (
     <ThemeProvider theme={theme}>

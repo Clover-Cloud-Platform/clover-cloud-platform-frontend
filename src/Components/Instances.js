@@ -1,32 +1,36 @@
 import * as React from "react";
-import Container from "@mui/material/Container";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Avatar from "@mui/material/Avatar";
+import {
+  AppBar,
+  Avatar,
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Fade,
+  Grow,
+  IconButton,
+  Menu,
+  MenuItem,
+  TextField,
+  Toolbar,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import {ThemeProvider} from "@mui/material/styles";
 import {theme} from "../App";
 import {io} from "socket.io-client";
-import Typography from "@mui/material/Typography";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
 import {ReactComponent as FullLogo} from "../assets/clover-cloud-platform-logo-full.svg";
 import {ReactComponent as Logo} from "../assets/clover-cloud-platform-logo.svg";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import {CircularProgress, Grow, Tooltip} from "@mui/material";
-import IconButton from "@mui/material/IconButton";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
 import {ReactComponent as StoppedInstance} from "../assets/stoppedInstance.svg";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import StopRoundedIcon from "@mui/icons-material/StopRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
-import TextField from "@mui/material/TextField";
-import Fade from "@mui/material/Fade";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
 import LaunchRoundedIcon from "@mui/icons-material/LaunchRounded";
 import ExitToAppRoundedIcon from "@mui/icons-material/ExitToAppRounded";
 

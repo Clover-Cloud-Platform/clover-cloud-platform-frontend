@@ -1,12 +1,16 @@
 import * as React from "react";
 import {useEffect} from "react";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import {
+  Box,
+  Divider,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Typography,
+} from "@mui/material";
 import {ThemeProvider} from "@mui/material/styles";
 import {theme} from "../App";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import {Divider, ListItemIcon, ListItemText} from "@mui/material";
 import {
   ContentCopyRounded,
   ContentCutRounded,
@@ -17,6 +21,7 @@ import {socket} from "./Instances";
 
 let directorySet = false;
 
+// Function that returns Terminal component
 export default function Terminal(props) {
   const [history, setHistory] = React.useState([]);
   const [historyKey, setHistoryKey] = React.useState(0);
@@ -24,6 +29,7 @@ export default function Terminal(props) {
   const [directory, setDirectory] = React.useState("");
   const open = Boolean(anchorEl);
 
+  // Kill previous commands
   if (localStorage.getItem("prevCmd")) {
     socket.emit("ExecuteCommand", {
       command: {
@@ -35,6 +41,7 @@ export default function Terminal(props) {
     localStorage.removeItem("prevCmd");
   }
 
+  // History item component
   const HistoryItem = props => {
     return (
       <MenuItem
@@ -50,9 +57,11 @@ export default function Terminal(props) {
     );
   };
 
+  // Function that executes entered command
   const execute = command => {
     const commandTrimmed = command.trim();
     if (commandTrimmed !== "") {
+      // Push command to the history
       const newHistory = history;
       const prevSameCommand = newHistory.filter(
         item => item.props.command === commandTrimmed,
@@ -64,6 +73,8 @@ export default function Terminal(props) {
         <HistoryItem key={historyKey} command={commandTrimmed} />,
       );
       setHistory(newHistory);
+
+      // Check if the command is built-in
       if (commandTrimmed === "help") {
         document.getElementById(
           "output",
@@ -80,6 +91,7 @@ export default function Terminal(props) {
           props.onOpen(`../..${filePath}`);
         }
       } else {
+        // Send command to the container
         socket.emit("ExecuteCommand", {
           command: {type: "command", cmd: commandTrimmed},
           instanceID: props.instanceID,
@@ -89,17 +101,22 @@ export default function Terminal(props) {
   };
   useEffect(() => {
     if (!directorySet) {
+      // Get current directory
       socket.emit("ExecuteCommand", {
         command: {type: "command", cmd: "ls"},
         instanceID: props.instanceID,
       });
     }
+
+    // Receive command output
     socket.on("CommandOutput", commandOutput => {
       if (document.getElementById("directory").value !== "$" && directorySet) {
+        // Display output
         document.getElementById("output").innerHTML +=
           commandOutput.output.split("]0;")[0];
       }
       if (commandOutput.output.includes(props.instanceID)) {
+        // Set directory
         setDirectory(
           commandOutput.output
             .split("$")[0]
@@ -113,9 +130,12 @@ export default function Terminal(props) {
       }
       setHistoryKey(prev => prev + 1);
     });
+
     window.onunload = () => {
+      // Stop the simulator when user leaves page
       socket.emit("StopGazebo", props.instanceID);
       if (history.length > 0) {
+        // Save commands for killing
         localStorage.setItem(
           "prevCmd",
           JSON.stringify(
@@ -126,6 +146,7 @@ export default function Terminal(props) {
     };
   }, []);
 
+  // Handle enter, arrows and right click
   const handleKeyDown = e => {
     if (e.key === "Enter") {
       execute(e.currentTarget.value);
@@ -136,16 +157,15 @@ export default function Terminal(props) {
       }
     }
   };
-
   const handleRightClick = e => {
     setAnchorEl(e.currentTarget);
     e.preventDefault();
   };
-
   const handleClose = () => {
     setAnchorEl(null);
   };
 
+  // Return the terminal component
   return (
     <ThemeProvider theme={theme}>
       <Box

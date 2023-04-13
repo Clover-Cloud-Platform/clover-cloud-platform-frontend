@@ -1,15 +1,18 @@
+// Importing necessary modules and components
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
-import reportWebVitals from "./reportWebVitals";
-import {BrowserRouter as Router, Routes, Route} from "react-router-dom";
-import MainApp from "./Components/MainApp";
+import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
+import Workspace from "./Components/Workspace";
 import SignUp from "./Components/SignUp";
 import SignIn from "./Components/SignIn";
 import Instances from "./Components/Instances";
+
+// Importing firebase modules and initializing app with firebaseConfig
 import {initializeApp} from "firebase/app";
-import {getAnalytics, logEvent} from "firebase/analytics";
+import {getAnalytics} from "firebase/analytics";
+import {getPerformance} from "firebase/performance";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -21,24 +24,21 @@ const firebaseConfig = {
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
+// Initialize Firebase and get analytics and performance
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+export const analytics = getAnalytics(app);
+getPerformance(app);
 
+// Rendering components through React router and ReactDOM
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Router>
     <Routes>
       <Route path="/" element={<App />} />
-      <Route path="/clover" element={<MainApp />} />
+      <Route path="/clover" element={<Workspace />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/signin" element={<SignIn />} />
       <Route path="/instances" element={<Instances />} />
     </Routes>
   </Router>,
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();

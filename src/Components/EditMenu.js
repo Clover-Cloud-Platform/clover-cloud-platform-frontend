@@ -3,6 +3,7 @@ import Menu from "@mui/material/Menu";
 import {theme} from "../App";
 import {ThemeProvider} from "@mui/material/styles";
 
+// A pop-up component for inputs in the file manager
 export default function EditMenu(props) {
   return (
     <ThemeProvider theme={theme}>

@@ -1,31 +1,21 @@
 import * as React from "react";
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Link from "@mui/material/Link";
-import Grid from "@mui/material/Grid";
-import Box from "@mui/material/Box";
+import {
+  Avatar,
+  Box,
+  Button,
+  Container,
+  Fade,
+  Grid,
+  Link,
+  TextField,
+  Typography,
+} from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Typography from "@mui/material/Typography";
-import Container from "@mui/material/Container";
 import {ThemeProvider} from "@mui/material/styles";
 import {theme} from "../App";
-import Fade from "@mui/material/Fade";
 import {socket} from "./Instances";
-import {initializeApp} from "firebase/app";
-import {getAnalytics, logEvent} from "firebase/analytics";
-const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: "clover-cloud-platform",
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID,
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
-};
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
+// Copyright component
 function Copyright(props) {
   return (
     <Typography
@@ -46,6 +36,7 @@ const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/;
 
 let timerCount = 60;
 
+// Function that renders SignUp component
 export default function SignUp() {
   const [usernameError, setUsernameError] = React.useState(false);
   const [emailError, setEmailError] = React.useState(false);
@@ -66,6 +57,7 @@ export default function SignUp() {
   });
   const [signupButtonState, disableSignupButton] = React.useState(false);
 
+  // Handle submit of the form
   const handleSubmit = event => {
     event.preventDefault();
     disableSignupButton(true);
@@ -73,6 +65,8 @@ export default function SignUp() {
     const username = data.get("username").trim();
     const email = data.get("email").trim();
     const password = data.get("password");
+
+    // Check email and password
     if (!emailRegex.test(email)) {
       disableSignupButton(false);
       setEmailError(true);
@@ -95,15 +89,21 @@ export default function SignUp() {
           timerCount = 60;
         }
       }, 1000);
+
+      // Send request to the server
       socket.emit("SignUp", {
         email: email,
       });
+
+      // Handle response
       socket.on("SignUpRes", res => {
+        // Check errors
         if (res.error) {
           disableSignupButton(false);
           setEmailError(true);
           setEmailHelper("There is already an account with this email");
         } else if (!res.error && res.code) {
+          // If everything is ok, wait for a verification code from the user
           setAuthCode(res.code);
           setVerify(true);
           setUserData({email: email, username: username, password: password});
@@ -112,6 +112,7 @@ export default function SignUp() {
     }
   };
 
+  // Handle verification code submitting
   const handleAuthCodeSubmit = event => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -134,6 +135,7 @@ export default function SignUp() {
     }
   };
 
+  // Function for re-sending verification code
   const resendCode = e => {
     e.preventDefault();
     socket.emit("AuthByEmail", {
@@ -156,6 +158,7 @@ export default function SignUp() {
     }, 1000);
   };
 
+  // Return the SignUp component
   return (
     <ThemeProvider theme={theme}>
       {!verify ? (

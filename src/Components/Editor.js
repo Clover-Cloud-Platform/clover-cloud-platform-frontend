@@ -2,7 +2,7 @@ import * as React from "react";
 import {useEffect, useRef} from "react";
 import Editor from "@monaco-editor/react";
 import Box from "@mui/material/Box";
-import {workspaceTheme} from "./MainApp";
+import {workspaceTheme} from "./Workspace";
 import {ThemeProvider} from "@mui/material/styles";
 import {DndProvider, useDrop} from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";

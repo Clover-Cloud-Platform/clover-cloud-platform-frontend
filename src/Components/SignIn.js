@@ -1,21 +1,25 @@
+// Importing necessary modules and components
 import * as React from "react";
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
-import Link from "@mui/material/Link";
-import Grid from "@mui/material/Grid";
-import Box from "@mui/material/Box";
+import {
+  Avatar,
+  Box,
+  Button,
+  Checkbox,
+  Container,
+  Fade,
+  FormControlLabel,
+  Grid,
+  Link,
+  TextField,
+  Typography,
+} from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Typography from "@mui/material/Typography";
-import Container from "@mui/material/Container";
 import {ThemeProvider} from "@mui/material/styles";
 import {theme} from "../App";
-import Fade from "@mui/material/Fade";
 import {emailRegex} from "./SignUp";
 import {socket} from "./Instances";
 
+// Copyright component
 function Copyright(props) {
   return (
     <Typography
@@ -30,24 +34,34 @@ function Copyright(props) {
   );
 }
 
+// Function that creates SignIn component
 export default function SignIn() {
+  // Define states for email error, password error, email helper and password halper
   const [emailError, setEmailError] = React.useState(false);
   const [passwordError, setPasswordError] = React.useState(false);
   const [emailHelper, setEmailHelper] = React.useState("");
   const [passwordHelper, setPasswordHelper] = React.useState("");
 
+  // Handle submit sign in form
   const handleSubmit = event => {
     event.preventDefault();
+
+    // Get entered data
     const data = new FormData(event.currentTarget);
     const email = data.get("email").trim();
     const password = data.get("password");
     const remember = data.get("remember");
+
+    // Check email
     if (!emailRegex.test(email)) {
       setEmailError(true);
       setEmailHelper("Invalid email");
     } else {
+      // Send sign in request to the server
       socket.emit("SignIn", {email: email, password: password});
+      // Handle response
       socket.on("SignInRes", res => {
+        // Check errors
         if (res.error === "email") {
           setEmailError(true);
           setEmailHelper("No account with this email");
@@ -55,17 +69,20 @@ export default function SignIn() {
           setPasswordError(true);
           setPasswordHelper("Invalid password");
         } else if (!res.error && res.uid) {
+          // Set uid to the storage
           if (remember) {
             localStorage.setItem("uid", res.uid);
           } else {
             sessionStorage.setItem("uid", res.uid);
           }
+          // Move user to the dashboard
           window.location.href = "/instances";
         }
       });
     }
   };
 
+  // Render component
   return (
     <ThemeProvider theme={theme}>
       <Fade in={true}>

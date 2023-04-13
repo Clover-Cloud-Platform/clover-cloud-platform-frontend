@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import {Divider} from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import IconButton from "@mui/material/IconButton";
-import {workspaceTheme} from "./MainApp";
+import {workspaceTheme} from "./Workspace";
 import {ThemeProvider} from "@mui/material/styles";
 import {useDrag, useDrop} from "react-dnd";
 import CircleIcon from "@mui/icons-material/Circle";
