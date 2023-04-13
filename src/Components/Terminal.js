@@ -114,8 +114,8 @@ export default function Terminal(props) {
       setHistoryKey(prev => prev + 1);
     });
     window.onunload = () => {
+      socket.emit("StopGazebo", props.instanceID);
       if (history.length > 0) {
-        socket.emit("StopGazebo", props.instanceID);
         localStorage.setItem(
           "prevCmd",
           JSON.stringify(
