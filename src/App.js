@@ -374,6 +374,14 @@ export default function App() {
                 },
               }}>
               <img
+                onClick={() => {
+                  window
+                    .open(
+                      "https://www.youtube.com/watch?v=FZPl2LOMgi4",
+                      "_blank",
+                    )
+                    .focus();
+                }}
                 src={ccp}
                 alt={"overview"}
                 style={{
