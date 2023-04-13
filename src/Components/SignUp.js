@@ -134,7 +134,6 @@ export default function SignUp() {
       });
       socket.on("AuthByEmailRes", uid => {
         localStorage.setItem("uid", uid);
-        localStorage.setItem("containers", JSON.stringify([false, false]));
         window.location.href = "/instances";
       });
     } else {

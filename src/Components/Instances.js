@@ -440,7 +440,17 @@ export default function Instances() {
                       onClick={handleCloseUserMenu}
                       style={{opacity: 1}}
                       disabled>
-                      <Typography textAlign="center" color={"primary.500"}>
+                      <Avatar
+                        sx={{
+                          height: "24px",
+                          width: "24px",
+                          bgcolor: "primary.200",
+                        }}
+                      />
+                      <Typography
+                        textAlign="center"
+                        color={"primary.500"}
+                        ml={"8px"}>
                         {username}
                       </Typography>
                     </MenuItem>
