@@ -1,5 +1,6 @@
 // Importing necessary modules and components
 import * as React from "react";
+import {useEffect} from "react";
 import {
   Avatar,
   Box,
@@ -41,6 +42,13 @@ export default function SignIn() {
   const [passwordError, setPasswordError] = React.useState(false);
   const [emailHelper, setEmailHelper] = React.useState("");
   const [passwordHelper, setPasswordHelper] = React.useState("");
+
+  // Change theme color
+  useEffect(() => {
+    document
+      .querySelector('meta[name="theme-color"]')
+      .setAttribute("content", "#ede9fe");
+  }, []);
 
   // Handle submit sign in form
   const handleSubmit = event => {

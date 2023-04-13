@@ -1,4 +1,5 @@
 import * as React from "react";
+import {useEffect} from "react";
 import {
   AppBar,
   Avatar,
@@ -67,6 +68,13 @@ export default function Instances() {
       ? localStorage.getItem("uid")
       : sessionStorage.getItem("uid");
   }
+
+  // Change theme color
+  useEffect(() => {
+    document
+      .querySelector('meta[name="theme-color"]')
+      .setAttribute("content", "#ede9fe");
+  }, []);
 
   //username state
   const [username, setUsername] = React.useState("");

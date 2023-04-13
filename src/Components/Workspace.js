@@ -1,4 +1,5 @@
 import * as React from "react";
+import {useEffect} from "react";
 import {theme} from "../App";
 import {createTheme, ThemeProvider} from "@mui/material/styles";
 import ReactSplit, {SplitDirection} from "@devbookhq/splitter";
@@ -46,6 +47,13 @@ export default function Workspace() {
   const [preloader, setPreloader] = React.useState(true);
   const [splitSizesX, setSplitSizesX] = React.useState([20, 45, 35]);
   const [splitSizesY, setSplitSizesY] = React.useState([50, 50]);
+
+  // Change theme color
+  useEffect(() => {
+    document
+      .querySelector('meta[name="theme-color"]')
+      .setAttribute("content", "#2a2931");
+  }, []);
 
   // Editor start window where you can drop files
   const EditorStartWindow = () => {

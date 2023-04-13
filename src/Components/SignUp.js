@@ -1,4 +1,5 @@
 import * as React from "react";
+import {useEffect} from "react";
 import {
   Avatar,
   Box,
@@ -56,6 +57,13 @@ export default function SignUp() {
     password: undefined,
   });
   const [signupButtonState, disableSignupButton] = React.useState(false);
+
+  // Change theme color
+  useEffect(() => {
+    document
+      .querySelector('meta[name="theme-color"]')
+      .setAttribute("content", "#ede9fe");
+  }, []);
 
   // Handle submit of the form
   const handleSubmit = event => {

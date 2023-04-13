@@ -1,5 +1,6 @@
 // Importing necessary modules and components
 import * as React from "react";
+import {useEffect} from "react";
 import {createTheme, ThemeProvider} from "@mui/material/styles";
 import {
   AppBar,
@@ -289,6 +290,13 @@ const Repo = props => {
 
 // export App and render it
 export default function App() {
+  // Change theme color
+  useEffect(() => {
+    document
+      .querySelector('meta[name="theme-color"]')
+      .setAttribute("content", "#ede9fe");
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <ResponsiveAppBar />
