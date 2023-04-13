@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useEffect} from "react";
+import {useContext, useEffect} from "react";
 import {
   Box,
   Divider,
@@ -18,6 +18,7 @@ import {
 } from "@mui/icons-material";
 import TerminalRoundedIcon from "@mui/icons-material/TerminalRounded";
 import {socket} from "./Instances";
+import {SettingsContext} from "./Workspace";
 
 let directorySet = false;
 
@@ -28,6 +29,7 @@ export default function Terminal(props) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [directory, setDirectory] = React.useState("");
   const open = Boolean(anchorEl);
+  const {terminalBG} = useContext(SettingsContext);
 
   // Kill previous commands
   if (localStorage.getItem("prevCmd")) {
@@ -170,7 +172,7 @@ export default function Terminal(props) {
     <ThemeProvider theme={theme}>
       <Box
         height={"100%"}
-        bgcolor={"background.cloverMain"}
+        bgcolor={terminalBG}
         sx={{
           overflowY: "scroll",
           scrollbarWidth: "thin",

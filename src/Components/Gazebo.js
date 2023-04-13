@@ -609,9 +609,7 @@ export default function Gazebo(props) {
   const handleModeChange = (event, newMode) => {
     if (newMode === "play") {
       setTarget(null);
-      console.log("play mode");
     } else if (newMode === "edit") {
-      console.log("edit mode");
     }
     setMode(newMode);
     globalMode = newMode;
@@ -648,10 +646,6 @@ export default function Gazebo(props) {
       setCloverRotation([data.rotation[1], data.rotation[2], data.rotation[0]]);
     });
   }, []);
-
-  //socket.on("DebugOutput", data => {
-  // console.log(data);
-  //});
 
   const runGazebo = e => {
     e.preventDefault();

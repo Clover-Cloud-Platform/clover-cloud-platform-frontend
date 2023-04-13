@@ -1,8 +1,8 @@
 import * as React from "react";
-import {useEffect, useRef} from "react";
+import {useContext, useEffect, useRef} from "react";
 import Editor from "@monaco-editor/react";
 import Box from "@mui/material/Box";
-import {workspaceTheme} from "./Workspace";
+import {SettingsContext, workspaceTheme} from "./Workspace";
 import {ThemeProvider} from "@mui/material/styles";
 import {DndProvider, useDrop} from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";
@@ -23,6 +23,7 @@ export default function CodeEditor({
   getActiveFile,
 }) {
   const [localSavedState, setLocalSavedState] = React.useState(true);
+  const {editorFontSize} = useContext(SettingsContext);
 
   useEffect(() => {
     setLocalSavedState(true);
@@ -165,7 +166,7 @@ export default function CodeEditor({
           minimap: {
             enabled: false,
           },
-          fontSize: 13,
+          fontSize: editorFontSize,
           fontFamily:
             "Menlo, Cascadia Code, Consolas, Liberation Mono, monospace",
         }}

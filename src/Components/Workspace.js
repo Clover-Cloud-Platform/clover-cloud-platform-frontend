@@ -5,7 +5,7 @@ import {createTheme, ThemeProvider} from "@mui/material/styles";
 import ReactSplit, {SplitDirection} from "@devbookhq/splitter";
 import {Box, CircularProgress, Typography} from "@mui/material";
 import CodeEditor from "./Editor";
-import "./MainApp.css";
+import "./Workspace.css";
 import Terminal from "./Terminal";
 import Gazebo from "./Gazebo";
 import WorkspaceAppBar from "./WorkspaceAppBar";
@@ -34,6 +34,9 @@ export const workspaceTheme = createTheme({
 const filesBuffer = [];
 let activeFileGlobal = "";
 
+// Global settings state
+export const SettingsContext = React.createContext(null);
+
 // Function that renders the workspace component
 export default function Workspace() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -47,12 +50,27 @@ export default function Workspace() {
   const [preloader, setPreloader] = React.useState(true);
   const [splitSizesX, setSplitSizesX] = React.useState([20, 45, 35]);
   const [splitSizesY, setSplitSizesY] = React.useState([50, 50]);
+  const [terminalBG, setTerminalBG] = React.useState("#1c1b22");
+  const [editorFontSize, setEditorFontSize] = React.useState(13);
 
-  // Change theme color
   useEffect(() => {
+    // Change theme color
     document
       .querySelector('meta[name="theme-color"]')
       .setAttribute("content", "#2a2931");
+
+    // Apply settings
+    if (localStorage.getItem("config")) {
+      setTerminalBG(JSON.parse(localStorage.getItem("config")).terminalBG);
+      setEditorFontSize(
+        JSON.parse(localStorage.getItem("config")).editorFontSize,
+      );
+    } else if (sessionStorage.getItem("config")) {
+      setTerminalBG(JSON.parse(sessionStorage.getItem("config")).terminalBG);
+      setEditorFontSize(
+        JSON.parse(sessionStorage.getItem("config")).editorFontSize,
+      );
+    }
   }, []);
 
   // Editor start window where you can drop files
@@ -263,90 +281,98 @@ export default function Workspace() {
   return (
     <div style={{backgroundColor: "#1c1b22"}}>
       <ThemeProvider theme={workspaceTheme}>
-        {preloader ? (
-          <Box
-            style={{
-              transition: "opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms",
-              opacity: preloaderOpacity,
-            }}
-            position={"fixed"}
-            height={"100vh"}
-            zIndex={99999}
-            bgcolor={"background.cloverMain"}
-            width={"100%"}
-            display={"flex"}
-            justifyContent={"center"}
-            alignItems={"center"}>
-            <CircularProgress size={"60px"} sx={{position: "absolute"}} />
-            <Logo width={"40px"} />
-          </Box>
-        ) : (
-          <></>
-        )}
-        <Box width={"100%"} height={"100vh"}>
-          <WorkspaceAppBar />
-          <Box
-            width={"100%"}
-            style={{height: "calc(100% - 50px)"}}
-            bgcolor={"background.cloverMain"}>
-            <ReactSplit
-              minWidths={[160, 200, 320]}
-              initialSizes={splitSizesX}
-              direction={SplitDirection.Horizontal}
-              draggerClassName={"dragger"}
-              gutterClassName={"gutter-horizontal"}
-              onResizeFinished={(pairIdx, newSizes) => {
-                setSplitSizesX(newSizes);
-              }}>
-              <Box
-                height={"100%"}
-                bgcolor={"background.cloverMain"}
-                sx={{
-                  overflowY: "scroll",
-                  overflowX: "hidden",
-                  scrollbarWidth: "none",
-                  "&::-webkit-scrollbar": {
-                    display: "none",
-                  },
-                }}>
-                <FileManager
-                  onDragToEditor={dragToEditor}
-                  instanceID={instanceID}
-                  onLoadManager={onLoadManager}
-                />
-              </Box>
-              <Box height={"100%"} bgcolor={"#1e1e1e"}>
-                {openEditor ? (
-                  <CodeEditor
-                    files={editorFiles}
-                    activeFile={activeFile}
-                    language={editorLang}
-                    value={editorValue}
-                    instanceID={instanceID}
-                    changeSavedState={changeSavedState}
-                    getActiveFile={getActiveFile}
-                  />
-                ) : (
-                  <DndProvider backend={HTML5Backend}>
-                    <EditorStartWindow />
-                  </DndProvider>
-                )}
-              </Box>
+        <SettingsContext.Provider
+          value={{
+            terminalBG: terminalBG,
+            setTerminalBG: setTerminalBG,
+            editorFontSize: editorFontSize,
+            setEditorFontSize: setEditorFontSize,
+          }}>
+          {preloader ? (
+            <Box
+              style={{
+                transition: "opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms",
+                opacity: preloaderOpacity,
+              }}
+              position={"fixed"}
+              height={"100vh"}
+              zIndex={99999}
+              bgcolor={"background.cloverMain"}
+              width={"100%"}
+              display={"flex"}
+              justifyContent={"center"}
+              alignItems={"center"}>
+              <CircularProgress size={"60px"} sx={{position: "absolute"}} />
+              <Logo width={"40px"} />
+            </Box>
+          ) : (
+            <></>
+          )}
+          <Box width={"100%"} height={"100vh"}>
+            <WorkspaceAppBar />
+            <Box
+              width={"100%"}
+              style={{height: "calc(100% - 50px)"}}
+              bgcolor={"background.cloverMain"}>
               <ReactSplit
-                minHeights={[300, 150]}
-                initialSizes={splitSizesY}
-                onResizeFinished={(pairIdx, newSizes) => {
-                  setSplitSizesY(newSizes);
-                }}
-                direction={SplitDirection.Vertical}
+                minWidths={[160, 200, 320]}
+                initialSizes={splitSizesX}
+                direction={SplitDirection.Horizontal}
                 draggerClassName={"dragger"}
-                gutterClassName={"gutter-vertical"}>
-                <Gazebo instanceID={instanceID} />
-                <Terminal instanceID={instanceID} onOpen={dragToEditor} />
+                gutterClassName={"gutter-horizontal"}
+                onResizeFinished={(pairIdx, newSizes) => {
+                  setSplitSizesX(newSizes);
+                }}>
+                <Box
+                  height={"100%"}
+                  bgcolor={"background.cloverMain"}
+                  sx={{
+                    overflowY: "scroll",
+                    overflowX: "hidden",
+                    scrollbarWidth: "none",
+                    "&::-webkit-scrollbar": {
+                      display: "none",
+                    },
+                  }}>
+                  <FileManager
+                    onDragToEditor={dragToEditor}
+                    instanceID={instanceID}
+                    onLoadManager={onLoadManager}
+                  />
+                </Box>
+                <Box height={"100%"} bgcolor={"#1e1e1e"}>
+                  {openEditor ? (
+                    <CodeEditor
+                      files={editorFiles}
+                      activeFile={activeFile}
+                      language={editorLang}
+                      value={editorValue}
+                      instanceID={instanceID}
+                      changeSavedState={changeSavedState}
+                      getActiveFile={getActiveFile}
+                    />
+                  ) : (
+                    <DndProvider backend={HTML5Backend}>
+                      <EditorStartWindow />
+                    </DndProvider>
+                  )}
+                </Box>
+                <ReactSplit
+                  minHeights={[300, 150]}
+                  initialSizes={splitSizesY}
+                  onResizeFinished={(pairIdx, newSizes) => {
+                    setSplitSizesY(newSizes);
+                  }}
+                  direction={SplitDirection.Vertical}
+                  draggerClassName={"dragger"}
+                  gutterClassName={"gutter-vertical"}>
+                  <Gazebo instanceID={instanceID} />
+                  <Terminal instanceID={instanceID} onOpen={dragToEditor} />
+                </ReactSplit>
               </ReactSplit>
-            </ReactSplit>
+            </Box>
           </Box>
-        </Box>
+        </SettingsContext.Provider>
       </ThemeProvider>
     </div>
   );
