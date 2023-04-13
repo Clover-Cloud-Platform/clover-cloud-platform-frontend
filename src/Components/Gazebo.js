@@ -19,12 +19,14 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import {socket} from "./Instances";
 import {
+  Chip,
   CircularProgress,
   FormControl,
   FormLabel,
   Paper,
   Radio,
   RadioGroup,
+  Tooltip,
 } from "@mui/material";
 import {theme} from "../App";
 import {ThemeProvider} from "@mui/material/styles";
@@ -43,6 +45,9 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import generateAruco from "./arucogen";
 import GenerateArucoDialog from "./GenerateArucoDialog";
 import {CirclePicker} from "react-color";
+import AddPhotoAlternateRoundedIcon from "@mui/icons-material/AddPhotoAlternateRounded";
+import IconButton from "@mui/material/IconButton";
+import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 
 const useStore = create(set => ({
   target: null,
@@ -55,6 +60,7 @@ let arucoMarkersReceived = false;
 let globalMode = "play";
 let cubeKey = 0;
 let telemGlobal = false;
+let platformGeneratedMarkerIndex = 0;
 
 const Leds = ({count = 58, temp = new THREE.Object3D()}) => {
   const ref = useRef();
@@ -89,7 +95,7 @@ const Leds = ({count = 58, temp = new THREE.Object3D()}) => {
         ref.current.instanceColor.needsUpdate = true;
       }
     });
-  }, []);
+  }, [socket]);
   return (
     <instancedMesh ref={ref} args={[null, null, count]}>
       <boxGeometry args={[0.06, 0.06, 0.015]} />
@@ -170,9 +176,6 @@ export default function Gazebo(props) {
     const [posX, setPosX] = React.useState(props.position[0]);
     const [posY, setPosY] = React.useState(props.position[1]);
     const [openGenArucoDialog, setOpenGenArucoDialog] = React.useState(false);
-    const [markerId, setMarkerId] = React.useState(
-      Number(props.name.split("_").at(-1)),
-    );
     const [genArucoId, setGenArucoId] = React.useState(null);
     const [fileContent, setFileContent] = React.useState();
 
@@ -199,11 +202,25 @@ export default function Gazebo(props) {
       setOpenGenArucoDialog(false);
     };
     const generateMarker = id => {
-      setMarkerId(id);
       setGenArucoId(String(id));
       setOpenGenArucoDialog(false);
       setFileType("svg");
       setArucoImg(`data:image/svg+xml;utf8,${generateAruco(id).outerHTML}`);
+    };
+
+    const deleteMarker = () => {
+      setArucoImg(null);
+      setEditArucoComponent(null);
+      arucoMarkersGlobal.splice(
+        arucoMarkersGlobal.indexOf(
+          arucoMarkersGlobal.filter(
+            marker => marker.props.name === props.name,
+          )[0],
+        ),
+        1,
+      );
+      setArucoMarkers([...arucoMarkersGlobal]);
+      socket.emit("DeleteMarker", {instanceId: instanceID, name: props.name});
     };
     return (
       <Paper
@@ -226,9 +243,7 @@ export default function Gazebo(props) {
             alignItems={"center"}
             mt={"8px"}>
             <Typography color={"primary.50"} variant={"overline"}>
-              {props.type === "svg"
-                ? `aruco marker #${markerId}`
-                : "png marker"}
+              {props.type === "svg" ? `aruco marker` : "png marker"}
             </Typography>
             <img
               onClick={handleArucoUpload}
@@ -264,7 +279,6 @@ export default function Gazebo(props) {
               Upload PNG marker
             </Button>
             <GenerateArucoDialog
-              value={markerId}
               open={openGenArucoDialog}
               handleClose={handleCloseGenArucoDialog}
               generateMarker={generateMarker}
@@ -273,9 +287,11 @@ export default function Gazebo(props) {
           <Box mt={"15px"}>
             <FormControl>
               <FormLabel id="size-select">
-                <Typography color={"primary.50"} variant={"overline"}>
-                  Size
-                </Typography>
+                <Tooltip title={"Size of the marker (m)"} disableInteractive>
+                  <Typography color={"primary.50"} variant={"overline"}>
+                    Size
+                  </Typography>
+                </Tooltip>
               </FormLabel>
               <RadioGroup
                 value={size}
@@ -324,8 +340,16 @@ export default function Gazebo(props) {
               </RadioGroup>
             </FormControl>
           </Box>
-          <Typography color={"primary.50"} variant={"overline"} mt={"15px"}>
-            Position:{" "}
+          <Typography
+            color={"primary.50"}
+            variant={"overline"}
+            mt={"15px"}
+            sx={{lineHeight: 1}}>
+            <Tooltip
+              title={"Position of the marker (x, y) m"}
+              disableInteractive>
+              <span>Position: </span>
+            </Tooltip>
             <input
               style={{
                 border: "none",
@@ -356,6 +380,22 @@ export default function Gazebo(props) {
               }}
             />
           </Typography>
+          <Tooltip
+            title={"Delete marker"}
+            disableInteractive
+            placement={"right"}>
+            <IconButton
+              onClick={deleteMarker}
+              aria-label="delete"
+              sx={{
+                position: "absolute",
+                left: "4px",
+                bottom: "8px",
+                color: "primary.50",
+              }}>
+              <DeleteRoundedIcon />
+            </IconButton>
+          </Tooltip>
           <Box position={"absolute"} right={"4px"} bottom={"8px"}>
             {" "}
             <Button
@@ -446,11 +486,21 @@ export default function Gazebo(props) {
         src={`data:image/svg+xml;utf8,${props.image}`}
         rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
         position={[
-          parseFloat(props.position[1]) * 10 + 2.1 * (props.size / 0.33),
+          (parseFloat(props.position[1]) +
+            parseFloat(props.size) * 0.5 +
+            0.0625) *
+            10,
           -0.86,
-          parseFloat(props.position[0]) * 10 - 2.1 * (props.size / 0.33),
+          (parseFloat(props.position[0]) -
+            parseFloat(props.size) * 0.5 -
+            0.0625) *
+            10,
         ]}
-        scale={[(props.size / 0.33) * 0.528, (props.size / 0.33) * 0.528, 1]}
+        scale={[
+          (1 / 6) * parseFloat(props.size) * 10,
+          (1 / 6) * parseFloat(props.size) * 10,
+          1,
+        ]}
       />
     );
   };
@@ -540,6 +590,22 @@ export default function Gazebo(props) {
     cubeKey++;
   };
 
+  const addMarker = () => {
+    platformGeneratedMarkerIndex++;
+    const name = `aruco_marker_${props.instanceID}_${platformGeneratedMarkerIndex}`;
+    socket.emit("AddMarker", {instanceID: props.instanceID, name: name});
+    arucoMarkersGlobal.push(
+      <Aruco
+        name={name}
+        size={0.33}
+        position={["0.0", "-1.0"]}
+        image={generateAruco(0).outerHTML}
+        key={arucoMarkersGlobal.length}
+      />,
+    );
+    setArucoMarkers([...arucoMarkersGlobal]);
+  };
+
   const handleModeChange = (event, newMode) => {
     if (newMode === "play") {
       setTarget(null);
@@ -551,38 +617,40 @@ export default function Gazebo(props) {
     globalMode = newMode;
   };
 
-  socket.on("CloverPosition", data => {
-    if (!telemGlobal) {
-      setTelem(true);
-      telemGlobal = true;
-    }
-    const pos = [
-      data.position[0] * 10,
-      data.position[1] * 10,
-      data.position[2] * 10,
-    ];
-    if (data.armed) {
-      if (propRotation >= Math.PI * 2) {
-        setPropRotation(0);
-      } else {
-        setPropRotation(prev => prev + 0.7);
-      }
-    }
-    setCloverPosition(pos);
-    setCloverRotation([data.rotation[1], data.rotation[2], data.rotation[0]]);
-  });
-
   useEffect(() => {
     if (telem !== telemGlobal) {
       setTelem(telemGlobal);
-      if (telemGlobal) {
-        setTimeout(() => setStopGazeboButton(false), 1000);
-      }
+    }
+    if (telemGlobal) {
+      setTimeout(() => setStopGazeboButton(false), 5000);
     }
   }, [telemGlobal]);
 
+  useEffect(() => {
+    socket.on("CloverPosition", data => {
+      if (!telemGlobal) {
+        setTelem(true);
+        telemGlobal = true;
+      }
+      const pos = [
+        data.position[0] * 10,
+        data.position[1] * 10,
+        data.position[2] * 10,
+      ];
+      if (data.armed) {
+        if (propRotation >= Math.PI * 2) {
+          setPropRotation(0);
+        } else {
+          setPropRotation(prev => prev + 0.7);
+        }
+      }
+      setCloverPosition(pos);
+      setCloverRotation([data.rotation[1], data.rotation[2], data.rotation[0]]);
+    });
+  }, []);
+
   //socket.on("DebugOutput", data => {
-  //  console.log(data);
+  // console.log(data);
   //});
 
   const runGazebo = e => {
@@ -617,6 +685,13 @@ export default function Gazebo(props) {
                   key={i}
                 />,
               );
+            }
+            const arucoName = models.aruco_map[i].aruco_name.split("_");
+            if (arucoName[2] === props.instanceID) {
+              const index = Number(arucoName[3]);
+              if (index > platformGeneratedMarkerIndex) {
+                platformGeneratedMarkerIndex = index;
+              }
             }
           }
         }
@@ -659,7 +734,7 @@ export default function Gazebo(props) {
         arucoMarkersReceived = true;
       }
     });
-  }, []);
+  }, [socket]);
 
   const texture = useLoader(TextureLoader, "/models/floor.jpg");
   texture.wrapS = texture.wrapT = RepeatWrapping;
@@ -669,33 +744,51 @@ export default function Gazebo(props) {
     switch (color) {
       case "#0504ff":
         return "Blue";
-        break;
       case "#fe0405":
         return "Red";
-        break;
       case "#04ff04":
         return "Green";
-        break;
       case "#838383":
         return "Gray";
-        break;
       case "#020202":
         return "Black";
-        break;
       case "#ffffff":
         return "White";
-        break;
       case "#ffff00":
         return "Yellow";
-        break;
       case "#ff9a0e":
         return "Orange";
-        break;
       case "#ff04ff":
         return "Purple";
-        break;
     }
   };
+
+  const deleteCube = () => {
+    socket.emit("DeleteCube", {
+      instanceID: instanceID,
+      model_id: String(target.oId),
+    });
+    cubesGlobal.splice(
+      cubesGlobal.indexOf(
+        cubesGlobal.filter(cube => cube.oId === target.oId)[0],
+      ),
+      1,
+    );
+    setTarget(null);
+    setCubes([
+      ...cubesGlobal.map(cube => (
+        <Cube
+          position={cube.position}
+          rotation={cube.rotation}
+          args={cube.args}
+          color={cube.color}
+          key={cube.oId}
+          oId={cube.oId}
+        />
+      )),
+    ]);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <Box
@@ -733,10 +826,20 @@ export default function Gazebo(props) {
                     size="small"
                     aria-label="mode">
                     <ToggleButton value="play" aria-label="play">
-                      <PlayArrowRoundedIcon />
+                      <Tooltip
+                        title={"Switch to play mode"}
+                        placement="right"
+                        disableInteractive>
+                        <PlayArrowRoundedIcon />
+                      </Tooltip>
                     </ToggleButton>
                     <ToggleButton value="edit" aria-label="edit">
-                      <EditRoundedIcon />
+                      <Tooltip
+                        title={"Switch to edit mode"}
+                        placement="right"
+                        disableInteractive>
+                        <EditRoundedIcon />
+                      </Tooltip>
                     </ToggleButton>
                   </ToggleButtonGroup>
                   <ToggleButtonGroup
@@ -765,25 +868,62 @@ export default function Gazebo(props) {
                           setRunGazeboButton(true);
                         }, 200);
                       }}>
-                      <StopRoundedIcon />
+                      <Tooltip
+                        title={"Kill Gazebo"}
+                        placement="right"
+                        disableInteractive>
+                        <StopRoundedIcon />
+                      </Tooltip>
                     </ToggleButton>
                   </ToggleButtonGroup>
                   {mode === "edit" ? (
                     <ToggleButtonGroup
                       exclusive
+                      orientation="vertical"
                       size="small"
                       aria-label="add cube">
                       <ToggleButton
                         value="add cube"
                         aria-label="add cube"
                         onClick={addCube}>
-                        <AddRoundedIcon />
+                        <Tooltip
+                          title={"Add a cube to the scene"}
+                          placement="right"
+                          disableInteractive>
+                          <AddRoundedIcon />
+                        </Tooltip>
+                      </ToggleButton>
+                      <ToggleButton
+                        value="add marker"
+                        aria-label="add marker"
+                        onClick={addMarker}>
+                        <Tooltip
+                          title={"Add a marker to the map"}
+                          placement="right"
+                          disableInteractive>
+                          <AddPhotoAlternateRoundedIcon />
+                        </Tooltip>
                       </ToggleButton>
                     </ToggleButtonGroup>
                   ) : (
                     <></>
                   )}
                 </Box>
+                {mode === "edit" ? (
+                  <Chip
+                    label={"Edit Mode"}
+                    sx={{
+                      top: "4px",
+                      transform: "translate(-50%, 0%)",
+                      left: "50%",
+                      zIndex: 9,
+                      color: "#7c8186",
+                      position: "absolute",
+                    }}
+                  />
+                ) : (
+                  <></>
+                )}
                 <Box
                   position={"absolute"}
                   top={"4px"}
@@ -792,19 +932,39 @@ export default function Gazebo(props) {
                   {target && mode === "edit" ? (
                     <>
                       <ToggleButtonGroup
+                        sx={{mr: "4px"}}
+                        exclusive
+                        size="small"
+                        aria-label="delete">
+                        <ToggleButton
+                          value="delete-cube"
+                          aria-label="delete-cube"
+                          onClick={deleteCube}>
+                          <Tooltip title={"Delete cube"} disableInteractive>
+                            <DeleteRoundedIcon />
+                          </Tooltip>
+                        </ToggleButton>
+                      </ToggleButtonGroup>
+                      <ToggleButtonGroup
                         size={"small"}
                         value={cubeEditMode}
                         exclusive
                         onChange={handleCubeEditModeChange}
                         aria-label="cube edit mode">
                         <ToggleButton value="translate" aria-label="translate">
-                          <OpenWithRoundedIcon />
+                          <Tooltip title={"Translate"} disableInteractive>
+                            <OpenWithRoundedIcon />
+                          </Tooltip>
                         </ToggleButton>
                         <ToggleButton value="rotate" aria-label="rotate">
-                          <AutorenewRoundedIcon />
+                          <Tooltip title={"Rotate"} disableInteractive>
+                            <AutorenewRoundedIcon />
+                          </Tooltip>
                         </ToggleButton>
                         <ToggleButton value="scale" aria-label="scale">
-                          <AspectRatioRoundedIcon />
+                          <Tooltip title={"Scale"} disableInteractive>
+                            <AspectRatioRoundedIcon />
+                          </Tooltip>
                         </ToggleButton>
                       </ToggleButtonGroup>
                       <CirclePicker

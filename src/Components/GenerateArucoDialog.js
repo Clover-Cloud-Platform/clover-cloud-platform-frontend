@@ -12,7 +12,7 @@ const StyledPaper = styled(Paper)`
   background-color: #2a2931;
 `;
 export default function GenerateArucoDialog(props) {
-  const [value, setValue] = React.useState(props.value);
+  const [value, setValue] = React.useState(0);
   return (
     <Dialog
       open={props.open}
