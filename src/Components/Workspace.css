@@ -26,3 +26,6 @@
     top: 50px;
     right: 4px;
 }
+#editor-container{
+    height: calc(100% - 55px);
+}

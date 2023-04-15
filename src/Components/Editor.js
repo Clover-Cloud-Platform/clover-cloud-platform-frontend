@@ -6,10 +6,15 @@ import {SettingsContext, workspaceTheme} from "./Workspace";
 import {ThemeProvider} from "@mui/material/styles";
 import {DndProvider, useDrop} from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";
-import {CircularProgress, Divider} from "@mui/material";
+import {CircularProgress, Divider, Tooltip} from "@mui/material";
 import {useHorizontalScroll} from "./HorizontalScroll";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
+import ArticleRoundedIcon from "@mui/icons-material/ArticleRounded";
+import CodeRoundedIcon from "@mui/icons-material/CodeRounded";
 import IconButton from "@mui/material/IconButton";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 
 import {socket} from "./Instances";
 
@@ -24,6 +29,7 @@ export default function CodeEditor({
 }) {
   const [localSavedState, setLocalSavedState] = React.useState(true);
   const {editorFontSize} = useContext(SettingsContext);
+  const [mdViewMode, setMdViewMode] = React.useState(false);
 
   useEffect(() => {
     setLocalSavedState(true);
@@ -123,54 +129,94 @@ export default function CodeEditor({
           alignItems={"center"}
           justifyContent={"center"}
           overflow={"hidden"}
-          width={language === "python" ? "50px" : "0px"}
+          width={
+            language === "python" || language === "markdown" ? "50px" : "0px"
+          }
           sx={{flexGrow: 0, transition: "width 0.3s"}}
           bgcolor={"background.cloverMain"}>
-          <IconButton
-            aria-label="run"
-            color={"success"}
-            onClick={() => {
-              setLocalSavedState(true);
-              socket.emit("WriteFile", {
-                path: getActiveFile(),
-                value: editorRef.current.getValue(),
-                instanceID: instanceID,
-              });
-              changeSavedState(true);
-              socket.emit("ExecuteCommand", {
-                command: {
-                  type: "command",
-                  cmd: `python3 /home/ubuntu/${activeFile}`,
-                },
-                instanceID: instanceID,
-              });
-            }}>
-            <PlayArrowRoundedIcon />
-          </IconButton>
+          {language === "python" ? (
+            <Tooltip title={"Run script in Terminal"} disableInteractive>
+              <IconButton
+                aria-label="run"
+                color={"success"}
+                onClick={() => {
+                  setLocalSavedState(true);
+                  socket.emit("WriteFile", {
+                    path: getActiveFile(),
+                    value: editorRef.current.getValue(),
+                    instanceID: instanceID,
+                  });
+                  changeSavedState(true);
+                  socket.emit("ExecuteCommand", {
+                    command: {
+                      type: "command",
+                      cmd: `python3 /home/ubuntu/${activeFile}`,
+                    },
+                    instanceID: instanceID,
+                  });
+                }}>
+                <PlayArrowRoundedIcon />
+              </IconButton>
+            </Tooltip>
+          ) : (
+            <Tooltip
+              title={mdViewMode ? "Edit Markdown" : "Markdown reader"}
+              disableInteractive>
+              <IconButton
+                aria-label={"view-md"}
+                onClick={() => {
+                  setMdViewMode(prev => !prev);
+                }}>
+                {mdViewMode ? <CodeRoundedIcon /> : <ArticleRoundedIcon />}
+              </IconButton>
+            </Tooltip>
+          )}
         </Box>
       </Box>
-      <Editor
-        loading={<Preloader />}
-        onMount={editorMount}
-        onChange={() => {
-          if (localSavedState) {
-            changeSavedState(false, activeFile);
-            setLocalSavedState(false);
-          }
-        }}
-        theme={"vs-dark"}
-        height="calc(100% - 50px)"
-        value={value}
-        language={language}
-        options={{
-          minimap: {
-            enabled: false,
-          },
-          fontSize: editorFontSize,
-          fontFamily:
-            "Menlo, Cascadia Code, Consolas, Liberation Mono, monospace",
-        }}
-      />
+      <Box position={"relative"} id={"editor-container"}>
+        <Editor
+          loading={<Preloader />}
+          onMount={editorMount}
+          onChange={() => {
+            setMdViewMode(false);
+            if (localSavedState) {
+              changeSavedState(false, activeFile);
+              setLocalSavedState(false);
+            }
+          }}
+          theme={"vs-dark"}
+          height="100%"
+          value={value}
+          language={language}
+          options={{
+            minimap: {
+              enabled: false,
+            },
+            fontSize: editorFontSize,
+            fontFamily:
+              "Menlo, Cascadia Code, Consolas, Liberation Mono, monospace",
+          }}
+        />
+        {mdViewMode ? (
+          <Box
+            color={"primary.50"}
+            bgcolor={"background.cloverMain"}
+            position={"absolute"}
+            height={"100%"}
+            width={"100%"}
+            sx={{overflow: "scroll"}}
+            top={0}
+            left={0}>
+            <ReactMarkdown
+              children={editorRef.current.getValue()}
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw]}
+            />
+          </Box>
+        ) : (
+          <></>
+        )}
+      </Box>
     </ThemeProvider>
   );
 }

@@ -207,14 +207,24 @@ export default function Workspace() {
       setEditorValue(file.content);
       // Set language for the editor
       let lang;
+      let langList;
       if (!file.path.split("/").at(-1).includes(".")) {
         lang = "plaintext";
       } else {
-        lang = Object.entries(langMap).filter(
+        langList = Object.entries(langMap).filter(
           lang =>
             lang[1].extensions &&
             lang[1].extensions.includes(`.${file.path.split(".").at(-1)}`),
-        )[0][1].aceMode;
+        );
+        let extNum = 0;
+        let extIndex = 0;
+        for (let i in langList) {
+          if (langList[i][1].extensions.length > extNum) {
+            extNum = langList[i][1].extensions.length;
+            extIndex = i;
+          }
+        }
+        lang = langList[extIndex][1].aceMode;
         if (lang.includes("_")) {
           lang = lang.split("_")[1];
         }
