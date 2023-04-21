@@ -60,7 +60,6 @@ let arucoMarkersReceived = false;
 let globalMode = "play";
 let cubeKey = 0;
 let telemGlobal = false;
-let platformGeneratedMarkerIndex = 0;
 
 const Leds = ({count = 58, temp = new THREE.Object3D()}) => {
   const ref = useRef();
@@ -220,7 +219,7 @@ export default function Gazebo(props) {
         1,
       );
       setArucoMarkers([...arucoMarkersGlobal]);
-      socket.emit("DeleteMarker", {instanceId: instanceID, name: props.name});
+      socket.emit("DeleteMarker", {instanceID: instanceID, name: props.name});
     };
     return (
       <Paper
@@ -404,10 +403,13 @@ export default function Gazebo(props) {
                 const marker = arucoMarkersGlobal.filter(
                   m => m.props.position === props.position,
                 )[0];
+                let newName = props.name.split("_");
+                newName[newName.length - 1] = genArucoId;
+                newName = newName.join("_");
                 arucoMarkersGlobal[arucoMarkersGlobal.indexOf(marker)] =
                   fileType === "svg" ? (
                     <Aruco
-                      name={props.name}
+                      name={newName}
                       size={size}
                       position={[posX, posY]}
                       image={arucoImg.split("data:image/svg+xml;utf8,")[1]}
@@ -415,7 +417,7 @@ export default function Gazebo(props) {
                     />
                   ) : (
                     <PngMarker
-                      name={props.name}
+                      name={newName}
                       size={size}
                       position={[posX, posY]}
                       image={arucoImg}
@@ -427,7 +429,7 @@ export default function Gazebo(props) {
                 setEditArucoComponent(null);
                 socket.emit("EditMarker", {
                   instanceID: instanceID,
-                  aruco_name: props.name,
+                  aruco_name: newName,
                   marker_id: genArucoId,
                   image:
                     fileType === "svg"
@@ -591,15 +593,25 @@ export default function Gazebo(props) {
   };
 
   const addMarker = () => {
-    platformGeneratedMarkerIndex++;
-    const name = `aruco_marker_${props.instanceID}_${platformGeneratedMarkerIndex}`;
+    let name;
+    let maxId = 0;
+    for (let i in arucoMarkersGlobal) {
+      let cId = Number(arucoMarkersGlobal[i].props.name.split("_").at(-1));
+      if (cId > maxId) {
+        maxId = cId;
+        name = arucoMarkersGlobal[i].props.name;
+      }
+    }
+    name = name.split("_");
+    name[name.length - 1] = String(maxId + 1);
+    name = name.join("_");
     socket.emit("AddMarker", {instanceID: props.instanceID, name: name});
     arucoMarkersGlobal.push(
       <Aruco
         name={name}
         size={0.33}
         position={["0.0", "-1.0"]}
-        image={generateAruco(0).outerHTML}
+        image={generateAruco(maxId + 1).outerHTML}
         key={arucoMarkersGlobal.length}
       />,
     );
@@ -679,13 +691,6 @@ export default function Gazebo(props) {
                   key={i}
                 />,
               );
-            }
-            const arucoName = models.aruco_map[i].aruco_name.split("_");
-            if (arucoName[2] === props.instanceID) {
-              const index = Number(arucoName[3]);
-              if (index > platformGeneratedMarkerIndex) {
-                platformGeneratedMarkerIndex = index;
-              }
             }
           }
         }
