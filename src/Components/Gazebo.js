@@ -403,9 +403,12 @@ export default function Gazebo(props) {
                 const marker = arucoMarkersGlobal.filter(
                   m => m.props.position === props.position,
                 )[0];
-                let newName = props.name.split("_");
-                newName[newName.length - 1] = genArucoId;
-                newName = newName.join("_");
+                let newName = props.name;
+                if (genArucoId) {
+                  newName = props.name.split("_");
+                  newName[newName.length - 1] = genArucoId;
+                  newName = newName.join("_");
+                }
                 arucoMarkersGlobal[arucoMarkersGlobal.indexOf(marker)] =
                   fileType === "svg" ? (
                     <Aruco
@@ -602,6 +605,7 @@ export default function Gazebo(props) {
         name = arucoMarkersGlobal[i].props.name;
       }
     }
+    console.log(maxId);
     name = name.split("_");
     name[name.length - 1] = String(maxId + 1);
     name = name.join("_");
@@ -1012,6 +1016,7 @@ export default function Gazebo(props) {
                             cubesGlobal[target.oId].args[1] * target.scale.y,
                             cubesGlobal[target.oId].args[2] * target.scale.z,
                           ];
+                          setTarget(null);
                           setCubes([
                             ...cubesGlobal.map(cube => (
                               <Cube
@@ -1024,7 +1029,6 @@ export default function Gazebo(props) {
                               />
                             )),
                           ]);
-                          setTarget(cubes[target.oId]);
                         }}
                         circleSize={18}
                         circleSpacing={8}
