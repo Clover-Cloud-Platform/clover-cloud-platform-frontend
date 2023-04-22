@@ -432,7 +432,7 @@ export default function Gazebo(props) {
                 setEditArucoComponent(null);
                 socket.emit("EditMarker", {
                   instanceID: instanceID,
-                  aruco_name: newName,
+                  aruco_name: props.name,
                   marker_id: genArucoId,
                   image:
                     fileType === "svg"
@@ -605,7 +605,6 @@ export default function Gazebo(props) {
         name = arucoMarkersGlobal[i].props.name;
       }
     }
-    console.log(maxId);
     name = name.split("_");
     name[name.length - 1] = String(maxId + 1);
     name = name.join("_");
