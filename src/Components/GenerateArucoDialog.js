@@ -8,7 +8,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import {Paper, styled} from "@mui/material";
 
-export const StyledPaper = styled(Paper)`
+const StyledPaper = styled(Paper)`
   background-color: #2a2931;
 `;
 export default function GenerateArucoDialog(props) {

@@ -8,6 +8,7 @@ import Workspace from "./Components/Workspace";
 import SignUp from "./Components/SignUp";
 import SignIn from "./Components/SignIn";
 import Instances from "./Components/Instances";
+import NotFound from "./Components/NotFound";
 
 // Importing firebase modules and initializing app with firebaseConfig
 import {initializeApp} from "firebase/app";
@@ -39,6 +40,7 @@ root.render(
       <Route path="/signup" element={<SignUp />} />
       <Route path="/signin" element={<SignIn />} />
       <Route path="/instances" element={<Instances />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   </Router>,
 );
