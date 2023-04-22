@@ -64,6 +64,10 @@ const Template = props => {
             onClick={() => {
               setInstall(true);
               setDisableInstall(true);
+              socket.emit("InstallTemplate", {
+                newID: props.instanceId,
+                oldID: props.currentID,
+              });
             }}>
             Install
           </Button>
@@ -73,7 +77,11 @@ const Template = props => {
   );
 };
 
-export default function TemplateBrowser({openTBrowser, setOpenTBrowser}) {
+export default function TemplateBrowser({
+  openTBrowser,
+  setOpenTBrowser,
+  currentID,
+}) {
   const [disableInstall, setDisableInstall] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const [templates, setTemplates] = React.useState([]);
@@ -84,7 +92,6 @@ export default function TemplateBrowser({openTBrowser, setOpenTBrowser}) {
   useEffect(() => {
     socket.on("Templates", templates => {
       setTemplates(templates);
-      console.log(templates);
     });
   }, []);
 
@@ -95,6 +102,10 @@ export default function TemplateBrowser({openTBrowser, setOpenTBrowser}) {
       ),
     );
   };
+
+  socket.on("TemplateInstalled", () => {
+    window.location.reload();
+  });
 
   return (
     <ThemeProvider theme={theme}>
@@ -157,6 +168,7 @@ export default function TemplateBrowser({openTBrowser, setOpenTBrowser}) {
                   date={template.date}
                   key={template.instanceID}
                   instanceId={template.instanceID}
+                  currentID={currentID}
                 />
               ))}
             </DisableInstall.Provider>

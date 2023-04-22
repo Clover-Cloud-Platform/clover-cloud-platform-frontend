@@ -467,6 +467,7 @@ export default function WorkspaceAppBar(props) {
       <TemplateBrowser
         openTBrowser={openTBrowser}
         setOpenTBrowser={setOpenTBrowser}
+        currentID={instanceID}
       />
       <Snackbar
         open={templateCreated}
