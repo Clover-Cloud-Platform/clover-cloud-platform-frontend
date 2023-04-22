@@ -58,8 +58,6 @@ function generateMarkerSvg(width, height, bits, fixPdfArtifacts = true) {
 }
 
 function generateArucoMarker(width, height, dictName, id) {
-  console.log("Generate ArUco marker " + dictName + " " + id);
-
   const bytes = dict[dictName][id];
   const bits = [];
   const bitsCount = width * height;

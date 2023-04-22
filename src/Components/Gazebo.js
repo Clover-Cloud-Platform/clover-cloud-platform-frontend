@@ -177,6 +177,7 @@ export default function Gazebo(props) {
     const [openGenArucoDialog, setOpenGenArucoDialog] = React.useState(false);
     const [genArucoId, setGenArucoId] = React.useState(null);
     const [fileContent, setFileContent] = React.useState();
+    const [arucoId, setArucoId] = React.useState(props.name.split("_").at(-1));
 
     const inputArucoRef = useRef();
     const handleArucoUpload = () => {
@@ -242,7 +243,7 @@ export default function Gazebo(props) {
             alignItems={"center"}
             mt={"8px"}>
             <Typography color={"primary.50"} variant={"overline"}>
-              {props.type === "svg" ? `aruco marker` : "png marker"}
+              {props.type === "svg" ? `aruco marker #${arucoId}` : "png marker"}
             </Typography>
             <img
               onClick={handleArucoUpload}
@@ -281,6 +282,11 @@ export default function Gazebo(props) {
               open={openGenArucoDialog}
               handleClose={handleCloseGenArucoDialog}
               generateMarker={generateMarker}
+              id={arucoId}
+              setId={setArucoId}
+              ids={arucoMarkersGlobal.map(marker =>
+                marker.props.name.split("_").at(-1),
+              )}
             />
           </Box>
           <Box mt={"15px"}>

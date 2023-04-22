@@ -101,13 +101,13 @@ export default function WorkspaceAppBar(props) {
   socket.emit("GetInstanceData", {uid: uid, instance_id: instanceID});
   socket.on("InstanceData", data => {
     if (!instanceDataReceived) {
-      console.log(data.user_templates);
       if (data.instance_state) {
         if (data.instance_state === "Stopped") {
           setInstanceError(1);
           props.hidePreloader();
         } else if (data.instance_state === "No access") {
           setInstanceError(2);
+          props.hidePreloader();
         }
       }
       setUsername(data.username);

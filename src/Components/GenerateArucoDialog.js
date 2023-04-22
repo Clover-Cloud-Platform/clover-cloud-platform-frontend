@@ -12,7 +12,8 @@ const StyledPaper = styled(Paper)`
   background-color: #2a2931;
 `;
 export default function GenerateArucoDialog(props) {
-  const [value, setValue] = React.useState(0);
+  const [value, setValue] = React.useState(props.id);
+  const [error, setError] = React.useState(true);
   return (
     <Dialog
       open={props.open}
@@ -24,6 +25,8 @@ export default function GenerateArucoDialog(props) {
           Please enter the id of the ArUco marker to generate it.
         </DialogContentText>
         <TextField
+          error={error}
+          helperText={error ? "Marker with this id already exists" : ""}
           sx={{input: {color: "primary.50"}, mt: "10px"}}
           required
           label="ID"
@@ -33,6 +36,11 @@ export default function GenerateArucoDialog(props) {
             shrink: true,
           }}
           onChange={e => {
+            if (props.ids.includes(e.target.value)) {
+              setError(true);
+            } else {
+              setError(false);
+            }
             setValue(e.target.value);
           }}
           variant="standard"
@@ -41,8 +49,10 @@ export default function GenerateArucoDialog(props) {
       <DialogActions>
         <Button onClick={props.handleClose}>Cancel</Button>
         <Button
+          disabled={error}
           onClick={() => {
             props.generateMarker(value);
+            props.setId(value);
           }}>
           Generate
         </Button>
