@@ -401,8 +401,19 @@ export default function Gazebo(props) {
               <DeleteRoundedIcon />
             </IconButton>
           </Tooltip>
-          <Box position={"absolute"} right={"4px"} bottom={"8px"}>
-            {" "}
+          <Box
+            position={"absolute"}
+            right={"4px"}
+            bottom={"8px"}
+            display={"flex"}
+            gap={"2px"}>
+            <Button
+              sx={{color: "primary.50"}}
+              onClick={() => {
+                setEditArucoComponent(null);
+              }}>
+              Cancel
+            </Button>
             <Button
               sx={{color: "primary.50"}}
               onClick={() => {
