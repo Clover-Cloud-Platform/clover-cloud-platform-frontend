@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v2
       - shell: bash
         env:
-          SERVER_LINK: ${{ secrets.SERVER_LINK }}
+          SERVER_LINK: ${{ secrets.REACT_APP_SERVER_LINK }}
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
