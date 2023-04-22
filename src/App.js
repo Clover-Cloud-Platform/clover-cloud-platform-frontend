@@ -385,29 +385,26 @@ export default function App() {
               </Box>
             </Box>
             <Box
+              onClick={() => {
+                window
+                  .open("https://www.youtube.com/watch?v=FZPl2LOMgi4", "_blank")
+                  .focus();
+              }}
               mb={"-30px"}
               position={"relative"}
               mt={"40px"}
               sx={{
+                cursor: "pointer",
                 "@media (min-width:900px)": {
                   mt: "130px",
                   maxWidth: "500px",
                 },
               }}>
               <img
-                onClick={() => {
-                  window
-                    .open(
-                      "https://www.youtube.com/watch?v=FZPl2LOMgi4",
-                      "_blank",
-                    )
-                    .focus();
-                }}
                 src={ccp}
                 alt={"overview"}
                 style={{
                   borderRadius: "28px",
-                  cursor: "pointer",
                   width: "100%",
                   maxWidth: "100%",
                   minWidth: "320px",
