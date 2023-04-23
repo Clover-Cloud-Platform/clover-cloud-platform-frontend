@@ -25,6 +25,7 @@ import {DndProvider, useDrag, useDrop} from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";
 import EditMenu from "./EditMenu";
 import {socket} from "./Instances";
+import IconButton from "@mui/material/IconButton";
 
 let filesReceived = false;
 let data = [];
@@ -681,14 +682,17 @@ export default function FileManager({
           <Tooltip
             title={"Revert instance to its initial state"}
             disableInteractive>
-            <SettingsBackupRestoreRoundedIcon
-              fontSize={"small"}
-              sx={{
-                color: "#7c8186",
-                "&:hover": {color: "primary.50"},
-                cursor: "pointer",
-              }}
-            />
+            <IconButton aria-label="revert" size="small">
+              <SettingsBackupRestoreRoundedIcon
+                onClick={() => {
+                  socket.emit("RevertToInitial", instanceID);
+                }}
+                fontSize={"small"}
+                sx={{
+                  color: "#7c8186",
+                }}
+              />
+            </IconButton>
           </Tooltip>
         </Box>
         <DndProvider backend={HTML5Backend}>{fileTree}</DndProvider>
