@@ -682,11 +682,13 @@ export default function FileManager({
           <Tooltip
             title={"Revert instance to its initial state"}
             disableInteractive>
-            <IconButton aria-label="revert" size="small">
+            <IconButton
+              aria-label="revert"
+              size="small"
+              onClick={() => {
+                socket.emit("RevertToInitial", instanceID);
+              }}>
               <SettingsBackupRestoreRoundedIcon
-                onClick={() => {
-                  socket.emit("RevertToInitial", instanceID);
-                }}
                 fontSize={"small"}
                 sx={{
                   color: "#7c8186",
