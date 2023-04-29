@@ -48,6 +48,7 @@ import {CirclePicker} from "react-color";
 import AddPhotoAlternateRoundedIcon from "@mui/icons-material/AddPhotoAlternateRounded";
 import IconButton from "@mui/material/IconButton";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
+import {v4 as uuidv4} from "uuid";
 
 const useStore = create(set => ({
   target: null,
@@ -58,7 +59,6 @@ let arucoMarkersGlobal = [];
 let cubesGlobal = [];
 let arucoMarkersReceived = false;
 let globalMode = "play";
-let cubeKey = 0;
 let telemGlobal = false;
 
 const Leds = ({count = 58, temp = new THREE.Object3D()}) => {
@@ -594,13 +594,14 @@ export default function Gazebo(props) {
 
   const addCube = () => {
     setTarget(null);
-    socket.emit("AddCube", props.instanceID);
+    const cubeID = uuidv4();
+    socket.emit("AddCube", {instanceID: props.instanceID, cubeID: cubeID});
     cubesGlobal.push({
       position: [10, 5 - 0.87, 0],
       rotation: [0, 0, 0],
       args: [10, 10, 10],
       color: "#838383",
-      oId: cubeKey,
+      oId: cubeID,
     });
     setCubes([
       ...cubesGlobal.map(cube => (
@@ -614,7 +615,6 @@ export default function Gazebo(props) {
         />
       )),
     ]);
-    cubeKey++;
   };
 
   const addMarker = () => {
@@ -738,9 +738,8 @@ export default function Gazebo(props) {
               models.user_objects[oId].size[2] * 10,
             ],
             color: models.user_objects[oId].colorHex,
-            oId: cubeKey,
+            oId: models.user_objects[oId].cubeID,
           });
-          cubeKey++;
         }
         setArucoMarkers([...arucoMarkersGlobal]);
         setCubes([
@@ -790,7 +789,7 @@ export default function Gazebo(props) {
   const deleteCube = () => {
     socket.emit("DeleteCube", {
       instanceID: instanceID,
-      model_id: String(target.oId),
+      model_id: target.oId,
     });
     cubesGlobal.splice(
       cubesGlobal.indexOf(
@@ -885,7 +884,6 @@ export default function Gazebo(props) {
                           cubesGlobal = [];
                           arucoMarkersReceived = false;
                           globalMode = "play";
-                          cubeKey = 0;
                           setTelem(false);
                           telemGlobal = false;
                           setGazebo(false);
@@ -995,7 +993,7 @@ export default function Gazebo(props) {
                         onChange={color => {
                           let colorGazebo = hexToGazebo(color.hex);
                           socket.emit("EditCube", {
-                            model_id: String(target.oId),
+                            model_id: target.oId,
                             position: [
                               target.position.z / 10,
                               target.position.x / 10,
@@ -1145,7 +1143,7 @@ export default function Gazebo(props) {
                         cubesGlobal[cubeIndex].args[2] * target.scale.z,
                       ];
                       socket.emit("EditCube", {
-                        model_id: String(target.oId),
+                        model_id: target.oId,
                         position: [
                           target.position.z / 10,
                           target.position.x / 10,
