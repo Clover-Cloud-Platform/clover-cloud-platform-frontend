@@ -41,6 +41,8 @@ let activeFileGlobal = "";
 export const SettingsContext = React.createContext(null);
 // Global instance error page state
 export const InstanceErrorContext = React.createContext(null);
+// Global terminal history state
+export const TerminalHistoryContext = React.createContext(null);
 
 // Function that renders the workspace component
 export default function Workspace() {
@@ -58,6 +60,8 @@ export default function Workspace() {
   const [terminalBG, setTerminalBG] = React.useState("#1c1b22");
   const [editorFontSize, setEditorFontSize] = React.useState(13);
   const [instanceError, setInstanceError] = React.useState(null);
+  const [history, setHistory] = React.useState([]);
+  const [historyKey, setHistoryKey] = React.useState(0);
 
   useEffect(() => {
     // Change theme color
@@ -309,124 +313,136 @@ export default function Workspace() {
               instanceError: instanceError,
               setInstanceError: setInstanceError,
             }}>
-            {preloader ? (
-              <Box
-                style={{
-                  transition: "opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms",
-                  opacity: preloaderOpacity,
-                }}
-                position={"fixed"}
-                height={"100vh"}
-                zIndex={99999}
-                bgcolor={"background.cloverMain"}
-                width={"100%"}
-                display={"flex"}
-                justifyContent={"center"}
-                alignItems={"center"}>
-                <CircularProgress size={"60px"} sx={{position: "absolute"}} />
-                <Logo width={"40px"} />
-              </Box>
-            ) : (
-              <></>
-            )}
-            {instanceError ? (
-              <Box
-                width={"100%"}
-                height={"100vh"}
-                display={"flex"}
-                alignItems={"center"}
-                justifyContent={"center"}
-                flexDirection={"column"}
-                gap={"20px"}>
-                <ErrorOutlineRoundedIcon color={"error"} fontSize={"large"} />
-                <Typography
-                  sx={{
-                    color: "primary.50",
-                    fontFamily: "Google Sans,Noto Sans,sans-serif",
-                    letterSpacing: "-.5px",
-                    lineHeight: "1.2em",
-                    fontSize: "24px",
-                    "@media (min-width:900px)": {fontSize: "30px"},
-                    textAlign: "center",
-                    mb: "30px",
-                  }}>
-                  {instanceError === 1
-                    ? "This instance is stopped. Go to the Dashboard to run it."
-                    : "This instance does not exist, or you do not have access to it."}
-                </Typography>
-                <Button
-                  href={"/instances"}
-                  variant={"outlined"}
-                  startIcon={<ArrowBackRoundedIcon />}>
-                  Go to dashboard
-                </Button>
-              </Box>
-            ) : (
-              <Box width={"100%"} height={"100vh"}>
-                <WorkspaceAppBar hidePreloader={hidePreloader} />
+            <TerminalHistoryContext.Provider
+              value={{
+                history: history,
+                setHistory: setHistory,
+                historyKey: historyKey,
+                setHistoryKey: setHistoryKey,
+              }}>
+              {preloader ? (
+                <Box
+                  style={{
+                    transition:
+                      "opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms",
+                    opacity: preloaderOpacity,
+                  }}
+                  position={"fixed"}
+                  height={"100vh"}
+                  zIndex={99999}
+                  bgcolor={"background.cloverMain"}
+                  width={"100%"}
+                  display={"flex"}
+                  justifyContent={"center"}
+                  alignItems={"center"}>
+                  <CircularProgress size={"60px"} sx={{position: "absolute"}} />
+                  <Logo width={"40px"} />
+                </Box>
+              ) : (
+                <></>
+              )}
+              {instanceError ? (
                 <Box
                   width={"100%"}
-                  style={{height: "calc(100% - 50px)"}}
-                  bgcolor={"background.cloverMain"}>
-                  <ReactSplit
-                    minWidths={[160, 200, 320]}
-                    initialSizes={splitSizesX}
-                    direction={SplitDirection.Horizontal}
-                    draggerClassName={"dragger"}
-                    gutterClassName={"gutter-horizontal"}
-                    onResizeFinished={(pairIdx, newSizes) => {
-                      setSplitSizesX(newSizes);
+                  height={"100vh"}
+                  display={"flex"}
+                  alignItems={"center"}
+                  justifyContent={"center"}
+                  flexDirection={"column"}
+                  gap={"20px"}>
+                  <ErrorOutlineRoundedIcon color={"error"} fontSize={"large"} />
+                  <Typography
+                    sx={{
+                      color: "primary.50",
+                      fontFamily: "Google Sans,Noto Sans,sans-serif",
+                      letterSpacing: "-.5px",
+                      lineHeight: "1.2em",
+                      fontSize: "24px",
+                      "@media (min-width:900px)": {fontSize: "30px"},
+                      textAlign: "center",
+                      mb: "30px",
                     }}>
-                    <Box
-                      height={"100%"}
-                      bgcolor={"background.cloverMain"}
-                      sx={{
-                        overflowY: "scroll",
-                        overflowX: "hidden",
-                        scrollbarWidth: "none",
-                        "&::-webkit-scrollbar": {
-                          display: "none",
-                        },
-                      }}>
-                      <FileManager
-                        onDragToEditor={dragToEditor}
-                        instanceID={instanceID}
-                        onLoadManager={hidePreloader}
-                      />
-                    </Box>
-                    <Box height={"100%"} bgcolor={"#1e1e1e"}>
-                      {openEditor ? (
-                        <CodeEditor
-                          files={editorFiles}
-                          activeFile={activeFile}
-                          language={editorLang}
-                          value={editorValue}
-                          instanceID={instanceID}
-                          changeSavedState={changeSavedState}
-                          getActiveFile={getActiveFile}
-                        />
-                      ) : (
-                        <DndProvider backend={HTML5Backend}>
-                          <EditorStartWindow />
-                        </DndProvider>
-                      )}
-                    </Box>
-                    <ReactSplit
-                      minHeights={[300, 150]}
-                      initialSizes={splitSizesY}
-                      onResizeFinished={(pairIdx, newSizes) => {
-                        setSplitSizesY(newSizes);
-                      }}
-                      direction={SplitDirection.Vertical}
-                      draggerClassName={"dragger"}
-                      gutterClassName={"gutter-vertical"}>
-                      <Gazebo instanceID={instanceID} />
-                      <Terminal instanceID={instanceID} onOpen={dragToEditor} />
-                    </ReactSplit>
-                  </ReactSplit>
+                    {instanceError === 1
+                      ? "This instance is stopped. Go to the Dashboard to run it."
+                      : "This instance does not exist, or you do not have access to it."}
+                  </Typography>
+                  <Button
+                    href={"/instances"}
+                    variant={"outlined"}
+                    startIcon={<ArrowBackRoundedIcon />}>
+                    Go to dashboard
+                  </Button>
                 </Box>
-              </Box>
-            )}
+              ) : (
+                <Box width={"100%"} height={"100vh"}>
+                  <WorkspaceAppBar hidePreloader={hidePreloader} />
+                  <Box
+                    width={"100%"}
+                    style={{height: "calc(100% - 50px)"}}
+                    bgcolor={"background.cloverMain"}>
+                    <ReactSplit
+                      minWidths={[160, 200, 320]}
+                      initialSizes={splitSizesX}
+                      direction={SplitDirection.Horizontal}
+                      draggerClassName={"dragger"}
+                      gutterClassName={"gutter-horizontal"}
+                      onResizeFinished={(pairIdx, newSizes) => {
+                        setSplitSizesX(newSizes);
+                      }}>
+                      <Box
+                        height={"100%"}
+                        bgcolor={"background.cloverMain"}
+                        sx={{
+                          overflowY: "scroll",
+                          overflowX: "hidden",
+                          scrollbarWidth: "none",
+                          "&::-webkit-scrollbar": {
+                            display: "none",
+                          },
+                        }}>
+                        <FileManager
+                          onDragToEditor={dragToEditor}
+                          instanceID={instanceID}
+                          onLoadManager={hidePreloader}
+                        />
+                      </Box>
+                      <Box height={"100%"} bgcolor={"#1e1e1e"}>
+                        {openEditor ? (
+                          <CodeEditor
+                            files={editorFiles}
+                            activeFile={activeFile}
+                            language={editorLang}
+                            value={editorValue}
+                            instanceID={instanceID}
+                            changeSavedState={changeSavedState}
+                            getActiveFile={getActiveFile}
+                          />
+                        ) : (
+                          <DndProvider backend={HTML5Backend}>
+                            <EditorStartWindow />
+                          </DndProvider>
+                        )}
+                      </Box>
+                      <ReactSplit
+                        minHeights={[300, 150]}
+                        initialSizes={splitSizesY}
+                        onResizeFinished={(pairIdx, newSizes) => {
+                          setSplitSizesY(newSizes);
+                        }}
+                        direction={SplitDirection.Vertical}
+                        draggerClassName={"dragger"}
+                        gutterClassName={"gutter-vertical"}>
+                        <Gazebo instanceID={instanceID} />
+                        <Terminal
+                          instanceID={instanceID}
+                          onOpen={dragToEditor}
+                        />
+                      </ReactSplit>
+                    </ReactSplit>
+                  </Box>
+                </Box>
+              )}
+            </TerminalHistoryContext.Provider>
           </InstanceErrorContext.Provider>
         </SettingsContext.Provider>
       </ThemeProvider>

@@ -4,7 +4,6 @@ import {
   SettingsContext,
   workspaceTheme,
   InstanceErrorContext,
-  hidePreloader,
 } from "./Workspace";
 import {ThemeProvider} from "@mui/material/styles";
 import Typography from "@mui/material/Typography";

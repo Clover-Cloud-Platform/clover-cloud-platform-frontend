@@ -18,46 +18,19 @@ import {
 } from "@mui/icons-material";
 import TerminalRoundedIcon from "@mui/icons-material/TerminalRounded";
 import {socket} from "./Instances";
-import {SettingsContext} from "./Workspace";
+import {SettingsContext, TerminalHistoryContext} from "./Workspace";
 
 let directorySet = false;
 
 // Function that returns Terminal component
 export default function Terminal(props) {
-  const [history, setHistory] = React.useState([]);
-  const [historyKey, setHistoryKey] = React.useState(0);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [directory, setDirectory] = React.useState("");
   const open = Boolean(anchorEl);
   const {terminalBG} = useContext(SettingsContext);
-
-  // Kill previous commands
-  if (localStorage.getItem("prevCmd")) {
-    socket.emit("ExecuteCommand", {
-      command: {
-        type: "kill",
-        cmd: JSON.parse(localStorage.getItem("prevCmd")),
-      },
-      instanceID: props.instanceID,
-    });
-    localStorage.removeItem("prevCmd");
-  }
-
-  // History item component
-  const HistoryItem = props => {
-    return (
-      <MenuItem
-        onClick={() => {
-          handleClose();
-          document.getElementById("terminal-input").value = props.command;
-        }}>
-        <ListItemIcon>
-          <TerminalRoundedIcon fontSize="small" sx={{color: "primary.50"}} />
-        </ListItemIcon>
-        <ListItemText>{props.command}</ListItemText>
-      </MenuItem>
-    );
-  };
+  const {history, setHistory, historyKey, setHistoryKey} = useContext(
+    TerminalHistoryContext,
+  );
 
   // Function that executes entered command
   const execute = command => {
@@ -66,14 +39,12 @@ export default function Terminal(props) {
       // Push command to the history
       const newHistory = history;
       const prevSameCommand = newHistory.filter(
-        item => item.props.command === commandTrimmed,
+        item => item.command === commandTrimmed,
       );
       if (prevSameCommand.length > 0) {
         newHistory.splice(newHistory.indexOf(prevSameCommand[0]), 1);
       }
-      newHistory.unshift(
-        <HistoryItem key={historyKey} command={commandTrimmed} />,
-      );
+      newHistory.unshift({key: historyKey, command: commandTrimmed});
       setHistory(newHistory);
 
       // Check if the command is built-in
@@ -101,6 +72,28 @@ export default function Terminal(props) {
       }
     }
   };
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Stop the simulator when the user leaves the page
+      socket.emit("StopGazebo", props.instanceID);
+      if (history.length > 0) {
+        // Kill all commands in terminal
+        socket.emit("ExecuteCommand", {
+          command: {
+            type: "kill",
+            cmd: history.map(command => (command = command.command)),
+          },
+          instanceID: props.instanceID,
+        });
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
   useEffect(() => {
     if (!directorySet) {
       // Get current directory
@@ -132,20 +125,6 @@ export default function Terminal(props) {
       }
       setHistoryKey(prev => prev + 1);
     });
-
-    window.onunload = () => {
-      // Stop the simulator when user leaves page
-      socket.emit("StopGazebo", props.instanceID);
-      if (history.length > 0) {
-        // Save commands for killing
-        localStorage.setItem(
-          "prevCmd",
-          JSON.stringify(
-            history.map(command => (command = command.props.command)),
-          ),
-        );
-      }
-    };
   }, []);
 
   // Handle enter, arrows and right click
@@ -165,6 +144,22 @@ export default function Terminal(props) {
   };
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  // History item component
+  const HistoryItem = props => {
+    return (
+      <MenuItem
+        onClick={() => {
+          handleClose();
+          document.getElementById("terminal-input").value = props.command;
+        }}>
+        <ListItemIcon>
+          <TerminalRoundedIcon fontSize="small" sx={{color: "primary.50"}} />
+        </ListItemIcon>
+        <ListItemText>{props.command}</ListItemText>
+      </MenuItem>
+    );
   };
 
   // Return the terminal component
@@ -208,9 +203,7 @@ export default function Terminal(props) {
                 socket.emit("ExecuteCommand", {
                   command: {
                     type: "kill",
-                    cmd: history.map(
-                      command => (command = command.props.command),
-                    ),
+                    cmd: history.map(command => (command = command.command)),
                   },
                   instanceID: props.instanceID,
                 });
@@ -323,7 +316,9 @@ export default function Terminal(props) {
                 </MenuItem>
               ) : null}
               <Divider />
-              {history}
+              {history.map(el => (
+                <HistoryItem key={el.key} command={el.command} />
+              ))}
             </Menu>
             <input
               id={"terminal-input"}

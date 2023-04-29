@@ -36,7 +36,9 @@ import LaunchRoundedIcon from "@mui/icons-material/LaunchRounded";
 import ExitToAppRoundedIcon from "@mui/icons-material/ExitToAppRounded";
 
 //connect to server
-export const socket = io(process.env.REACT_APP_SERVER_LINK);
+export const socket = io(process.env.REACT_APP_SERVER_LINK, {
+  closeOnBeforeunload: false,
+});
 
 //stopper for function that inserts existing instances
 let instancesHandled = false;

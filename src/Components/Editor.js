@@ -2,7 +2,11 @@ import * as React from "react";
 import {useContext, useEffect, useRef} from "react";
 import Editor from "@monaco-editor/react";
 import Box from "@mui/material/Box";
-import {SettingsContext, workspaceTheme} from "./Workspace";
+import {
+  SettingsContext,
+  workspaceTheme,
+  TerminalHistoryContext,
+} from "./Workspace";
 import {ThemeProvider} from "@mui/material/styles";
 import {DndProvider, useDrop} from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";
@@ -30,6 +34,7 @@ export default function CodeEditor({
   const [localSavedState, setLocalSavedState] = React.useState(true);
   const {editorFontSize} = useContext(SettingsContext);
   const [mdViewMode, setMdViewMode] = React.useState(false);
+  const {history, setHistory, historyKey} = useContext(TerminalHistoryContext);
 
   useEffect(() => {
     setLocalSavedState(true);
@@ -147,6 +152,23 @@ export default function CodeEditor({
                     instanceID: instanceID,
                   });
                   changeSavedState(true);
+                  // Push command to the history
+                  const newHistory = history;
+                  const prevSameCommand = newHistory.filter(
+                    item =>
+                      item.command === `python3 /home/ubuntu/${activeFile}`,
+                  );
+                  if (prevSameCommand.length > 0) {
+                    newHistory.splice(
+                      newHistory.indexOf(prevSameCommand[0]),
+                      1,
+                    );
+                  }
+                  newHistory.unshift({
+                    key: historyKey,
+                    command: `python3 /home/ubuntu/${activeFile}`,
+                  });
+                  setHistory(newHistory);
                   socket.emit("ExecuteCommand", {
                     command: {
                       type: "command",
