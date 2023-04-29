@@ -156,9 +156,13 @@ export default function Gazebo(props) {
   const [stopGazeboButton, setStopGazeboButton] = React.useState(true);
   const [runGazeboButton, setRunGazeboButton] = React.useState(false);
 
-  socket.on("GazeboStopped", () => {
-    setRunGazeboButton(false);
-  });
+  useEffect(() => {
+    socket.on("GazeboStopped", () => {
+      setTimeout(() => {
+        setRunGazeboButton(false);
+      }, 2000);
+    });
+  }, []);
 
   const handleCubeEditModeChange = (event, newMode) => {
     setCubeEditMode(newMode);
@@ -589,6 +593,7 @@ export default function Gazebo(props) {
   };
 
   const addCube = () => {
+    setTarget(null);
     socket.emit("AddCube", props.instanceID);
     cubesGlobal.push({
       position: [10, 5 - 0.87, 0],
@@ -1016,21 +1021,26 @@ export default function Gazebo(props) {
                             colorHex: color.hex,
                             instanceID: props.instanceID,
                           });
-                          cubesGlobal[target.oId].color = color.hex;
-                          cubesGlobal[target.oId].position = [
+                          const cubeIndex = cubesGlobal.indexOf(
+                            cubesGlobal.filter(
+                              cube => cube.oId === target.oId,
+                            )[0],
+                          );
+                          cubesGlobal[cubeIndex].color = color.hex;
+                          cubesGlobal[cubeIndex].position = [
                             target.position.x,
                             target.position.y,
                             target.position.z,
                           ];
-                          cubesGlobal[target.oId].rotation = [
+                          cubesGlobal[cubeIndex].rotation = [
                             target.rotation.x,
                             target.rotation.y,
                             target.rotation.z,
                           ];
-                          cubesGlobal[target.oId].args = [
-                            cubesGlobal[target.oId].args[0] * target.scale.x,
-                            cubesGlobal[target.oId].args[1] * target.scale.y,
-                            cubesGlobal[target.oId].args[2] * target.scale.z,
+                          cubesGlobal[cubeIndex].args = [
+                            cubesGlobal[cubeIndex].args[0] * target.scale.x,
+                            cubesGlobal[cubeIndex].args[1] * target.scale.y,
+                            cubesGlobal[cubeIndex].args[2] * target.scale.z,
                           ];
                           setTarget(null);
                           setCubes([
@@ -1116,20 +1126,23 @@ export default function Gazebo(props) {
                     object={target}
                     mode={cubeEditMode}
                     onMouseUp={() => {
-                      cubesGlobal[target.oId].position = [
+                      const cubeIndex = cubesGlobal.indexOf(
+                        cubesGlobal.filter(cube => cube.oId === target.oId)[0],
+                      );
+                      cubesGlobal[cubeIndex].position = [
                         target.position.x,
                         target.position.y,
                         target.position.z,
                       ];
-                      cubesGlobal[target.oId].rotation = [
+                      cubesGlobal[cubeIndex].rotation = [
                         target.rotation.x,
                         target.rotation.y,
                         target.rotation.z,
                       ];
-                      cubesGlobal[target.oId].args = [
-                        cubesGlobal[target.oId].args[0] * target.scale.x,
-                        cubesGlobal[target.oId].args[1] * target.scale.y,
-                        cubesGlobal[target.oId].args[2] * target.scale.z,
+                      cubesGlobal[cubeIndex].args = [
+                        cubesGlobal[cubeIndex].args[0] * target.scale.x,
+                        cubesGlobal[cubeIndex].args[1] * target.scale.y,
+                        cubesGlobal[cubeIndex].args[2] * target.scale.z,
                       ];
                       socket.emit("EditCube", {
                         model_id: String(target.oId),
