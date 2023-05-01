@@ -16,8 +16,8 @@ The list of our team members:
 
 ## Video demonstration
 
-<p align='center'>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/FZPl2LOMgi4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=FZPl2LOMgi4"><img img width="560" height="315" src="https://img.youtube.com/vi/FZPl2LOMgi4/maxresdefault.jpg" /></a>
 </p>
 
 ## Introduction
@@ -40,7 +40,7 @@ Our platform is incredibly user-friendly and provides seamless access to the sim
 
 <p align="center">
 
-![Workspace screenshot](docs/workspace.png)
+![Workspace screenshot](https://raw.githubusercontent.com/Clover-Cloud-Platform/clover-cloud-platform-frontend/master/docs/workspace.png)
 
 </p>
 
@@ -64,7 +64,7 @@ After creating an account, you will be taken to the [dashboard](https://clovercl
 
 <p align="center">
 
-![instance managment](docs/instances.gif)
+![instance managment](https://raw.githubusercontent.com/Clover-Cloud-Platform/clover-cloud-platform-frontend/master/docs/instances.gif)
 
 </p>
 
@@ -74,7 +74,7 @@ In the workspace, in addition to the simulator, you have a file manager, code ed
 
 <p align="center">
 
-![workspace overview](docs/workspace.gif)
+![workspace overview](https://github.com/Clover-Cloud-Platform/clover-cloud-platform-frontend/raw/master/docs/workspace.gif)
 
 </p>
 
@@ -92,18 +92,3 @@ Our team has worked tirelessly to develop a simple yet multifunctional platform.
 ## Conclusion
 
 In conclusion, we have successfully created a truly convenient and useful platform, suitable for both novice and advanced COEX Clover drone users. Beginners can test their first autonomous flight code without the need for demanding simulator installation or virtual machines. They can also explore all of the drone's functions and capabilities without editing any configuration files. Advanced users benefit from access to their workspace from anywhere in the world and on any device, along with a convenient code-sharing system. In the future, we plan to add more new features to our platform, scale our network to serve a greater number of users, and collaborate with COEX to integrate their Clover quadcopter documentation into our platform, offering users a very simple and user-friendly way to learn to program autonomous drone flight. We also want to express gratitude to the COEX customer support team for their assistance in resolving complex issues that arose during development.
-
-<br/>
-<style>
-    #clover-cloud-platform-footer{
-        display:flex;
-        justify-content: space-between;
-    }
-</style>
-<hr/>
-<section>
-<div id="clover-cloud-platform-footer">
-<p>Clover Cloud Platform 2023</p>
-<a href='https://clovercloud.software'>https://clovercloud.software</a>
-</div>
-</section>
