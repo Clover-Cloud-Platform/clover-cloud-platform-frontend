@@ -337,7 +337,10 @@ export default function WorkspaceAppBar(props) {
             }}>
             Cancel
           </Button>
-          <Button onClick={share} autoFocus>
+          <Button
+            onClick={share}
+            autoFocus
+            disabled={name === "" || description === ""}>
             Ok
           </Button>
         </DialogActions>
