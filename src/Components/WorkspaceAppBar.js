@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useContext} from "react";
+import {useContext, useEffect} from "react";
 import {
   SettingsContext,
   workspaceTheme,
@@ -36,12 +36,13 @@ import {useSearchParams} from "react-router-dom";
 import {TwitterPicker} from "react-color";
 import TemplateBrowser from "./TemplateBrowser";
 import HelpRoundedIcon from "@mui/icons-material/HelpRounded";
+import SpaceDashboardIcon from "@mui/icons-material/SpaceDashboard";
+import MyTemplates from "./MyTemplates";
 
 const StyledPaper = styled(Paper)`
   background-color: #2a2931;
   background-image: none;
 `;
-let instanceDataReceived = false;
 
 export const WorkspaceTextField = styled(TextField)({
   "& label.Mui-focused": {
@@ -76,7 +77,9 @@ export default function WorkspaceAppBar(props) {
   const [openTBrowser, setOpenTBrowser] = React.useState(false);
   const [openShareTemplate, setOpenShareTemplate] = React.useState(false);
   const [templateCreated, setTemplateCreated] = React.useState(false);
-  const {instanceError, setInstanceError} = useContext(InstanceErrorContext);
+  const [openMyTemplates, setOpenMyTemplates] = React.useState(false);
+  const [myTemplates, setMyTemplates] = React.useState([]);
+  const {setInstanceError} = useContext(InstanceErrorContext);
 
   // Get settings
   const {terminalBG, setTerminalBG} = useContext(SettingsContext);
@@ -96,10 +99,11 @@ export default function WorkspaceAppBar(props) {
     window.location.href = "/signin";
   }
 
-  // Get instance data - container state, user name, and instance name
-  socket.emit("GetInstanceData", {uid: uid, instance_id: instanceID});
-  socket.on("InstanceData", data => {
-    if (!instanceDataReceived) {
+  useEffect(() => {
+    // Get instance data - container state, user name, and instance name
+    socket.emit("GetInstanceData", {uid: uid, instance_id: instanceID});
+    socket.on("InstanceData", data => {
+      console.log(data);
       if (data.instance_state) {
         if (data.instance_state === "Stopped") {
           setInstanceError(1);
@@ -111,9 +115,13 @@ export default function WorkspaceAppBar(props) {
       }
       setUsername(data.username);
       setInstanceName(data.instance_name);
-      instanceDataReceived = true;
-    }
-  });
+      setMyTemplates(data.user_templates);
+    });
+
+    socket.on("UserTemplates", templates => {
+      setMyTemplates(templates);
+    });
+  }, []);
 
   // Handle user menu events
   const handleOpenUserMenu = event => {
@@ -363,11 +371,21 @@ export default function WorkspaceAppBar(props) {
           </Tooltip>
           <Tooltip title="Share template" disableInteractive>
             <IconButton
+              disabled={myTemplates.length >= 5}
               color="primary"
               onClick={() => {
                 setOpenShareTemplate(true);
               }}>
               <ShareRoundedIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="My templates" disableInteractive>
+            <IconButton
+              color="primary"
+              onClick={() => {
+                setOpenMyTemplates(true);
+              }}>
+              <SpaceDashboardIcon />
             </IconButton>
           </Tooltip>
         </Box>
@@ -467,6 +485,12 @@ export default function WorkspaceAppBar(props) {
         openTBrowser={openTBrowser}
         setOpenTBrowser={setOpenTBrowser}
         currentID={instanceID}
+      />
+      <MyTemplates
+        openMyTemplates={openMyTemplates}
+        setOpenMyTemplates={setOpenMyTemplates}
+        myTemplates={myTemplates}
+        setMyTemplates={setMyTemplates}
       />
       <Snackbar
         open={templateCreated}

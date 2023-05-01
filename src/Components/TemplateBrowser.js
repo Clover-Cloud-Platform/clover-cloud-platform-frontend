@@ -23,7 +23,7 @@ import {WorkspaceTextField} from "./WorkspaceAppBar";
 
 const DisableInstall = React.createContext(null);
 
-const StyledPaper = styled(Paper)`
+export const StyledPaper = styled(Paper)`
   background-color: #2a2931;
   background-image: none;
   min-height: calc(100% - 64px);
