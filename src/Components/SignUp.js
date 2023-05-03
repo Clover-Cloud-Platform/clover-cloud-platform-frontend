@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   Container,
+  Divider,
   Fade,
   Grid,
   Link,
@@ -12,9 +13,34 @@ import {
   Typography,
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import GoogleIcon from "@mui/icons-material/Google";
+import GitHubIcon from "@mui/icons-material/GitHub";
 import {ThemeProvider} from "@mui/material/styles";
 import {theme} from "../App";
 import {socket} from "./Instances";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  GithubAuthProvider,
+  sendEmailVerification,
+} from "firebase/auth";
+
+import {initializeApp} from "firebase/app";
+const googleProvider = new GoogleAuthProvider();
+const githubProvider = new GithubAuthProvider();
+
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: "clover-cloud-platform",
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
+};
+const app = initializeApp(firebaseConfig);
 
 // Copyright component
 function Copyright(props) {
@@ -70,7 +96,6 @@ export default function SignUp() {
     event.preventDefault();
     disableSignupButton(true);
     const data = new FormData(event.currentTarget);
-    const username = data.get("username").trim();
     const email = data.get("email").trim();
     const password = data.get("password");
 
@@ -79,45 +104,55 @@ export default function SignUp() {
       disableSignupButton(false);
       setEmailError(true);
       setEmailHelper("Invalid email");
-    } else if (!passwordRegex.test(password)) {
+    } else if (password.length < 6) {
       disableSignupButton(false);
       setPasswordError(true);
-      setPasswordHelper(
-        "Password must contain minimum 6 characters, at least one letter and one number",
-      );
+      setPasswordHelper("Password must contain minimum 6 characters");
     } else {
-      const timerInterval = setInterval(() => {
-        if (timerCount > 0) {
-          setTimer(prev => prev - 1);
-          timerCount--;
-        } else {
-          clearInterval(timerInterval);
-          disableResend(false);
-          setTimer(60);
-          timerCount = 60;
-        }
-      }, 1000);
-
-      // Send request to the server
-      socket.emit("SignUp", {
-        email: email,
-      });
-
-      // Handle response
-      socket.on("SignUpRes", res => {
-        // Check errors
-        if (res.error) {
-          disableSignupButton(false);
-          setEmailError(true);
-          setEmailHelper("There is already an account with this email");
-        } else if (!res.error && res.code) {
-          // If everything is ok, wait for a verification code from the user
-          setAuthCode(res.code);
-          setVerify(true);
-          setUserData({email: email, username: username, password: password});
-        }
-      });
+      const auth = getAuth();
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(userCredential => {
+          // Signed in
+          const user = userCredential.user;
+          console.log(user);
+          sendEmailVerification(user);
+        })
+        .catch(error => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          console.log(errorMessage);
+        });
     }
+  };
+
+  const signUpWithGoogle = () => {
+    const auth = getAuth();
+    signInWithPopup(auth, googleProvider)
+      .then(result => {
+        // The signed-in user info.
+        const user = result.user;
+      })
+      .catch(error => {
+        // Handle Errors here.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // The email of the user's account used.
+        const email = error.customData.email;
+      });
+  };
+
+  const signUpWithGitHub = () => {
+    const auth = getAuth();
+    signInWithPopup(auth, githubProvider)
+      .then(result => {
+        // The signed-in user info.
+        const user = result.user;
+      })
+      .catch(error => {
+        // Handle Errors here.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+      });
   };
 
   // Handle verification code submitting
@@ -190,23 +225,6 @@ export default function SignUp() {
                     <Grid item xs={12}>
                       <TextField
                         onChange={() => {
-                          setUsernameError(false);
-                          setUsernameHelper("");
-                        }}
-                        error={usernameError}
-                        helperText={usernameHelper}
-                        autoComplete="username"
-                        name="username"
-                        required
-                        fullWidth
-                        id="username"
-                        label="Username"
-                        autoFocus
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <TextField
-                        onChange={() => {
                           setEmailError(false);
                           setEmailHelper("");
                         }}
@@ -218,6 +236,7 @@ export default function SignUp() {
                         label="Email Address"
                         name="email"
                         autoComplete="email"
+                        autoFocus
                       />
                     </Grid>
                     <Grid item xs={12}>
@@ -246,7 +265,31 @@ export default function SignUp() {
                     sx={{mt: 3, mb: 2}}>
                     Sign Up
                   </Button>
-                  <Grid container justifyContent="flex-end">
+                  <Divider
+                    sx={{
+                      fontWeight: 400,
+                      fontFamily: "Roboto",
+                      color: "text.primary",
+                    }}>
+                    OR
+                  </Divider>
+                  <Button
+                    variant={"outlined"}
+                    fullWidth
+                    sx={{mt: "16px"}}
+                    startIcon={<GoogleIcon />}
+                    onClick={signUpWithGoogle}>
+                    SignUp with Google
+                  </Button>
+                  <Button
+                    variant={"outlined"}
+                    fullWidth
+                    sx={{mt: "8px"}}
+                    startIcon={<GitHubIcon />}
+                    onClick={signUpWithGitHub}>
+                    SignUp with GitHub
+                  </Button>
+                  <Grid container justifyContent="flex-end" sx={{mt: "16px"}}>
                     <Grid item>
                       <Link href="/signin" variant="body2">
                         Already have an account? Sign in
