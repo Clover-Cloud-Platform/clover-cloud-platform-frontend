@@ -5,6 +5,7 @@ import {
   Alert,
   Box,
   Container,
+  Fade,
   Grid,
   Snackbar,
   TextField,
@@ -33,7 +34,7 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 
-const ContainerBox = props => {
+export const ContainerBox = props => {
   return (
     <Box
       width={"100%"}
@@ -48,7 +49,7 @@ const ContainerBox = props => {
   );
 };
 
-const Text = props => {
+export const Text = props => {
   return (
     <Typography
       sx={{
@@ -78,7 +79,6 @@ const GoToDashboardButton = () => {
 
 export default function Action() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [message, setMessage] = React.useState("");
   const [error, setError] = React.useState(false);
   const [errorText, setErrorText] = React.useState("");
   const [emailVerified, setEmailVerified] = React.useState(false);
@@ -119,12 +119,6 @@ export default function Action() {
       applyActionCode(auth, actionCode)
         .then(resp => {
           // Email address has been verified.
-          // TODO: Display a confirmation message to the user.
-          // You could also provide the user with a link back to the app.
-          // TODO: If a continue URL is available, display a button which on
-          // click redirects the user back to the app via continueUrl with
-          // additional state determined from that URL's parameters.
-
           setEmailVerified(true);
         })
         .catch(error => {
@@ -134,9 +128,6 @@ export default function Action() {
     }
 
     function handleResetPassword(auth, actionCode, continueUrl, lang) {
-      // Localize the UI to the selected language as determined by the lang
-      // parameter.
-
       // Verify the password reset code is valid.
       verifyPasswordResetCode(auth, actionCode)
         .then(email => {
@@ -155,8 +146,7 @@ export default function Action() {
     // Save the new password.
     confirmPasswordReset(auth, actionCode, newPassword)
       .then(resp => {
-        // todo uncomment on prod
-        //auth.signInWithEmailAndPassword(accountEmail, newPassword);
+        auth.signInWithEmailAndPassword(accountEmail, newPassword);
         setPasswordApplied(true);
       })
       .catch(error => {
@@ -170,11 +160,18 @@ export default function Action() {
   const VerifyEmail = () => {
     if (emailVerified) {
       return (
-        <ContainerBox>
-          <CheckCircleOutlineRoundedIcon color={"success"} fontSize={"large"} />
-          <Text>You have successfully verified your account.</Text>
-          <GoToDashboardButton />
-        </ContainerBox>
+        <Fade in={true}>
+          <Box>
+            <ContainerBox>
+              <CheckCircleOutlineRoundedIcon
+                color={"success"}
+                fontSize={"large"}
+              />
+              <Text>You have successfully verified your account.</Text>
+              <GoToDashboardButton />
+            </ContainerBox>
+          </Box>
+        </Fade>
       );
     } else {
       return <></>;
@@ -191,7 +188,7 @@ export default function Action() {
                 color={"success"}
                 fontSize={"large"}
               />
-              <Text>You have successfully resetted your password.</Text>
+              <Text>You have successfully reset your password.</Text>
               <GoToDashboardButton />
             </ContainerBox>
           ) : (

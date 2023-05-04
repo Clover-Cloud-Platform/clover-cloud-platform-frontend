@@ -7,17 +7,27 @@ import {
   Container,
   Divider,
   Fade,
+  FormControl,
+  FormHelperText,
   Grid,
+  InputAdornment,
   Link,
-  TextField,
+  OutlinedInput,
   Typography,
+  InputLabel,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import GoogleIcon from "@mui/icons-material/Google";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import {ThemeProvider} from "@mui/material/styles";
 import {theme} from "../App";
-import {socket} from "./Instances";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import IconButton from "@mui/material/IconButton";
+import {ContainerBox, Text} from "./Action";
+import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -26,7 +36,6 @@ import {
   GithubAuthProvider,
   sendEmailVerification,
 } from "firebase/auth";
-
 import {initializeApp} from "firebase/app";
 const googleProvider = new GoogleAuthProvider();
 const githubProvider = new GithubAuthProvider();
@@ -59,30 +68,25 @@ function Copyright(props) {
 
 export const emailRegex =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/;
-
-let timerCount = 60;
 
 // Function that renders SignUp component
 export default function SignUp() {
-  const [usernameError, setUsernameError] = React.useState(false);
   const [emailError, setEmailError] = React.useState(false);
   const [passwordError, setPasswordError] = React.useState(false);
-  const [usernameHelper, setUsernameHelper] = React.useState("");
   const [emailHelper, setEmailHelper] = React.useState("");
   const [passwordHelper, setPasswordHelper] = React.useState("");
-  const [verify, setVerify] = React.useState(false);
-  const [codeError, setCodeError] = React.useState(false);
-  const [codeHelper, setCodeHelper] = React.useState("");
-  const [authCode, setAuthCode] = React.useState();
-  const [timer, setTimer] = React.useState(60);
-  const [resend, disableResend] = React.useState(true);
-  const [userData, setUserData] = React.useState({
-    email: undefined,
-    username: undefined,
-    password: undefined,
-  });
   const [signupButtonState, disableSignupButton] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [fadeSignUp, setFadeSignUp] = React.useState(true);
+  const [signUp, setSignUp] = React.useState(true);
+  const [error, setError] = React.useState(false);
+  const [errorText, setErrorText] = React.useState("");
+
+  const handleClickShowPassword = () => setShowPassword(show => !show);
+
+  const handleMouseDownPassword = event => {
+    event.preventDefault();
+  };
 
   // Change theme color
   useEffect(() => {
@@ -114,13 +118,16 @@ export default function SignUp() {
         .then(userCredential => {
           // Signed in
           const user = userCredential.user;
-          console.log(user);
+          setFadeSignUp(false);
+          setTimeout(() => {
+            setSignUp(false);
+          }, 300);
           sendEmailVerification(user);
         })
         .catch(error => {
-          const errorCode = error.code;
           const errorMessage = error.message;
-          console.log(errorMessage);
+          setErrorText(errorMessage);
+          setError(true);
         });
     }
   };
@@ -133,11 +140,10 @@ export default function SignUp() {
         const user = result.user;
       })
       .catch(error => {
-        // Handle Errors here.
-        const errorCode = error.code;
+        // Handle Errors.
         const errorMessage = error.message;
-        // The email of the user's account used.
-        const email = error.customData.email;
+        setErrorText(errorMessage);
+        setError(true);
       });
   };
 
@@ -149,62 +155,18 @@ export default function SignUp() {
         const user = result.user;
       })
       .catch(error => {
-        // Handle Errors here.
-        const errorCode = error.code;
+        // Handle Errors.
         const errorMessage = error.message;
+        setErrorText(errorMessage);
+        setError(true);
       });
-  };
-
-  // Handle verification code submitting
-  const handleAuthCodeSubmit = event => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const enteredCode = data.get("authCode").trim();
-    if (enteredCode == authCode) {
-      socket.emit("AuthByEmail", {
-        email: userData.email,
-        username: userData.username,
-        password: userData.password,
-        resend_code: false,
-      });
-      socket.on("AuthByEmailRes", uid => {
-        localStorage.setItem("uid", uid);
-        window.location.href = "/instances";
-      });
-    } else {
-      setCodeError(true);
-      setCodeHelper("Invalid auth code");
-    }
-  };
-
-  // Function for re-sending verification code
-  const resendCode = e => {
-    e.preventDefault();
-    socket.emit("AuthByEmail", {
-      email: userData.email,
-      username: userData.username,
-      password: userData.password,
-      resend_code: true,
-    });
-    disableResend(true);
-    const timerInterval = setInterval(() => {
-      if (timerCount > 0) {
-        setTimer(prev => prev - 1);
-        timerCount--;
-      } else {
-        clearInterval(timerInterval);
-        disableResend(false);
-        setTimer(60);
-        timerCount = 60;
-      }
-    }, 1000);
   };
 
   // Return the SignUp component
   return (
     <ThemeProvider theme={theme}>
-      {!verify ? (
-        <Fade in={true}>
+      {signUp ? (
+        <Fade in={fadeSignUp}>
           <Box>
             <Container component="main" maxWidth="xs">
               <Box
@@ -223,38 +185,69 @@ export default function SignUp() {
                 <Box component="form" onSubmit={handleSubmit} sx={{mt: 3}}>
                   <Grid container spacing={2}>
                     <Grid item xs={12}>
-                      <TextField
-                        onChange={() => {
-                          setEmailError(false);
-                          setEmailHelper("");
-                        }}
-                        error={emailError}
-                        helperText={emailHelper}
-                        required
-                        fullWidth
-                        id="email"
-                        label="Email Address"
-                        name="email"
-                        autoComplete="email"
-                        autoFocus
-                      />
+                      <FormControl
+                        variant="outlined"
+                        sx={{width: "100%"}}
+                        error={emailError}>
+                        <InputLabel htmlFor="email">Email Address</InputLabel>
+                        <OutlinedInput
+                          onChange={() => {
+                            setEmailError(false);
+                            setEmailHelper("");
+                          }}
+                          required
+                          fullWidth
+                          label={"EmailAddress"}
+                          id="email"
+                          name="email"
+                          autoComplete="email"
+                          autoFocus
+                          aria-describedby="email-helper-text"
+                        />
+                        <FormHelperText id="email-helper-text">
+                          {emailHelper}
+                        </FormHelperText>
+                      </FormControl>
                     </Grid>
                     <Grid item xs={12}>
-                      <TextField
-                        onChange={() => {
-                          setPasswordError(false);
-                          setPasswordHelper("");
-                        }}
-                        error={passwordError}
-                        helperText={passwordHelper}
-                        required
-                        fullWidth
-                        name="password"
-                        label="Password"
-                        type="password"
-                        id="password"
-                        autoComplete="new-password"
-                      />
+                      <FormControl
+                        variant="outlined"
+                        sx={{width: "100%"}}
+                        error={passwordError}>
+                        <InputLabel htmlFor="password">Password</InputLabel>
+                        <OutlinedInput
+                          type={showPassword ? "text" : "password"}
+                          onChange={() => {
+                            setPasswordError(false);
+                            setPasswordHelper("");
+                          }}
+                          required
+                          fullWidth
+                          name="password"
+                          id="password"
+                          autoComplete="new-password"
+                          endAdornment={
+                            <InputAdornment position="end">
+                              <IconButton
+                                aria-label="toggle password visibility"
+                                onClick={handleClickShowPassword}
+                                onMouseDown={handleMouseDownPassword}
+                                edge="end">
+                                {showPassword ? (
+                                  <VisibilityOff />
+                                ) : (
+                                  <Visibility />
+                                )}
+                              </IconButton>
+                            </InputAdornment>
+                          }
+                          label="Password"
+                          aria-describedby="password-helper-text"
+                        />
+                        <FormHelperText id="password-helper-text">
+                          {passwordHelper}
+                        </FormHelperText>
+                      </FormControl>
                     </Grid>
                   </Grid>
                   <Button
@@ -305,70 +298,37 @@ export default function SignUp() {
       ) : (
         <Fade in={true}>
           <Box>
-            <Container component="main" maxWidth="lg">
-              <Box
-                component="form"
-                onSubmit={handleAuthCodeSubmit}
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  flexDirection: "column",
-                  height: "100vh",
-                }}>
-                <Typography
-                  sx={{
-                    fontFamily: "Google Sans,Noto Sans,sans-serif",
-                    letterSpacing: "-.5px",
-                    lineHeight: "1.2em",
-                    fontSize: "24px",
-                    "@media (min-width:900px)": {fontSize: "30px"},
-                    textAlign: "center",
-                    mb: "30px",
-                  }}>
-                  Enter your auth code we sent you by email
-                </Typography>
-                <TextField
-                  onChange={() => {
-                    setCodeError(false);
-                    setCodeHelper("");
-                  }}
-                  error={codeError}
-                  helperText={codeHelper}
-                  autoComplete="authCode"
-                  name="authCode"
-                  required
-                  id="authCode"
-                  label="Auth code"
-                  autoFocus
-                  sx={{maxWidth: "400px", width: "100%"}}
-                />
-                <Button
-                  type="submit"
-                  variant="contained"
-                  sx={{mt: 3, maxWidth: "400px", width: "100%"}}>
-                  Verify
-                </Button>
-                <Grid
-                  container
-                  justifyContent="flex-end"
-                  maxWidth={"400px"}
-                  width={"100%"}
-                  mt={3}>
-                  <Grid item>
-                    <Button
-                      size={"small"}
-                      onClick={resendCode}
-                      disabled={resend}>
-                      Resend code {resend ? timer : ""}
-                    </Button>
-                  </Grid>
-                </Grid>
-              </Box>
-            </Container>
+            <ContainerBox>
+              <MailOutlineRoundedIcon color={"primary"} fontSize={"large"} />
+              <Text>
+                Please check your email. We have sent you a link to activate
+                your account.
+              </Text>
+            </ContainerBox>
           </Box>
         </Fade>
       )}
+      <Snackbar
+        anchorOrigin={{vertical: "bottom", horizontal: "center"}}
+        open={error}
+        onClose={() => {
+          setError(false);
+        }}>
+        <Alert
+          onClose={() => {
+            setError(false);
+          }}
+          severity="error"
+          sx={{width: "100%"}}>
+          {errorText !== ""
+            ? `Error: ${errorText
+                .split("/")[1]
+                .split("-")
+                .join(" ")
+                .slice(0, -2)}. Please try again.`
+            : ""}
+        </Alert>
+      </Snackbar>
     </ThemeProvider>
   );
 }
