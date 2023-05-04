@@ -136,8 +136,7 @@ export default function SignUp() {
     const auth = getAuth();
     signInWithPopup(auth, googleProvider)
       .then(result => {
-        // The signed-in user info.
-        const user = result.user;
+        window.location.href = "/instances";
       })
       .catch(error => {
         // Handle Errors.
@@ -151,8 +150,7 @@ export default function SignUp() {
     const auth = getAuth();
     signInWithPopup(auth, githubProvider)
       .then(result => {
-        // The signed-in user info.
-        const user = result.user;
+        window.location.href = "/instances";
       })
       .catch(error => {
         // Handle Errors.
