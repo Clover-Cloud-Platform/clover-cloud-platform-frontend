@@ -6,9 +6,12 @@ import {
   Box,
   Container,
   Fade,
+  FormControl,
   Grid,
+  InputAdornment,
+  InputLabel,
+  OutlinedInput,
   Snackbar,
-  TextField,
   Typography,
 } from "@mui/material";
 import {initializeApp} from "firebase/app";
@@ -17,11 +20,16 @@ import {
   applyActionCode,
   verifyPasswordResetCode,
   confirmPasswordReset,
+  onAuthStateChanged,
 } from "firebase/auth";
 import {useSearchParams} from "react-router-dom";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
 import Button from "@mui/material/Button";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
+import IconButton from "@mui/material/IconButton";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import Visibility from "@mui/icons-material/Visibility";
+import {socket} from "./Instances";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -85,6 +93,13 @@ export default function Action() {
   const [accountEmail, setAccountEmail] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
   const [passwordApplied, setPasswordApplied] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
+
+  const handleClickShowPassword = () => setShowPassword(show => !show);
+
+  const handleMouseDownPassword = event => {
+    event.preventDefault();
+  };
 
   const auth = getAuth(app);
   // Get the action to complete.
@@ -120,6 +135,11 @@ export default function Action() {
         .then(resp => {
           // Email address has been verified.
           setEmailVerified(true);
+          onAuthStateChanged(auth, user => {
+            if (user) {
+              socket.emit("AddNewUser", user.uid);
+            }
+          });
         })
         .catch(error => {
           setErrorText("Error: This link is invalid or expired.");
@@ -151,7 +171,7 @@ export default function Action() {
       })
       .catch(error => {
         setErrorText(
-          "Error occurred during confirmation. The link might have expired or the password is too weak.",
+          "Error occurred during confirmation. The link might have expired.",
         );
         setError(true);
       });
@@ -178,9 +198,11 @@ export default function Action() {
     }
   };
 
-  const ResetPassword = () => {
-    if (accountEmail !== "") {
-      return (
+  return (
+    <ThemeProvider theme={theme}>
+      {mode === "verifyEmail" ? (
+        <VerifyEmail />
+      ) : (
         <>
           {passwordApplied ? (
             <ContainerBox>
@@ -197,18 +219,38 @@ export default function Action() {
               <Container component="main" maxWidth="xs">
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
-                      value={newPassword}
-                      onChange={e => {
-                        setNewPassword(e.target.value);
-                      }}
-                      autoFocus
-                      fullWidth
-                      required
-                      label="Password"
-                      type="password"
-                      autoComplete="new-password"
-                    />
+                    <FormControl variant="outlined" sx={{width: "100%"}}>
+                      <InputLabel htmlFor="password">New Password</InputLabel>
+                      <OutlinedInput
+                        type={showPassword ? "text" : "password"}
+                        onChange={e => {
+                          setNewPassword(e.target.value);
+                        }}
+                        value={newPassword}
+                        required
+                        fullWidth
+                        name="password"
+                        id="password"
+                        autoComplete="new-password"
+                        endAdornment={
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={handleClickShowPassword}
+                              onMouseDown={handleMouseDownPassword}
+                              edge="end">
+                              {showPassword ? (
+                                <VisibilityOff />
+                              ) : (
+                                <Visibility />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        }
+                        label="New Password"
+                        autoFocus
+                      />
+                    </FormControl>
                   </Grid>
                   <Grid item xs={12}>
                     <Button
@@ -223,15 +265,7 @@ export default function Action() {
             </ContainerBox>
           )}
         </>
-      );
-    } else {
-      return <></>;
-    }
-  };
-
-  return (
-    <ThemeProvider theme={theme}>
-      {mode === "verifyEmail" ? <VerifyEmail /> : <ResetPassword />}
+      )}
       <Snackbar
         anchorOrigin={{vertical: "bottom", horizontal: "center"}}
         open={error}

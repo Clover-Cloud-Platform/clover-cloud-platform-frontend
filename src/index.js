@@ -10,6 +10,7 @@ import SignIn from "./Components/SignIn";
 import Instances from "./Components/Instances";
 import NotFound from "./Components/NotFound";
 import Action from "./Components/Action";
+import ResetPassword from "./Components/ResetPassword";
 
 // Importing firebase modules and initializing app with firebaseConfig
 import {initializeApp} from "firebase/app";
@@ -42,6 +43,7 @@ root.render(
       <Route path="/signin" element={<SignIn />} />
       <Route path="/instances" element={<Instances />} />
       <Route path="/action" element={<Action />} />
+      <Route path="/reset" element={<ResetPassword />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   </Router>,

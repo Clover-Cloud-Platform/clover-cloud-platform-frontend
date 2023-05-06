@@ -34,6 +34,19 @@ import StopRoundedIcon from "@mui/icons-material/StopRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import LaunchRoundedIcon from "@mui/icons-material/LaunchRounded";
 import ExitToAppRoundedIcon from "@mui/icons-material/ExitToAppRounded";
+import LockResetRoundedIcon from "@mui/icons-material/LockResetRounded";
+import {getAuth, onAuthStateChanged, signOut} from "firebase/auth";
+import {initializeApp} from "firebase/app";
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: "clover-cloud-platform",
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
+};
+initializeApp(firebaseConfig);
 
 //connect to server
 export const socket = io(process.env.REACT_APP_SERVER_LINK, {
@@ -58,19 +71,10 @@ let pushInstanceCounter = 0;
 //UID of the user
 let uid;
 
+const auth = getAuth();
+
 //Page that displays user's instances and makes it possible to manage them and create new ones
 export default function Instances() {
-  //check UID
-  if (!localStorage.getItem("uid") && !sessionStorage.getItem("uid")) {
-    //move to sign in page
-    window.location.href = "/signin";
-  } else {
-    //set UID
-    uid = localStorage.getItem("uid")
-      ? localStorage.getItem("uid")
-      : sessionStorage.getItem("uid");
-  }
-
   // Change theme color
   useEffect(() => {
     document
@@ -107,6 +111,35 @@ export default function Instances() {
   const [dialogHelper, setDialogHelper] = React.useState("");
 
   const [disableNewInstance, setNewInstanceDisabled] = React.useState(false);
+
+  const [userPhoto, setUserPhoto] = React.useState(null);
+
+  useEffect(() => {
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        if (
+          user.emailVerified ||
+          user.providerData[0].providerId !== "password"
+        ) {
+          uid = user.uid;
+          if (user.displayName) {
+            setUsername(user.displayName);
+          } else {
+            setUsername(user.email.split("@")[0]);
+          }
+          if (user.photoURL) {
+            setUserPhoto(user.photoURL);
+          }
+          //request for available instances
+          socket.emit("GetInstances", uid);
+        } else {
+          window.location.href = "/signin";
+        }
+      } else {
+        window.location.href = "/signin";
+      }
+    });
+  }, []);
 
   //open/close user menu
   const handleOpenUserMenu = event => {
@@ -266,24 +299,18 @@ export default function Instances() {
     );
   };
 
-  //request for username and available instances
-  socket.emit("GetUsername", uid);
+  // todo tests
+  useEffect(() => {
+    setPreloaderOpacity(0);
+    setTimeout(() => {
+      setPreloader(false);
+    }, 225);
+  }, []);
+
   //handle response
-  socket.on("Username", data => {
+  socket.on("Instances", data => {
     //check stopper
     if (!instancesHandled) {
-      if (data.username) {
-        //set username
-        setUsername(data.username);
-      } else {
-        //if UID is invalid remove it, or if it not exists, move to sign in page
-        if (localStorage.getItem("uid")) {
-          localStorage.removeItem("uid");
-        } else if (sessionStorage.getItem("uid")) {
-          sessionStorage.removeItem("uid");
-        }
-        window.location.href = "/signin";
-      }
       if (data.cont_list) {
         const instanceNames = Object.keys(data.cont_list);
         //insert instances
@@ -416,6 +443,7 @@ export default function Instances() {
                   <Tooltip title="Open settings">
                     <IconButton onClick={handleOpenUserMenu} sx={{p: 0}}>
                       <Avatar
+                        src={userPhoto}
                         sx={{
                           bgcolor: "primary.200",
                         }}>
@@ -443,6 +471,7 @@ export default function Instances() {
                       style={{opacity: 1}}
                       disabled>
                       <Avatar
+                        src={userPhoto}
                         sx={{
                           height: "24px",
                           width: "24px",
@@ -458,10 +487,18 @@ export default function Instances() {
                     </MenuItem>
                     <MenuItem
                       onClick={() => {
-                        localStorage.getItem("uid")
-                          ? localStorage.removeItem("uid")
-                          : sessionStorage.removeItem("uid");
-                        window.location.href = "/signin";
+                        window.location.href = "/reset";
+                      }}>
+                      <LockResetRoundedIcon />
+                      <Typography textAlign="center" ml={"8px"}>
+                        Reset password
+                      </Typography>
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        signOut(auth).then(() => {
+                          window.location.href = "/signin";
+                        });
                       }}>
                       <ExitToAppRoundedIcon />
                       <Typography textAlign="center" ml={"8px"}>

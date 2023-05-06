@@ -38,6 +38,19 @@ import TemplateBrowser from "./TemplateBrowser";
 import HelpRoundedIcon from "@mui/icons-material/HelpRounded";
 import SpaceDashboardIcon from "@mui/icons-material/SpaceDashboard";
 import MyTemplates from "./MyTemplates";
+import {getAuth, onAuthStateChanged, signOut} from "firebase/auth";
+import {initializeApp} from "firebase/app";
+import LockResetRoundedIcon from "@mui/icons-material/LockResetRounded";
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: "clover-cloud-platform",
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
+};
+initializeApp(firebaseConfig);
 
 const StyledPaper = styled(Paper)`
   background-color: #2a2931;
@@ -67,11 +80,14 @@ export const WorkspaceTextField = styled(TextField)({
   },
 });
 
+const auth = getAuth();
+
 // A component that returns app bar for workspace
 export default function WorkspaceAppBar(props) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [instanceName, setInstanceName] = React.useState("");
   const [username, setUsername] = React.useState("");
+  const [userPhoto, setUserPhoto] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const [openSettings, setOpenSettings] = React.useState(false);
   const [openTBrowser, setOpenTBrowser] = React.useState(false);
@@ -91,19 +107,34 @@ export default function WorkspaceAppBar(props) {
     window.location.href = "/instances";
   }
   let uid;
-  if (localStorage.getItem("uid")) {
-    uid = localStorage.getItem("uid");
-  } else if (sessionStorage.getItem("uid")) {
-    uid = sessionStorage.getItem("uid");
-  } else {
-    window.location.href = "/signin";
-  }
+  useEffect(() => {}, []);
 
   useEffect(() => {
-    // Get instance data - container state, user name, and instance name
-    socket.emit("GetInstanceData", {uid: uid, instance_id: instanceID});
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        if (
+          user.emailVerified ||
+          user.providerData[0].providerId !== "password"
+        ) {
+          uid = user.uid;
+          if (user.displayName) {
+            setUsername(user.displayName);
+          } else {
+            setUsername(user.email.split("@")[0]);
+          }
+          if (user.photoURL) {
+            setUserPhoto(user.photoURL);
+          }
+          // Get instance data - container state and instance name
+          socket.emit("GetInstanceData", {uid: uid, instance_id: instanceID});
+        } else {
+          window.location.href = "/signin";
+        }
+      } else {
+        window.location.href = "/signin";
+      }
+    });
     socket.on("InstanceData", data => {
-      console.log(data);
       if (data.instance_state) {
         if (data.instance_state === "Stopped") {
           setInstanceError(1);
@@ -113,7 +144,6 @@ export default function WorkspaceAppBar(props) {
           props.hidePreloader();
         }
       }
-      setUsername(data.username);
       setInstanceName(data.instance_name);
       setMyTemplates(data.user_templates);
     });
@@ -428,6 +458,7 @@ export default function WorkspaceAppBar(props) {
           <Tooltip title="Open user settings" disableInteractive>
             <IconButton onClick={handleOpenUserMenu} sx={{p: 0}}>
               <Avatar
+                src={userPhoto}
                 sx={{
                   height: "32px",
                   width: "32px",
@@ -457,6 +488,7 @@ export default function WorkspaceAppBar(props) {
               style={{opacity: 1}}
               disabled>
               <Avatar
+                src={userPhoto}
                 sx={{
                   height: "24px",
                   width: "24px",
@@ -469,10 +501,18 @@ export default function WorkspaceAppBar(props) {
             </MenuItem>
             <MenuItem
               onClick={() => {
-                localStorage.getItem("uid")
-                  ? localStorage.removeItem("uid")
-                  : sessionStorage.removeItem("uid");
-                window.location.href = "/signin";
+                window.location.href = "/reset";
+              }}>
+              <LockResetRoundedIcon />
+              <Typography textAlign="center" ml={"8px"}>
+                Reset password
+              </Typography>
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                signOut(auth).then(() => {
+                  window.location.href = "/signin";
+                });
               }}>
               <ExitToAppRoundedIcon />
               <Typography textAlign="center" ml={"8px"}>
@@ -490,6 +530,7 @@ export default function WorkspaceAppBar(props) {
         currentID={instanceID}
       />
       <MyTemplates
+        uid={uid}
         openMyTemplates={openMyTemplates}
         setOpenMyTemplates={setOpenMyTemplates}
         myTemplates={myTemplates}

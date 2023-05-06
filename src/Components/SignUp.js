@@ -35,8 +35,11 @@ import {
   GoogleAuthProvider,
   GithubAuthProvider,
   sendEmailVerification,
+  onAuthStateChanged,
 } from "firebase/auth";
 import {initializeApp} from "firebase/app";
+import {Link as RouterLink} from "react-router-dom";
+import {socket} from "./Instances";
 const googleProvider = new GoogleAuthProvider();
 const githubProvider = new GithubAuthProvider();
 
@@ -132,11 +135,16 @@ export default function SignUp() {
     }
   };
 
-  const signUpWithGoogle = () => {
+  const signInWithGoogle = () => {
     const auth = getAuth();
     signInWithPopup(auth, googleProvider)
       .then(result => {
-        window.location.href = "/instances";
+        onAuthStateChanged(auth, user => {
+          if (user) {
+            socket.emit("AddNewUser", user.uid);
+            window.location.href = "/instances";
+          }
+        });
       })
       .catch(error => {
         // Handle Errors.
@@ -146,11 +154,16 @@ export default function SignUp() {
       });
   };
 
-  const signUpWithGitHub = () => {
+  const signInWithGitHub = () => {
     const auth = getAuth();
     signInWithPopup(auth, githubProvider)
       .then(result => {
-        window.location.href = "/instances";
+        onAuthStateChanged(auth, user => {
+          if (user) {
+            socket.emit("AddNewUser", user.uid);
+            window.location.href = "/instances";
+          }
+        });
       })
       .catch(error => {
         // Handle Errors.
@@ -187,7 +200,7 @@ export default function SignUp() {
                         variant="outlined"
                         sx={{width: "100%"}}
                         error={emailError}>
-                        <InputLabel htmlFor="email">Email Address</InputLabel>
+                        <InputLabel htmlFor="email">Email Address *</InputLabel>
                         <OutlinedInput
                           onChange={() => {
                             setEmailError(false);
@@ -195,7 +208,7 @@ export default function SignUp() {
                           }}
                           required
                           fullWidth
-                          label={"EmailAddress"}
+                          label={"Email Address"}
                           id="email"
                           name="email"
                           autoComplete="email"
@@ -212,7 +225,7 @@ export default function SignUp() {
                         variant="outlined"
                         sx={{width: "100%"}}
                         error={passwordError}>
-                        <InputLabel htmlFor="password">Password</InputLabel>
+                        <InputLabel htmlFor="password">Password *</InputLabel>
                         <OutlinedInput
                           type={showPassword ? "text" : "password"}
                           onChange={() => {
@@ -269,20 +282,23 @@ export default function SignUp() {
                     fullWidth
                     sx={{mt: "16px"}}
                     startIcon={<GoogleIcon />}
-                    onClick={signUpWithGoogle}>
-                    SignUp with Google
+                    onClick={signInWithGoogle}>
+                    Sign Up with Google
                   </Button>
                   <Button
                     variant={"outlined"}
                     fullWidth
                     sx={{mt: "8px"}}
                     startIcon={<GitHubIcon />}
-                    onClick={signUpWithGitHub}>
-                    SignUp with GitHub
+                    onClick={signInWithGitHub}>
+                    Sign Up with GitHub
                   </Button>
                   <Grid container justifyContent="flex-end" sx={{mt: "16px"}}>
                     <Grid item>
-                      <Link href="/signin" variant="body2">
+                      <Link
+                        component={RouterLink}
+                        to={"/signin"}
+                        variant="body2">
                         Already have an account? Sign in
                       </Link>
                     </Grid>

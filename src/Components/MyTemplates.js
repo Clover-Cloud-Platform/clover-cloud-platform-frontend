@@ -45,7 +45,10 @@ export default function MyTemplates({
         <CardActions>
           <Button
             onClick={() => {
-              socket.emit("DeleteTemplate", props.instanceId);
+              socket.emit("DeleteTemplate", {
+                instanceID: props.instanceId,
+                uid: props.uid,
+              });
               const myTemplatesUpdated = myTemplates;
               myTemplatesUpdated.splice(props.index, 1);
               setMyTemplates([...myTemplatesUpdated]);
