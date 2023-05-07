@@ -299,14 +299,6 @@ export default function Instances() {
     );
   };
 
-  // todo tests
-  useEffect(() => {
-    setPreloaderOpacity(0);
-    setTimeout(() => {
-      setPreloader(false);
-    }, 225);
-  }, []);
-
   //handle response
   socket.on("Instances", data => {
     //check stopper

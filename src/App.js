@@ -17,6 +17,7 @@ import {
   Menu,
   MenuItem,
   Toolbar,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -37,6 +38,22 @@ import {ReactComponent as FrontendIcon} from "./assets/frontend.svg";
 import {ReactComponent as BackendIcon} from "./assets/backend.svg";
 import {ReactComponent as HistoryIcon} from "./assets/history.svg";
 import {Link as RouterLink} from "react-router-dom";
+import {getAuth, onAuthStateChanged, signOut} from "firebase/auth";
+import {initializeApp} from "firebase/app";
+import LockResetRoundedIcon from "@mui/icons-material/LockResetRounded";
+import ExitToAppRoundedIcon from "@mui/icons-material/ExitToAppRounded";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: "clover-cloud-platform",
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
+};
+initializeApp(firebaseConfig);
+const auth = getAuth();
 
 //global theme for the app
 export const theme = createTheme({
@@ -84,6 +101,32 @@ const ResponsiveAppBar = () => {
   // Setting states for anchorElNav and appBar
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [appBar, setAppBar] = React.useState(false);
+  //state of user menu
+  const [anchorElUser, setAnchorElUser] = React.useState(null);
+
+  const [username, setUsername] = React.useState("");
+  const [userPhoto, setUserPhoto] = React.useState(null);
+
+  // Getting user info
+  useEffect(() => {
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        if (
+          user.emailVerified ||
+          user.providerData[0].providerId !== "password"
+        ) {
+          if (user.displayName) {
+            setUsername(user.displayName);
+          } else {
+            setUsername(user.email.split("@")[0]);
+          }
+          if (user.photoURL) {
+            setUserPhoto(user.photoURL);
+          }
+        }
+      }
+    });
+  }, []);
 
   // Setting functions to open and close navigation menu
   const handleOpenNavMenu = event => {
@@ -91,6 +134,14 @@ const ResponsiveAppBar = () => {
   };
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
+  };
+
+  //open/close user menu
+  const handleOpenUserMenu = event => {
+    setAnchorElUser(event.currentTarget);
+  };
+  const handleCloseUserMenu = () => {
+    setAnchorElUser(null);
   };
 
   // Setting function to set the state of appBar based on window scroll Y-axis position
@@ -144,8 +195,7 @@ const ResponsiveAppBar = () => {
               }}>
               <MenuItem
                 onClick={() => {
-                  window.location.href =
-                    "https://github.com/Clover-Cloud-Platform/clover-cloud-platform-frontend/wiki";
+                  window.location.href = "https://docs.clovercloud.software";
                 }}>
                 <Typography textAlign="center">Docs</Typography>
               </MenuItem>
@@ -173,16 +223,14 @@ const ResponsiveAppBar = () => {
           </Box>
           <Box
             sx={{
-              display: {xs: "flex", md: "none"},
+              display: {xs: username === "" ? "flex" : "none", md: "none"},
               mr: 1,
             }}>
             <Logo style={{height: "52px", width: "32px"}} />
           </Box>
           <Box sx={{flexGrow: 1, display: {xs: "none", md: "flex"}}}>
             <Button
-              href={
-                "https://github.com/Clover-Cloud-Platform/clover-cloud-platform-frontend/wiki"
-              }
+              href={"https://docs.clovercloud.software"}
               sx={{my: 2, display: "block"}}>
               Docs
             </Button>
@@ -199,29 +247,111 @@ const ResponsiveAppBar = () => {
               Contact us
             </Button>
           </Box>
-          <Button
-            key={"Login"}
-            component={RouterLink}
-            to={"/signin"}
-            sx={{
-              my: 2,
-              display: "block",
-              "@media (max-width:900px)": {display: "none"},
-            }}>
-            {"Login"}
-          </Button>
-          <Button
-            variant={"outlined"}
-            key={"Sign Up"}
-            component={RouterLink}
-            to={"/signup"}
-            sx={{
-              my: 2,
-              display: "block",
-              "@media (max-width:900px)": {display: "none"},
-            }}>
-            {"Sign Up"}
-          </Button>
+          {username === "" ? (
+            <>
+              <Button
+                key={"Login"}
+                component={RouterLink}
+                to={"/signin"}
+                sx={{
+                  my: 2,
+                  display: "block",
+                  "@media (max-width:900px)": {display: "none"},
+                }}>
+                {"Login"}
+              </Button>
+              <Button
+                variant={"outlined"}
+                key={"Sign Up"}
+                component={RouterLink}
+                to={"/signup"}
+                sx={{
+                  my: 2,
+                  display: "block",
+                  "@media (max-width:900px)": {display: "none"},
+                }}>
+                {"Sign Up"}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Tooltip title="Open settings">
+                <IconButton onClick={handleOpenUserMenu} sx={{p: 0}}>
+                  <Avatar
+                    src={userPhoto}
+                    sx={{
+                      bgcolor: "primary.200",
+                    }}>
+                    {username ? username.split("")[0].toUpperCase() : ""}
+                  </Avatar>
+                </IconButton>
+              </Tooltip>
+              <Menu
+                sx={{mt: "45px"}}
+                id="menu-appbar"
+                anchorEl={anchorElUser}
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                open={Boolean(anchorElUser)}
+                onClose={handleCloseUserMenu}>
+                <MenuItem
+                  onClick={handleCloseUserMenu}
+                  style={{opacity: 1}}
+                  disabled>
+                  <Avatar
+                    src={userPhoto}
+                    sx={{
+                      height: "24px",
+                      width: "24px",
+                      bgcolor: "primary.200",
+                    }}
+                  />
+                  <Typography
+                    textAlign="center"
+                    color={"primary.500"}
+                    ml={"8px"}>
+                    {username}
+                  </Typography>
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    window.location.href = "/instances";
+                  }}>
+                  <DashboardOutlinedIcon />
+                  <Typography textAlign="center" ml={"8px"}>
+                    Go to dashboard
+                  </Typography>
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    window.location.href = "/reset";
+                  }}>
+                  <LockResetRoundedIcon />
+                  <Typography textAlign="center" ml={"8px"}>
+                    Reset password
+                  </Typography>
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    signOut(auth).then(() => {
+                      window.location.href = "/signin";
+                    });
+                  }}>
+                  <ExitToAppRoundedIcon />
+                  <Typography textAlign="center" ml={"8px"}>
+                    Log out
+                  </Typography>
+                </MenuItem>
+              </Menu>
+            </>
+          )}
         </Toolbar>
       </Container>
     </AppBar>
@@ -368,7 +498,7 @@ export default function App() {
                   Get started
                 </Button>
                 <Button
-                  href={"/instances"}
+                  href={"https://docs.clovercloud.software"}
                   variant={"outlined"}
                   size={"large"}
                   sx={{
@@ -380,7 +510,7 @@ export default function App() {
                       mt: "10px",
                     },
                   }}>
-                  Go to dashboard
+                  Documentation
                 </Button>
               </Box>
             </Box>
