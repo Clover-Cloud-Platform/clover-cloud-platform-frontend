@@ -303,8 +303,8 @@ export default function Instances() {
   socket.on("Instances", data => {
     //check stopper
     if (!instancesHandled) {
-      if (data.cont_list) {
-        const instanceNames = Object.keys(data.cont_list);
+      if (data) {
+        const instanceNames = Object.keys(data);
         //insert instances
         for (
           pushInstanceCounter;
@@ -316,9 +316,9 @@ export default function Instances() {
             names.push(name);
             instanceList.push(
               <Instance
-                link={data.cont_list[name][0]}
+                link={data[name][0]}
                 init={true}
-                running={data.cont_list[name][1]}
+                running={data[name][1]}
                 key={pushInstanceCounter}
                 num={pushInstanceCounter}
                 name={name}
