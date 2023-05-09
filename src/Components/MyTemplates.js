@@ -1,5 +1,4 @@
 import * as React from "react";
-import {useEffect} from "react";
 import {
   Box,
   Button,
@@ -81,26 +80,40 @@ export default function MyTemplates({
           }}>
           {"My Templates"}
         </DialogTitle>
-        <DialogContent>
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "10px",
-              mt: "15px",
-            }}>
-            {myTemplates.map(template => (
-              <Template
-                workspaceName={template.workspaceName}
-                name={template.name}
-                description={template.description}
-                date={template.date}
-                key={template.instanceID}
-                instanceId={template.instanceID}
-                index={myTemplates.indexOf(template)}
-              />
-            ))}
-          </Box>
+        <DialogContent sx={{position: "relative"}}>
+          {myTemplates.length === 0 ? (
+            <Typography
+              color={"text.secondary"}
+              sx={{
+                fontSize: "24px",
+                position: "absolute",
+                top: "50%",
+                transform: "translate(-50%, -50%)",
+                left: "50%",
+              }}>
+              You have no templates.
+            </Typography>
+          ) : (
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "10px",
+                mt: "15px",
+              }}>
+              {myTemplates.map(template => (
+                <Template
+                  workspaceName={template.workspaceName}
+                  name={template.name}
+                  description={template.description}
+                  date={template.date}
+                  key={template.instanceID}
+                  instanceId={template.instanceID}
+                  index={myTemplates.indexOf(template)}
+                />
+              ))}
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
           <Button
