@@ -74,13 +74,13 @@ export const Text = props => {
     </Typography>
   );
 };
-const GoToDashboardButton = () => {
+const GoToButton = props => {
   return (
     <Button
       variant={"outlined"}
       endIcon={<ArrowForwardRoundedIcon />}
-      href={"/instances"}>
-      Go to dashboard
+      href={props.to === "dashboard" ? "/instances" : "/signin"}>
+      Go to {props.to}
     </Button>
   );
 };
@@ -166,7 +166,6 @@ export default function Action() {
     // Save the new password.
     confirmPasswordReset(auth, actionCode, newPassword)
       .then(resp => {
-        auth.signInWithEmailAndPassword(accountEmail, newPassword);
         setPasswordApplied(true);
       })
       .catch(error => {
@@ -188,7 +187,7 @@ export default function Action() {
                 fontSize={"large"}
               />
               <Text>You have successfully verified your account.</Text>
-              <GoToDashboardButton />
+              <GoToButton to={"dashboard"} />
             </ContainerBox>
           </Box>
         </Fade>
@@ -211,7 +210,7 @@ export default function Action() {
                 fontSize={"large"}
               />
               <Text>You have successfully reset your password.</Text>
-              <GoToDashboardButton />
+              <GoToButton to={"login"} />
             </ContainerBox>
           ) : (
             <ContainerBox>
