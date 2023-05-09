@@ -420,8 +420,11 @@ const Repo = props => {
 
 // export App and render it
 export default function App() {
-  // Change theme color
   useEffect(() => {
+    // Set title
+    document.title = "Clover Cloud Platform";
+
+    // Change theme color
     document
       .querySelector('meta[name="theme-color"]')
       .setAttribute("content", "#ede9fe");

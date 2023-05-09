@@ -75,8 +75,11 @@ const auth = getAuth();
 
 //Page that displays user's instances and makes it possible to manage them and create new ones
 export default function Instances() {
-  // Change theme color
   useEffect(() => {
+    // Set title
+    document.title = "Dashboard - Clover Cloud Platform";
+
+    // Change theme color
     document
       .querySelector('meta[name="theme-color"]')
       .setAttribute("content", "#ede9fe");

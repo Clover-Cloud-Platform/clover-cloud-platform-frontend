@@ -64,6 +64,9 @@ export default function Workspace() {
   const [historyKey, setHistoryKey] = React.useState(0);
 
   useEffect(() => {
+    // Set title
+    document.title = "Workspace - Clover Cloud Platform";
+
     // Change theme color
     document
       .querySelector('meta[name="theme-color"]')

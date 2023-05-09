@@ -107,7 +107,6 @@ export default function WorkspaceAppBar(props) {
     window.location.href = "/instances";
   }
   let uid;
-  useEffect(() => {}, []);
 
   useEffect(() => {
     onAuthStateChanged(auth, user => {

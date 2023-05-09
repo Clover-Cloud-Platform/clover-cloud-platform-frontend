@@ -91,8 +91,11 @@ export default function SignUp() {
     event.preventDefault();
   };
 
-  // Change theme color
   useEffect(() => {
+    // Set title
+    document.title = "Sign Up - Clover Cloud Platform";
+
+    // Change theme color
     document
       .querySelector('meta[name="theme-color"]')
       .setAttribute("content", "#ede9fe");
