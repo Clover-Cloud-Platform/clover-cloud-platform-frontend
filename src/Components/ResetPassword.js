@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import {ThemeProvider} from "@mui/material/styles";
 import {theme} from "../App";
 import {ContainerBox, Text} from "./Action";
@@ -26,6 +26,16 @@ export default function ResetPassword() {
   const [errorText, setErrorText] = React.useState("");
   const [emailError, setEmailError] = React.useState(false);
   const [emailHelper, setEmailHelper] = React.useState("");
+
+  useEffect(() => {
+    // Set title
+    document.title = "Reset Password - Clover Cloud Platform";
+
+    // Change theme color
+    document
+      .querySelector('meta[name="theme-color"]')
+      .setAttribute("content", "#ede9fe");
+  }, []);
 
   const resetPassword = () => {
     if (!emailRegex.test(email.trim())) {

@@ -107,6 +107,20 @@ export default function Action() {
   // Get the one-time code from the query parameter.
   const actionCode = searchParams.get("oobCode");
 
+  // Set title
+  if (mode === "verifyEmail") {
+    document.title = "Verify Email - Clover Cloud Platform";
+  } else if (mode === "resetPassword") {
+    document.title = "Reset Password - Clover Cloud Platform";
+  } else {
+    document.title = "Clover Cloud Platform";
+  }
+
+  // Change theme color
+  document
+    .querySelector('meta[name="theme-color"]')
+    .setAttribute("content", "#ede9fe");
+
   useEffect(() => {
     // Get the continue URL from the query parameter if available.
     const continueUrl = searchParams.get("continueUrl");
