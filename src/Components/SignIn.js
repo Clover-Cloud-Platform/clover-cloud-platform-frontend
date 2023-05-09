@@ -33,6 +33,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   GithubAuthProvider,
+  onAuthStateChanged,
 } from "firebase/auth";
 import {initializeApp} from "firebase/app";
 import IconButton from "@mui/material/IconButton";
@@ -84,8 +85,11 @@ export default function SignIn() {
     event.preventDefault();
   };
 
-  // Change theme color
   useEffect(() => {
+    // Set title
+    document.title = "Sign In - Clover Cloud Platform";
+
+    // Change theme color
     document
       .querySelector('meta[name="theme-color"]')
       .setAttribute("content", "#ede9fe");
@@ -123,8 +127,12 @@ export default function SignIn() {
     const auth = getAuth();
     signInWithPopup(auth, googleProvider)
       .then(result => {
-        socket.emit("AddNewUser", user.uid);
-        window.location.href = "/instances";
+        onAuthStateChanged(auth, user => {
+          if (user) {
+            socket.emit("AddNewUser", user.uid);
+            window.location.href = "/instances";
+          }
+        });
       })
       .catch(error => {
         // Handle Errors.
@@ -138,8 +146,12 @@ export default function SignIn() {
     const auth = getAuth();
     signInWithPopup(auth, githubProvider)
       .then(result => {
-        socket.emit("AddNewUser", user.uid);
-        window.location.href = "/instances";
+        onAuthStateChanged(auth, user => {
+          if (user) {
+            socket.emit("AddNewUser", user.uid);
+            window.location.href = "/instances";
+          }
+        });
       })
       .catch(error => {
         // Handle Errors.
