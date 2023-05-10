@@ -184,13 +184,7 @@ export default function WorkspaceAppBar(props) {
         editorFontSize: fontSize,
         terminalBG: tColor,
       });
-      if (localStorage.getItem("uid")) {
-        localStorage.setItem("config", config);
-      } else if (sessionStorage.getItem("uid")) {
-        sessionStorage.setItem("config", config);
-      } else {
-        window.location.href = "/signin";
-      }
+      localStorage.setItem("config", config);
     };
 
     // Get a response from the server about creating a template

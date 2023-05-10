@@ -78,11 +78,6 @@ export default function Workspace() {
       setEditorFontSize(
         JSON.parse(localStorage.getItem("config")).editorFontSize,
       );
-    } else if (sessionStorage.getItem("config")) {
-      setTerminalBG(JSON.parse(sessionStorage.getItem("config")).terminalBG);
-      setEditorFontSize(
-        JSON.parse(sessionStorage.getItem("config")).editorFontSize,
-      );
     }
   }, []);
 
