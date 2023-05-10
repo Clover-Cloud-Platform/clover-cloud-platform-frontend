@@ -1,4 +1,10 @@
-import React, {Suspense, useEffect, useRef} from "react";
+import React, {
+  createContext,
+  Suspense,
+  useContext,
+  useEffect,
+  useRef,
+} from "react";
 import {
   Box as BoxDrei,
   OrbitControls,
@@ -61,6 +67,70 @@ let arucoMarkersReceived = false;
 let globalMode = "play";
 let telemGlobal = false;
 
+const LedContext = createContext(null);
+
+const Leds = ({count = 58, temp = new THREE.Object3D()}) => {
+  const {ledRef} = useContext(LedContext);
+  useEffect(() => {
+    for (let i = 0; i < count; i++) {
+      temp.position.set(
+        0.817 * Math.cos((360 / 58) * i * (Math.PI / 180)),
+        -0.275,
+        0.817 * Math.sin((360 / 58) * i * (Math.PI / 180)),
+      );
+      temp.rotation.set(0, Math.PI / 2 - (360 / 58) * i * (Math.PI / 180), 0);
+      temp.updateMatrix();
+      ledRef.current.setMatrixAt(i, temp.matrix);
+      ledRef.current.setColorAt(i, new THREE.Color("black"));
+    }
+    ledRef.current.instanceMatrix.needsUpdate = true;
+    setTimeout(() => {
+      ledRef.current.instanceColor.needsUpdate = true;
+    }, 1);
+  }, []);
+  return (
+    <instancedMesh ref={ledRef} args={[null, null, count]}>
+      <boxGeometry args={[0.06, 0.06, 0.015]} />
+      <meshBasicMaterial />
+    </instancedMesh>
+  );
+};
+
+const Clover = props => {
+  const group = useRef();
+  return (
+    <group
+      ref={group}
+      dispose={null}
+      position={props.position}
+      rotation={props.rotation}>
+      <CloverBody position={[0, 0, 0]} scale={[10, 10, 10]} />
+      <CloverGuards position={[0, 0, 0]} scale={[10, 10, 10]} />
+      <PropCW
+        position={[-0.826, 0, 0.826]}
+        scale={[10, 10, 10]}
+        rotation={[0, -props.propRotation, 0]}
+      />
+      <PropCCW
+        position={[0.826, 0, 0.826]}
+        scale={[10, 10, 10]}
+        rotation={[0, props.propRotation, 0]}
+      />
+      <PropCW
+        position={[0.826, 0, -0.826]}
+        scale={[10, 10, 10]}
+        rotation={[0, -props.propRotation, 0]}
+      />
+      <PropCCW
+        position={[-0.826, 0, -0.826]}
+        scale={[10, 10, 10]}
+        rotation={[0, props.propRotation, 0]}
+      />
+      <Leds />
+    </group>
+  );
+};
+
 export default function Gazebo(props) {
   const instanceID = props.instanceID;
   const [gazeboRunning, setGazebo] = React.useState(false);
@@ -80,67 +150,6 @@ export default function Gazebo(props) {
   const [stopGazeboButton, setStopGazeboButton] = React.useState(true);
   const [runGazeboButton, setRunGazeboButton] = React.useState(false);
   const ledRef = useRef();
-
-  const Leds = ({count = 58, temp = new THREE.Object3D()}) => {
-    useEffect(() => {
-      for (let i = 0; i < count; i++) {
-        temp.position.set(
-          0.817 * Math.cos((360 / 58) * i * (Math.PI / 180)),
-          -0.275,
-          0.817 * Math.sin((360 / 58) * i * (Math.PI / 180)),
-        );
-        temp.rotation.set(0, Math.PI / 2 - (360 / 58) * i * (Math.PI / 180), 0);
-        temp.updateMatrix();
-        ledRef.current.setMatrixAt(i, temp.matrix);
-        ledRef.current.setColorAt(i, new THREE.Color("black"));
-      }
-      ledRef.current.instanceMatrix.needsUpdate = true;
-      setTimeout(() => {
-        ledRef.current.instanceColor.needsUpdate = true;
-      }, 1);
-    }, []);
-    return (
-      <instancedMesh ref={ledRef} args={[null, null, count]}>
-        <boxGeometry args={[0.06, 0.06, 0.015]} />
-        <meshBasicMaterial />
-      </instancedMesh>
-    );
-  };
-
-  const Clover = props => {
-    const group = useRef();
-    return (
-      <group
-        ref={group}
-        dispose={null}
-        position={props.position}
-        rotation={props.rotation}>
-        <CloverBody position={[0, 0, 0]} scale={[10, 10, 10]} />
-        <CloverGuards position={[0, 0, 0]} scale={[10, 10, 10]} />
-        <PropCW
-          position={[-0.826, 0, 0.826]}
-          scale={[10, 10, 10]}
-          rotation={[0, -props.propRotation, 0]}
-        />
-        <PropCCW
-          position={[0.826, 0, 0.826]}
-          scale={[10, 10, 10]}
-          rotation={[0, props.propRotation, 0]}
-        />
-        <PropCW
-          position={[0.826, 0, -0.826]}
-          scale={[10, 10, 10]}
-          rotation={[0, -props.propRotation, 0]}
-        />
-        <PropCCW
-          position={[-0.826, 0, -0.826]}
-          scale={[10, 10, 10]}
-          rotation={[0, props.propRotation, 0]}
-        />
-        <Leds />
-      </group>
-    );
-  };
 
   useEffect(() => {
     socket.on("GazeboStopped", () => {
@@ -1107,11 +1116,13 @@ export default function Gazebo(props) {
                   position={[-200, 400, -200]}
                 />
                 <Sky />
-                <Clover
-                  position={cloverPosition}
-                  rotation={cloverRotation}
-                  propRotation={propRotation}
-                />
+                <LedContext.Provider value={{ledRef: ledRef}}>
+                  <Clover
+                    position={cloverPosition}
+                    rotation={cloverRotation}
+                    propRotation={propRotation}
+                  />
+                </LedContext.Provider>
                 <group dispose={null}>{arucoMarkers}</group>
                 <group dispose={null}>{cubes}</group>
                 <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.87, 0]}>
