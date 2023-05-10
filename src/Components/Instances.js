@@ -51,9 +51,6 @@ initializeApp(firebaseConfig);
 //connect to server
 export const socket = io(process.env.REACT_APP_SERVER_LINK, {
   closeOnBeforeunload: false,
-  auth: cb => {
-    cb({token: process.env.REACT_APP_ACCESS_KEY});
-  },
 });
 
 //stopper for function that inserts existing instances
