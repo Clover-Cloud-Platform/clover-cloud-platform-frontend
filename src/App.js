@@ -3,6 +3,7 @@ import * as React from "react";
 import {useEffect} from "react";
 import {createTheme, ThemeProvider} from "@mui/material/styles";
 import {
+  Alert,
   AppBar,
   Avatar,
   Box,
@@ -481,13 +482,11 @@ export default function App() {
                 }}>
                 Simulate, test, and code with Clover Cloud
               </Typography>
-              <Typography
-                fontSize={"18px"}
-                mt={"17px"}
-                sx={{letterSpacing: "-.2px"}}>
-                Get access to Clover simulation in browser, test code faster,
-                and learn drones easier.
-              </Typography>
+              <Alert severity="warning" sx={{mt: "17px"}}>
+                At the moment the platform may not function correctly as our
+                team updates the server so that we can serve a large number of
+                users.
+              </Alert>
               <Box mt={"32px"}>
                 <Button
                   component={RouterLink}
