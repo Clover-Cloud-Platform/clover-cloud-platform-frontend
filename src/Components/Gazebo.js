@@ -56,21 +56,30 @@ import IconButton from "@mui/material/IconButton";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import {v4 as uuidv4} from "uuid";
 
+// Create a store for target cube state
 const useStore = create(set => ({
   target: null,
   setTarget: target => set({target}),
 }));
 
+// Define global arrays for cubes and markers to make working with them easier
 let arucoMarkersGlobal = [];
 let cubesGlobal = [];
+
+// Define global variables for marker receiving state, mode and telemetry state
 let arucoMarkersReceived = false;
 let globalMode = "play";
 let telemGlobal = false;
 
+// Create context for led strip data array
 const LedContext = createContext(null);
 
+// A component for the led strip
 const Leds = ({count = 58, temp = new THREE.Object3D()}) => {
+  // Get access to led ref from context
   const {ledRef} = useContext(LedContext);
+
+  // Place the LEDs and set the default color
   useEffect(() => {
     for (let i = 0; i < count; i++) {
       temp.position.set(
@@ -88,6 +97,8 @@ const Leds = ({count = 58, temp = new THREE.Object3D()}) => {
       ledRef.current.instanceColor.needsUpdate = true;
     }, 1);
   }, []);
+
+  // Return instanced mesh. I use it to update not each LED individually, but all at once, which greatly improves performance
   return (
     <instancedMesh ref={ledRef} args={[null, null, count]}>
       <boxGeometry args={[0.06, 0.06, 0.015]} />
@@ -96,8 +107,11 @@ const Leds = ({count = 58, temp = new THREE.Object3D()}) => {
   );
 };
 
+// A component for the Clover drone
 const Clover = props => {
   const group = useRef();
+
+  // Return body of the drone, its guards props and LEDs
   return (
     <group
       ref={group}
@@ -131,6 +145,7 @@ const Clover = props => {
   );
 };
 
+// A component with the simulator
 export default function Gazebo(props) {
   const instanceID = props.instanceID;
   const [gazeboRunning, setGazebo] = React.useState(false);
@@ -142,15 +157,13 @@ export default function Gazebo(props) {
   const [editArucoComponent, setEditArucoComponent] = React.useState();
   const [cubes, setCubes] = React.useState([]);
   const {target, setTarget} = useStore();
-
   const [mode, setMode] = React.useState("play");
-
   const [cubeEditMode, setCubeEditMode] = React.useState("translate");
-
   const [stopGazeboButton, setStopGazeboButton] = React.useState(true);
   const [runGazeboButton, setRunGazeboButton] = React.useState(false);
   const ledRef = useRef();
 
+  // Set button 'Run Gazebo' visible after receiving the GazeboStopped socket
   useEffect(() => {
     socket.on("GazeboStopped", () => {
       setTimeout(() => {
@@ -159,10 +172,12 @@ export default function Gazebo(props) {
     });
   }, []);
 
+  // A function to change cube edit mode
   const handleCubeEditModeChange = (event, newMode) => {
     setCubeEditMode(newMode);
   };
 
+  // A component that returns dialog box with elements for changing markers
   const ArucoPreview = props => {
     const [arucoImg, setArucoImg] = React.useState(
       props.type === "svg"
@@ -177,29 +192,44 @@ export default function Gazebo(props) {
     const [genArucoId, setGenArucoId] = React.useState(null);
     const [fileContent, setFileContent] = React.useState();
     const [arucoId, setArucoId] = React.useState(props.name.split("_").at(-1));
-
     const inputArucoRef = useRef();
+
+    // Handle Aruco image change
     const handleArucoUpload = () => {
       inputArucoRef.current?.click();
     };
     const handleArucoFileChange = e => {
+      // Check the file type
       if (!e.target.files || e.target.files[0].type !== "image/png") {
         return;
       } else {
-        setFileType("png");
-        setArucoImg(URL.createObjectURL(e.target.files[0]));
-        const reader = new FileReader();
-        reader.onload = () => {
-          setFileContent(
-            reader.result.replace("data:", "").replace(/^.+,/, ""),
-          );
+        const fr = new FileReader();
+        fr.onload = () => {
+          const img = new Image();
+          img.onload = function () {
+            // Check image resolution
+            if (img.width <= 300 && img.height <= 300) {
+              // Set new image
+              setFileType("png");
+              setArucoImg(URL.createObjectURL(e.target.files[0]));
+              setFileContent(
+                fr.result.replace("data:", "").replace(/^.+,/, ""),
+              );
+            } else {
+              return;
+            }
+          };
+
+          img.src = fr.result;
         };
-        reader.readAsDataURL(e.target.files[0]);
+        fr.readAsDataURL(e.target.files[0]);
       }
     };
     const handleCloseGenArucoDialog = () => {
       setOpenGenArucoDialog(false);
     };
+
+    // A function to generate marker
     const generateMarker = id => {
       setGenArucoId(String(id));
       setOpenGenArucoDialog(false);
@@ -207,6 +237,7 @@ export default function Gazebo(props) {
       setArucoImg(`data:image/svg+xml;utf8,${generateAruco(id).outerHTML}`);
     };
 
+    // A function to delete marker
     const deleteMarker = () => {
       setArucoImg(null);
       setEditArucoComponent(null);
@@ -469,6 +500,7 @@ export default function Gazebo(props) {
     );
   };
 
+  // Handle click on marker event
   const clickOnAruco = (image, position, type, size, name) => {
     if (globalMode === "edit") {
       setEditArucoComponent(
@@ -483,7 +515,7 @@ export default function Gazebo(props) {
     }
   };
 
-  //aruco size: ((0.22|0.33) / 0.33) * 0.88 * 0.6
+  // A component that returns Aruco marker
   const Aruco = props => {
     const [hovered, setHovered] = React.useState(false);
     useCursor(hovered);
@@ -526,6 +558,7 @@ export default function Gazebo(props) {
     );
   };
 
+  // A component that returns png marker
   const PngMarker = props => {
     let image = props.image;
     if (!image.includes("blob:") && !image.includes("data:")) {
@@ -562,6 +595,7 @@ export default function Gazebo(props) {
     );
   };
 
+  // A component that returns the cube object
   const Cube = props => {
     const [hovered, setHovered] = React.useState(false);
     const setTarget = useStore(state => state.setTarget);
@@ -587,10 +621,15 @@ export default function Gazebo(props) {
     );
   };
 
+  // A function to add a cube to the scene
   const addCube = () => {
     setTarget(null);
     const cubeID = uuidv4();
+
+    // Send request to the server
     socket.emit("AddCube", {instanceID: props.instanceID, cubeID: cubeID});
+
+    // Update scene
     cubesGlobal.push({
       position: [10, 5 - 0.87, 0],
       rotation: [0, 0, 0],
@@ -612,6 +651,7 @@ export default function Gazebo(props) {
     ]);
   };
 
+  // A function to add a marker to the scene
   const addMarker = () => {
     let name;
     let maxId = 0;
@@ -625,7 +665,11 @@ export default function Gazebo(props) {
     name = name.split("_");
     name[name.length - 1] = String(maxId + 1);
     name = name.join("_");
+
+    // Send request to the server
     socket.emit("AddMarker", {instanceID: props.instanceID, name: name});
+
+    // Update scene
     arucoMarkersGlobal.push(
       <Aruco
         name={name}
@@ -638,6 +682,7 @@ export default function Gazebo(props) {
     setArucoMarkers([...arucoMarkersGlobal]);
   };
 
+  // A function to change simulator mode
   const handleModeChange = (event, newMode) => {
     if (newMode === "play") {
       setTarget(null);
@@ -647,6 +692,7 @@ export default function Gazebo(props) {
     globalMode = newMode;
   };
 
+  // Update telemetry state
   useEffect(() => {
     if (telem !== telemGlobal) {
       setTelem(telemGlobal);
@@ -657,7 +703,9 @@ export default function Gazebo(props) {
   }, [telemGlobal]);
 
   useEffect(() => {
+    // Receive drone telemetry
     socket.on("CloverTelemetry", data => {
+      // Update telemetry state
       if (!telemGlobal) {
         setTelem(true);
         telemGlobal = true;
@@ -667,6 +715,8 @@ export default function Gazebo(props) {
         data.position[1] * 10,
         data.position[2] * 10,
       ];
+
+      // Rotate props
       if (data.armed) {
         if (propRotation >= Math.PI * 2) {
           setPropRotation(0);
@@ -674,8 +724,12 @@ export default function Gazebo(props) {
           setPropRotation(prev => prev + 0.7);
         }
       }
+
+      // Set a new drone position and rotation
       setCloverPosition(pos);
       setCloverRotation([data.rotation[1], data.rotation[2], data.rotation[0]]);
+
+      // Update LEDs
       if (ledRef.current) {
         for (let i = 0; i < data.led.length; i++) {
           ledRef.current.setColorAt(
@@ -692,16 +746,20 @@ export default function Gazebo(props) {
     });
   }, []);
 
+  // A function to run the simulator
   const runGazebo = e => {
     e.preventDefault();
     setGazebo(true);
     socket.emit("GetGazeboModels", props.instanceID);
     socket.emit("RunGazebo", props.instanceID);
   };
+
   useEffect(() => {
+    // Get an array of markers and cubes on the scene
     socket.on("GazeboModels", models => {
       console.log(models);
       if (!arucoMarkersReceived) {
+        // Update marker map
         for (let i = 0; i < models.aruco_map.length; i++) {
           if (arucoMarkersGlobal.length < models.aruco_map.length) {
             if (models.aruco_map[i].aruco_type === "svg") {
@@ -728,6 +786,7 @@ export default function Gazebo(props) {
           }
         }
 
+        // Update a list of cubes
         for (let oId in models.user_objects) {
           cubesGlobal.push({
             position: [
@@ -749,6 +808,8 @@ export default function Gazebo(props) {
             oId: models.user_objects[oId].cubeID,
           });
         }
+
+        // Update the scene
         setArucoMarkers([...arucoMarkersGlobal]);
         setCubes([
           ...cubesGlobal.map(cube => (
@@ -767,10 +828,12 @@ export default function Gazebo(props) {
     });
   }, [socket]);
 
+  // Define the texture of the floor
   const texture = useLoader(TextureLoader, "/models/floor.jpg");
   texture.wrapS = texture.wrapT = RepeatWrapping;
   texture.repeat.set(10, 10);
 
+  // Function that converts colors from hex format to Gazebo format
   const hexToGazebo = color => {
     switch (color) {
       case "#0504ff":
@@ -794,6 +857,7 @@ export default function Gazebo(props) {
     }
   };
 
+  // Function to delete a cube from the scene
   const deleteCube = () => {
     socket.emit("DeleteCube", {
       instanceID: instanceID,
@@ -820,6 +884,7 @@ export default function Gazebo(props) {
     ]);
   };
 
+  // Return the simulator component
   return (
     <ThemeProvider theme={theme}>
       <Box
@@ -882,7 +947,10 @@ export default function Gazebo(props) {
                       value="restart"
                       aria-label="restart"
                       onClick={() => {
+                        // Send request to the server
                         socket.emit("StopGazebo", props.instanceID);
+
+                        // Clean up the scene
                         setTimeout(() => {
                           setMode("play");
                           setTarget(null);
@@ -999,6 +1067,7 @@ export default function Gazebo(props) {
                       </ToggleButtonGroup>
                       <CirclePicker
                         onChange={color => {
+                          // Update the cube color
                           let colorGazebo = hexToGazebo(color.hex);
                           socket.emit("EditCube", {
                             model_id: target.oId,
@@ -1033,22 +1102,9 @@ export default function Gazebo(props) {
                             )[0],
                           );
                           cubesGlobal[cubeIndex].color = color.hex;
-                          cubesGlobal[cubeIndex].position = [
-                            target.position.x,
-                            target.position.y,
-                            target.position.z,
-                          ];
-                          cubesGlobal[cubeIndex].rotation = [
-                            target.rotation.x,
-                            target.rotation.y,
-                            target.rotation.z,
-                          ];
-                          cubesGlobal[cubeIndex].args = [
-                            cubesGlobal[cubeIndex].args[0] * target.scale.x,
-                            cubesGlobal[cubeIndex].args[1] * target.scale.y,
-                            cubesGlobal[cubeIndex].args[2] * target.scale.z,
-                          ];
                           setTarget(null);
+
+                          // Update the scene
                           setCubes([
                             ...cubesGlobal.map(cube => (
                               <Cube
@@ -1127,13 +1183,14 @@ export default function Gazebo(props) {
                 <group dispose={null}>{cubes}</group>
                 <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.87, 0]}>
                   <planeGeometry args={[500, 500]} />
-                  <meshStandardMaterial map={texture} />
+                  <meshStandardMaterial map={texture} side={THREE.DoubleSide} />
                 </mesh>
                 {target && (
                   <TransformControls
                     object={target}
                     mode={cubeEditMode}
                     onMouseUp={() => {
+                      // Update cube position
                       const cubeIndex = cubesGlobal.indexOf(
                         cubesGlobal.filter(cube => cube.oId === target.oId)[0],
                       );
@@ -1148,9 +1205,9 @@ export default function Gazebo(props) {
                         target.rotation.z,
                       ];
                       cubesGlobal[cubeIndex].args = [
-                        cubesGlobal[cubeIndex].args[0] * target.scale.x,
-                        cubesGlobal[cubeIndex].args[1] * target.scale.y,
-                        cubesGlobal[cubeIndex].args[2] * target.scale.z,
+                        target.scale.x * target.geometry.parameters.depth,
+                        target.scale.y * target.geometry.parameters.height,
+                        target.scale.z * target.geometry.parameters.width,
                       ];
                       socket.emit("EditCube", {
                         model_id: target.oId,
