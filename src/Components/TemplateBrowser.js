@@ -22,13 +22,13 @@ import {socket} from "./Instances";
 import {WorkspaceTextField} from "./WorkspaceAppBar";
 
 const DisableInstall = React.createContext(null);
-
 export const StyledPaper = styled(Paper)`
   background-color: #2a2931;
   background-image: none;
   min-height: calc(100% - 64px);
 `;
 
+// Template card component
 const Template = props => {
   const [install, setInstall] = React.useState(false);
   const {disableInstall, setDisableInstall} = useContext(DisableInstall);
@@ -77,6 +77,7 @@ const Template = props => {
   );
 };
 
+// Template browser that allows users to browse pre-configured workspaces
 export default function TemplateBrowser({
   openTBrowser,
   setOpenTBrowser,
@@ -89,12 +90,14 @@ export default function TemplateBrowser({
     Object.assign({}, ...Object.values(templates)),
   );
 
+  // Get up-to-date list of templates
   useEffect(() => {
     socket.on("Templates", templates => {
       setTemplates(templates);
     });
   }, []);
 
+  // Function to search templates
   const search = templates => {
     return templates.filter(template =>
       searchParameters.some(parameter =>
@@ -103,8 +106,11 @@ export default function TemplateBrowser({
     );
   };
 
+  // Reload page to get access to the new workspace
   socket.on("TemplateInstalled", () => {
-    window.location.reload();
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
   });
 
   return (

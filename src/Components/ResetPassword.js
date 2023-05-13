@@ -19,6 +19,8 @@ const firebaseConfig = {
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 const app = initializeApp(firebaseConfig);
+
+// Reset password page
 export default function ResetPassword() {
   const [getEmail, setGetEmail] = React.useState(true);
   const [email, setEmail] = React.useState("");

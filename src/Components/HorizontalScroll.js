@@ -1,7 +1,7 @@
 import * as React from "react";
 import {useEffect, useRef} from "react";
 
-// A ref that makes the fileview in the editor scrollable
+// A ref that makes the Fileview in the editor scrollable
 export function useHorizontalScroll() {
   const elRef = useRef();
   useEffect(() => {

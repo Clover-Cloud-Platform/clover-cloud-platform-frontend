@@ -138,6 +138,7 @@ export default function SignUp() {
     }
   };
 
+  // Sign up with Google account
   const signInWithGoogle = () => {
     const auth = getAuth();
     signInWithPopup(auth, googleProvider)
@@ -157,6 +158,7 @@ export default function SignUp() {
       });
   };
 
+  // Sign up with GitHub account
   const signInWithGitHub = () => {
     const auth = getAuth();
     signInWithPopup(auth, githubProvider)

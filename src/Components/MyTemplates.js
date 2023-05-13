@@ -16,6 +16,7 @@ import {theme} from "../App";
 import {socket} from "./Instances";
 import {StyledPaper} from "./TemplateBrowser";
 
+// Component that displays user's templates
 export default function MyTemplates({
   openMyTemplates,
   setOpenMyTemplates,

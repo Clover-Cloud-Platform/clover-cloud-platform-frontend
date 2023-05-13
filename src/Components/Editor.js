@@ -19,7 +19,6 @@ import IconButton from "@mui/material/IconButton";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
-
 import {socket} from "./Instances";
 
 export default function CodeEditor({
@@ -40,6 +39,7 @@ export default function CodeEditor({
     setLocalSavedState(true);
   }, [activeFile]);
 
+  // Component that returns a list of files opened in the editor
   const FileView = props => {
     const [{canDrop, isOver}, drop] = useDrop(() => ({
       accept: "file",
@@ -78,6 +78,7 @@ export default function CodeEditor({
     );
   };
 
+  // Editor preloader
   const Preloader = () => {
     return (
       <Box
@@ -94,6 +95,7 @@ export default function CodeEditor({
 
   const editorRef = useRef();
   const editorMount = (editor, monaco) => {
+    // Add the Save action to the context menu
     editorRef.current = editor;
     editor.addAction({
       id: "save-file-action-id",

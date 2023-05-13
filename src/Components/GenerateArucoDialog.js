@@ -11,6 +11,8 @@ import {Paper, styled} from "@mui/material";
 const StyledPaper = styled(Paper)`
   background-color: #2a2931;
 `;
+
+// Dialog box for changing the marker id
 export default function GenerateArucoDialog(props) {
   const [value, setValue] = React.useState(props.id);
   const [error, setError] = React.useState(true);

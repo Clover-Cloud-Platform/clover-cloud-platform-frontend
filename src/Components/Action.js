@@ -85,6 +85,7 @@ const GoToButton = props => {
   );
 };
 
+// Page for user verification and password reset
 export default function Action() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [error, setError] = React.useState(false);

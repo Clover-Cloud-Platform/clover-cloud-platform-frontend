@@ -10,6 +10,7 @@ import {ThemeProvider} from "@mui/material/styles";
 import {useDrag, useDrop} from "react-dnd";
 import CircleIcon from "@mui/icons-material/Circle";
 
+//  Component that returns the file element for the Fileview
 export default function EditorFile(props) {
   const path = props.path;
   const [{canDrop, isOver}, drop] = useDrop(() => ({
