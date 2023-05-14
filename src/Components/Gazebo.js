@@ -33,6 +33,8 @@ import {
   Radio,
   RadioGroup,
   Tooltip,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {theme} from "../App";
 import {ThemeProvider} from "@mui/material/styles";
@@ -162,6 +164,9 @@ export default function Gazebo(props) {
   const [stopGazeboButton, setStopGazeboButton] = React.useState(true);
   const [runGazeboButton, setRunGazeboButton] = React.useState(false);
   const ledRef = useRef();
+  const [openGazeboMsg, setOpenGazeboMsg] = React.useState(false);
+  const [gazeboMsg, setGazeboMsg] = React.useState("");
+  const [gazeboMsgType, setGazeboMsgType] = React.useState("error");
 
   // Set button 'Run Gazebo' visible after receiving the GazeboStopped socket
   useEffect(() => {
@@ -201,6 +206,9 @@ export default function Gazebo(props) {
     const handleArucoFileChange = e => {
       // Check the file type
       if (!e.target.files || e.target.files[0].type !== "image/png") {
+        setGazeboMsgType("error");
+        setGazeboMsg("You can upload image only in PNG format.");
+        setOpenGazeboMsg(true);
         return;
       } else {
         const fr = new FileReader();
@@ -216,6 +224,9 @@ export default function Gazebo(props) {
                 fr.result.replace("data:", "").replace(/^.+,/, ""),
               );
             } else {
+              setGazeboMsgType("error");
+              setGazeboMsg("You can upload an image up to 300px by 300px.");
+              setOpenGazeboMsg(true);
               return;
             }
           };
@@ -686,10 +697,22 @@ export default function Gazebo(props) {
   const handleModeChange = (event, newMode) => {
     if (newMode === "play") {
       setTarget(null);
-    } else if (newMode === "edit") {
+      if (
+        globalMode === "edit" &&
+        !localStorage.getItem("DoNotShowEditModeWarning")
+      ) {
+        setGazeboMsgType("warning");
+        setGazeboMsg(
+          "Restart the simulator so that the changes made in edit mode take effect.",
+        );
+        setOpenGazeboMsg(true);
+        localStorage.setItem("DoNotShowEditModeWarning", "true");
+      }
     }
-    setMode(newMode);
-    globalMode = newMode;
+    if (newMode) {
+      setMode(newMode);
+      globalMode = newMode;
+    }
   };
 
   // Update telemetry state
@@ -1254,6 +1277,21 @@ export default function Gazebo(props) {
             Run Gazebo
           </Button>
         )}
+        <Snackbar
+          anchorOrigin={{vertical: "bottom", horizontal: "right"}}
+          open={openGazeboMsg}
+          autoHideDuration={6000}
+          onClose={() => {
+            setOpenGazeboMsg(false);
+          }}>
+          <Alert
+            onClose={() => {
+              setOpenGazeboMsg(false);
+            }}
+            severity={gazeboMsgType}>
+            {gazeboMsg}
+          </Alert>
+        </Snackbar>
       </Box>
     </ThemeProvider>
   );
