@@ -81,6 +81,7 @@ export const WorkspaceTextField = styled(TextField)({
 });
 
 const auth = getAuth();
+let uid;
 
 // A component that returns app bar for workspace
 export default function WorkspaceAppBar(props) {
@@ -106,7 +107,6 @@ export default function WorkspaceAppBar(props) {
   if (!instanceID) {
     window.location.href = "/instances";
   }
-  let uid;
 
   useEffect(() => {
     onAuthStateChanged(auth, user => {
@@ -409,6 +409,7 @@ export default function WorkspaceAppBar(props) {
             <IconButton
               color="primary"
               onClick={() => {
+                socket.emit("GetUserTemplates", uid);
                 setOpenMyTemplates(true);
               }}>
               <SpaceDashboardIcon />

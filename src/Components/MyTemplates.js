@@ -22,6 +22,7 @@ export default function MyTemplates({
   setOpenMyTemplates,
   myTemplates,
   setMyTemplates,
+  uid,
 }) {
   const Template = props => {
     return (
@@ -47,7 +48,7 @@ export default function MyTemplates({
             onClick={() => {
               socket.emit("DeleteTemplate", {
                 instanceID: props.instanceId,
-                uid: props.uid,
+                uid: uid,
               });
               const myTemplatesUpdated = myTemplates;
               myTemplatesUpdated.splice(props.index, 1);
