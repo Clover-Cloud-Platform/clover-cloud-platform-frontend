@@ -40,6 +40,7 @@ import IconButton from "@mui/material/IconButton";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Visibility from "@mui/icons-material/Visibility";
 import {socket} from "./Instances";
+
 const googleProvider = new GoogleAuthProvider();
 const githubProvider = new GithubAuthProvider();
 const firebaseConfig = {

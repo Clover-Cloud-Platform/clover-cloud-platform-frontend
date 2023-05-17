@@ -41,6 +41,8 @@ import MyTemplates from "./MyTemplates";
 import {getAuth, onAuthStateChanged, signOut} from "firebase/auth";
 import {initializeApp} from "firebase/app";
 import LockResetRoundedIcon from "@mui/icons-material/LockResetRounded";
+import {getAnalytics, logEvent} from "firebase/analytics";
+const analytics = getAnalytics();
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -267,6 +269,7 @@ export default function WorkspaceAppBar(props) {
     const [name, setName] = React.useState("");
     const [description, setDescription] = React.useState("");
     const share = () => {
+      logEvent(analytics, "create_template");
       socket.emit("CreateNewTemplate", {
         uid: uid,
         workspaceName: instanceName,

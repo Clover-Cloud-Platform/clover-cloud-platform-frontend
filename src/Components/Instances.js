@@ -37,6 +37,9 @@ import ExitToAppRoundedIcon from "@mui/icons-material/ExitToAppRounded";
 import LockResetRoundedIcon from "@mui/icons-material/LockResetRounded";
 import {getAuth, onAuthStateChanged, signOut} from "firebase/auth";
 import {initializeApp} from "firebase/app";
+import {getAnalytics, logEvent} from "firebase/analytics";
+
+const analytics = getAnalytics();
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -226,6 +229,7 @@ export default function Instances() {
                   uid: uid,
                   cont_name: props.name,
                 });
+                logEvent(analytics, "delete_instance");
                 //hide instance
                 setContainer(false);
                 //update list of instances
@@ -362,6 +366,7 @@ export default function Instances() {
         uid: uid,
         cont_name: name,
       });
+      logEvent(analytics, "create_instance");
       setInstances([
         ...instances,
         <Instance

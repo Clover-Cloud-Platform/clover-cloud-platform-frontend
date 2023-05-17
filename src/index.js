@@ -27,9 +27,8 @@ const firebaseConfig = {
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase and get analytics and performance
+// Initialize Firebase and get performance
 const app = initializeApp(firebaseConfig);
-export const analytics = getAnalytics(app);
 getPerformance(app);
 
 // Rendering components through React router and ReactDOM

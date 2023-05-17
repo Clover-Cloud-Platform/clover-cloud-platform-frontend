@@ -15,6 +15,9 @@ import {ThemeProvider} from "@mui/material/styles";
 import {theme} from "../App";
 import {socket} from "./Instances";
 import {StyledPaper} from "./TemplateBrowser";
+import {getAnalytics, logEvent} from "firebase/analytics";
+
+const analytics = getAnalytics();
 
 // Component that displays user's templates
 export default function MyTemplates({
@@ -30,26 +33,43 @@ export default function MyTemplates({
         style={{
           minWidth: 270,
           flex: `1 0 30%`,
+          position: "relative",
         }}>
-        <CardContent>
-          <Typography sx={{fontSize: 14}} color="text.secondary" gutterBottom>
+        <CardContent sx={{mb: "60px"}}>
+          <Typography
+            sx={{fontSize: 14, wordWrap: "break-word"}}
+            color="text.secondary"
+            gutterBottom>
             {props.workspaceName}
           </Typography>
-          <Typography variant="h5" component="div">
+          <Typography
+            variant="h5"
+            component="div"
+            sx={{wordWrap: "break-word"}}>
             {props.name}
           </Typography>
           <Typography sx={{mb: 1.5}} color="text.secondary">
             {props.date}
           </Typography>
-          <Typography variant="body2">{props.description}</Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              wordWrap: "break-word",
+              maxHeight: "100px",
+              overflow: "scroll",
+            }}>
+            {props.description}
+          </Typography>
         </CardContent>
         <CardActions>
           <Button
+            sx={{position: "absolute", bottom: "8px", left: "8px"}}
             onClick={() => {
               socket.emit("DeleteTemplate", {
                 instanceID: props.instanceId,
                 uid: uid,
               });
+              logEvent(analytics, "delete_template");
               const myTemplatesUpdated = myTemplates;
               myTemplatesUpdated.splice(props.index, 1);
               setMyTemplates([...myTemplatesUpdated]);
