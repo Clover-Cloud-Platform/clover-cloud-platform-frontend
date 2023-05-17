@@ -17,6 +17,7 @@ import {
   Link,
   Menu,
   MenuItem,
+  Snackbar,
   Toolbar,
   Tooltip,
   Typography,
@@ -421,7 +422,13 @@ const Repo = props => {
 
 // export App and render it
 export default function App() {
+  const [openCookieWarning, setOpenCookieWarning] = React.useState(false);
+
   useEffect(() => {
+    // Show cookie warning
+    if (!localStorage.getItem("DoNotShowCookieWarning")) {
+      setOpenCookieWarning(true);
+    }
     // Set title
     document.title = "Clover Cloud Platform";
 
@@ -947,6 +954,27 @@ export default function App() {
           </Box>
         </Box>
       </Fade>
+      <Snackbar
+        open={openCookieWarning}
+        ContentProps={{style: {backgroundColor: "#fff"}}}
+        anchorOrigin={{vertical: "bottom", horizontal: "center"}}
+        action={
+          <Button
+            size="small"
+            onClick={() => {
+              localStorage.setItem("DoNotShowCookieWarning", "true");
+              setOpenCookieWarning(false);
+            }}>
+            Accept and do not show this again
+          </Button>
+        }
+        message={
+          "This site uses Cookies to collect information and report usage statistics."
+        }
+        onClose={() => {
+          setOpenCookieWarning(false);
+        }}
+      />
     </ThemeProvider>
   );
 }
