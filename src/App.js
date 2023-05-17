@@ -922,7 +922,7 @@ export default function App() {
             mr={"20px"}>
             <Typography fontSize={"16px"} color={"text.primary"}>
               <Link
-                href="#"
+                href="https://github.com/Clover-Cloud-Platform/clover-cloud-platform-frontend/blob/master/PRIVACYPOLICY.md"
                 underline="none"
                 color={"inherit"}
                 sx={{"&:hover": {color: "primary.500"}}}>
@@ -930,7 +930,7 @@ export default function App() {
               </Link>{" "}
               |{" "}
               <Link
-                href="#"
+                href="https://github.com/Clover-Cloud-Platform/clover-cloud-platform-frontend/blob/master/LICENSE"
                 underline="none"
                 color={"inherit"}
                 sx={{"&:hover": {color: "primary.500"}}}>
@@ -938,11 +938,11 @@ export default function App() {
               </Link>{" "}
               |{" "}
               <Link
-                href="#"
+                href="mailto:clover.cloud.platform@yandex.ru"
                 underline="none"
                 color={"inherit"}
                 sx={{"&:hover": {color: "primary.500"}}}>
-                Terms of Use
+                Contact us via email
               </Link>
             </Typography>
             <Typography
