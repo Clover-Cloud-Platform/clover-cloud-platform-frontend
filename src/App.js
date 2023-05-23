@@ -489,11 +489,13 @@ export default function App() {
                 }}>
                 Simulate, test, and code with Clover Cloud
               </Typography>
-              <Alert severity="warning" sx={{mt: "17px"}}>
-                At the moment the platform may not function correctly as our
-                team updates the server so that we can serve a large number of
-                users.
-              </Alert>
+              <Typography
+                fontSize={"18px"}
+                mt={"17px"}
+                sx={{letterSpacing: "-.2px"}}>
+                Get access to Clover simulation in browser, test code faster,
+                and learn drones easier.
+              </Typography>
               <Box mt={"32px"}>
                 <Button
                   component={RouterLink}
