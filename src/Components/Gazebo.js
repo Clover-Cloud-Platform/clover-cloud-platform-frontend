@@ -1099,8 +1099,8 @@ export default function Gazebo(props) {
                               (target.position.y + 0.87) / 10,
                             ],
                             rotation: [
-                              target.rotation.z,
                               target.rotation.x,
+                              target.rotation.z,
                               target.rotation.y,
                             ],
                             size: [
