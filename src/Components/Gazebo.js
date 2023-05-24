@@ -780,7 +780,6 @@ export default function Gazebo(props) {
   useEffect(() => {
     // Get an array of markers and cubes on the scene
     socket.on("GazeboModels", models => {
-      console.log(models);
       if (!arucoMarkersReceived) {
         // Update marker map
         for (let i = 0; i < models.aruco_map.length; i++) {
@@ -823,9 +822,9 @@ export default function Gazebo(props) {
               models.user_objects[oId].rotation[0],
             ],
             args: [
-              models.user_objects[oId].size[0] * 10,
               models.user_objects[oId].size[1] * 10,
               models.user_objects[oId].size[2] * 10,
+              models.user_objects[oId].size[0] * 10,
             ],
             color: models.user_objects[oId].colorHex,
             oId: models.user_objects[oId].cubeID,
@@ -1105,14 +1104,14 @@ export default function Gazebo(props) {
                               target.rotation.y,
                             ],
                             size: [
+                              (target.scale.z *
+                                target.geometry.parameters.width) /
+                                10,
                               (target.scale.x *
                                 target.geometry.parameters.depth) /
                                 10,
                               (target.scale.y *
                                 target.geometry.parameters.height) /
-                                10,
-                              (target.scale.z *
-                                target.geometry.parameters.width) /
                                 10,
                             ],
                             color: colorGazebo,
@@ -1245,11 +1244,11 @@ export default function Gazebo(props) {
                           target.rotation.y,
                         ],
                         size: [
+                          (target.scale.z * target.geometry.parameters.width) /
+                            10,
                           (target.scale.x * target.geometry.parameters.depth) /
                             10,
                           (target.scale.y * target.geometry.parameters.height) /
-                            10,
-                          (target.scale.z * target.geometry.parameters.width) /
                             10,
                         ],
                         color: hexToGazebo(target.color),
