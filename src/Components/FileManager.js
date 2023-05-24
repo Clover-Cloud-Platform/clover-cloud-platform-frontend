@@ -9,7 +9,9 @@ import {
 } from "file-extension-icon-js";
 import {
   Alert,
+  Backdrop,
   Box,
+  CircularProgress,
   Snackbar,
   TextField,
   Tooltip,
@@ -50,6 +52,8 @@ export default function FileManager({
 
   const [openErrorFile, setOpenErrorFile] = React.useState(false);
   const [openErrorFolder, setOpenErrorFolder] = React.useState(false);
+
+  const [revertBackdrop, setRevertBackdrop] = React.useState(false);
 
   // A function to edit the tree data by adding, modifying or deleting the nodes
   const editTree = (source, targetDir, operation, newName = "") => {
@@ -687,6 +691,7 @@ export default function FileManager({
               size="small"
               onClick={() => {
                 socket.emit("RevertToInitial", instanceID);
+                setRevertBackdrop(true);
               }}>
               <SettingsBackupRestoreRoundedIcon
                 fontSize={"small"}
@@ -729,6 +734,9 @@ export default function FileManager({
           </Alert>
         </Snackbar>
       </Box>
+      <Backdrop sx={{zIndex: 9999}} open={revertBackdrop}>
+        <CircularProgress color="primary" />
+      </Backdrop>
     </ThemeProvider>
   );
 }
