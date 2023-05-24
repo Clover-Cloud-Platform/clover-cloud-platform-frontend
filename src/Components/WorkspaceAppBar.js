@@ -306,6 +306,7 @@ export default function WorkspaceAppBar(props) {
               onChange={e => {
                 setName(e.target.value);
               }}
+              inputProps={{maxLength: 50}}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -332,6 +333,7 @@ export default function WorkspaceAppBar(props) {
               onChange={e => {
                 setDescription(e.target.value);
               }}
+              inputProps={{maxLength: 150}}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
