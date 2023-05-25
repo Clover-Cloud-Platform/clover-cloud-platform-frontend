@@ -171,11 +171,11 @@ export default function Terminal(props) {
         sx={{
           overflowY: "scroll",
           scrollbarWidth: "thin",
-          scrollbarColor: "#5f6368 #1c1b22",
+          scrollbarColor: "#5f6368 #202124",
           "&::-webkit-scrollbar": {
             width: "5px",
             height: "8px",
-            backgroundColor: "#1c1b22",
+            backgroundColor: "#202124",
             borderRadius: "4px",
           },
           "&::-webkit-scrollbar-thumb": {
@@ -189,7 +189,7 @@ export default function Terminal(props) {
           color={"primary.50"}
           alignItems={"center"}
           width={"100%"}
-          sx={{backdropFilter: "blur(5px)", bgcolor: "rgba(28,27,34,0.5)"}}>
+          sx={{backdropFilter: "blur(5px)", bgcolor: "rgba(32,33,36,0.5)"}}>
           <Typography variant={"overline"} color={"#7c8186"} ml={"10px"}>
             Terminal
           </Typography>
@@ -233,7 +233,7 @@ export default function Terminal(props) {
                 sx: {
                   filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
                   backdropFilter: "blur(5px)",
-                  bgcolor: "rgba(42,41,49,0.5)",
+                  bgcolor: "rgba(32,33,36,0.5)",
                   color: "primary.50",
                   fontFamily: "Monospace",
                   fontWeight: 400,

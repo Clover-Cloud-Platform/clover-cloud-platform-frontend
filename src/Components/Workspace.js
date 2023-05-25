@@ -97,7 +97,7 @@ export default function Workspace() {
     return (
       <Box
         ref={drop}
-        bgcolor={isOver && canDrop ? "#16161c" : "background.cloverMain"}
+        bgcolor={isOver && canDrop ? "#1b1b1e" : "background.cloverMain"}
         height={"100%"}
         display={"flex"}
         alignItems={"center"}
@@ -201,6 +201,7 @@ export default function Workspace() {
 
   // A function that opens a file in the editor
   const onOpen = path => {
+    let received = false;
     for (const i in filesBuffer) {
       if (filesBuffer[i].props.path === path) {
         if (!filesBuffer[i].props.active) {
@@ -274,24 +275,27 @@ export default function Workspace() {
 
     // Receive content
     socket.on("FileContent", file => {
-      if (file.content) {
-        // Set value
-        setEditorValue(file.content);
-        // Set language for the editor
-        setEditorLang(getFileLang(file.path));
-        setActiveFile(file.path);
-        activeFileGlobal = file.path;
-      } else {
-        socket.emit("CreateNewFile", {
-          path: path,
-          instanceID: instanceID,
-        });
-        // Set value
-        setEditorValue("");
-        // Set language for the editor
-        setEditorLang(getFileLang(path));
-        setActiveFile(path);
-        activeFileGlobal = path;
+      if (!received) {
+        if (file.content !== null) {
+          // Set value
+          setEditorValue(file.content);
+          // Set language for the editor
+          setEditorLang(getFileLang(file.path));
+          setActiveFile(file.path);
+          activeFileGlobal = file.path;
+        } else {
+          socket.emit("CreateNewFile", {
+            path: path,
+            instanceID: instanceID,
+          });
+          // Set value
+          setEditorValue("");
+          // Set language for the editor
+          setEditorLang(getFileLang(path));
+          setActiveFile(path);
+          activeFileGlobal = path;
+        }
+        received = true;
       }
     });
   };

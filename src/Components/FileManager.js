@@ -39,12 +39,12 @@ export default function FileManager({
 
   useEffect(() => {
     socket.emit("GetFiles", instanceID);
+    socket.on("Files", files => {
+      data = files;
+      setFileTree(<FileTree data={files} />);
+      onLoadManager();
+    });
   }, []);
-  socket.on("Files", files => {
-    data = files;
-    setFileTree(<FileTree data={files} />);
-    onLoadManager();
-  });
 
   const [openErrorFile, setOpenErrorFile] = React.useState(false);
   const [openErrorFolder, setOpenErrorFolder] = React.useState(false);
