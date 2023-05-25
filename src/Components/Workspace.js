@@ -3,7 +3,7 @@ import {useEffect} from "react";
 import {theme} from "../App";
 import {createTheme, ThemeProvider} from "@mui/material/styles";
 import ReactSplit, {SplitDirection} from "@devbookhq/splitter";
-import {Box, CircularProgress, Typography} from "@mui/material";
+import {Backdrop, Box, CircularProgress, Typography} from "@mui/material";
 import CodeEditor from "./Editor";
 import "./Workspace.css";
 import Terminal from "./Terminal";
@@ -62,6 +62,8 @@ export default function Workspace() {
   const [instanceError, setInstanceError] = React.useState(null);
   const [history, setHistory] = React.useState([]);
   const [historyKey, setHistoryKey] = React.useState(0);
+  const [openImageViewer, setOpenImageViewer] = React.useState(false);
+  const [imgViewerContent, setImgViewerContent] = React.useState(null);
 
   useEffect(() => {
     // Set title
@@ -109,38 +111,64 @@ export default function Workspace() {
 
   // A function that moves a file to the editor
   const dragToEditor = path => {
-    if (!openEditor) {
-      setOpenEditor(true);
-    }
-    let name = path.split("/");
-    name = name[name.length - 1];
-    let inEditor = false;
-    for (const i in filesBuffer) {
-      if (filesBuffer[i].props.path === path) {
-        inEditor = true;
-        break;
-      }
-      if (filesBuffer[i].props.name === name) {
-        name = path.split("/");
-        name = `${name.at(-2)}/${name.at(-1)}`;
-      }
-    }
-    if (!inEditor) {
-      filesBuffer.push(
-        <EditorFile
-          key={path}
-          name={name}
-          path={path}
-          onDelete={onDelete}
-          onOpen={onOpen}
-          onMove={onMove}
-          active={true}
-          saved={true}
-        />,
-      );
-      onOpen(path);
+    const imgList = ["png", "jpg", "jpeg", "svg"];
+    const ext = path.split(".").at(-1);
+    if (imgList.includes(ext)) {
+      socket.emit("ReadImage", {
+        path: path,
+        type: ext === "svg" ? "svg" : "img",
+        instanceID: instanceID,
+      });
+
+      socket.on("ImageData", data => {
+        if (data.type === "img") {
+          setImgViewerContent(data.content);
+        } else {
+          const imgBlob = new Blob([data.content], {type: "image/svg+xml"});
+          const imgUrl = URL.createObjectURL(imgBlob);
+          setImgViewerContent(imgUrl);
+          document
+            .getElementById("image-viewer")
+            .addEventListener("load", () => URL.revokeObjectURL(imgUrl), {
+              once: true,
+            });
+        }
+        setOpenImageViewer(true);
+      });
     } else {
-      onOpen(path);
+      if (!openEditor) {
+        setOpenEditor(true);
+      }
+      let name = path.split("/");
+      name = name[name.length - 1];
+      let inEditor = false;
+      for (const i in filesBuffer) {
+        if (filesBuffer[i].props.path === path) {
+          inEditor = true;
+          break;
+        }
+        if (filesBuffer[i].props.name === name) {
+          name = path.split("/");
+          name = `${name.at(-2)}/${name.at(-1)}`;
+        }
+      }
+      if (!inEditor) {
+        filesBuffer.push(
+          <EditorFile
+            key={path}
+            name={name}
+            path={path}
+            onDelete={onDelete}
+            onOpen={onOpen}
+            onMove={onMove}
+            active={true}
+            saved={true}
+          />,
+        );
+        onOpen(path);
+      } else {
+        onOpen(path);
+      }
     }
   };
 
@@ -209,40 +237,62 @@ export default function Workspace() {
     setEditorFiles([...filesBuffer]);
     // Get file content
     socket.emit("GetFileContent", {path: path, instanceID: instanceID});
-    // Receive content
-    socket.on("FileContent", file => {
-      // Set value
-      setEditorValue(file.content);
-      // Set language for the editor
+
+    const getFileLang = path => {
       let lang;
       let langList;
-      if (!file.path.split("/").at(-1).includes(".")) {
+      if (!path.split("/").at(-1).includes(".")) {
         lang = "plaintext";
       } else {
         langList = Object.entries(langMap).filter(
           lang =>
             lang[1].extensions &&
-            lang[1].extensions.includes(`.${file.path.split(".").at(-1)}`),
+            lang[1].extensions.includes(`.${path.split(".").at(-1)}`),
         );
-        let extNum = 0;
-        let extIndex = 0;
-        for (let i in langList) {
-          if (langList[i][1].extensions.length > extNum) {
-            extNum = langList[i][1].extensions.length;
-            extIndex = i;
+        if (langList.length > 0) {
+          let extNum = 0;
+          let extIndex = 0;
+          for (let i in langList) {
+            if (langList[i][1].extensions.length > extNum) {
+              extNum = langList[i][1].extensions.length;
+              extIndex = i;
+            }
           }
-        }
-        lang = langList[extIndex][1].aceMode;
-        if (lang.includes("_")) {
-          lang = lang.split("_")[1];
-        }
-        if (lang === "text") {
+          lang = langList[extIndex][1].aceMode;
+          if (lang.includes("_")) {
+            lang = lang.split("_")[1];
+          }
+          if (lang === "text") {
+            lang = "plaintext";
+          }
+        } else {
           lang = "plaintext";
         }
       }
-      setEditorLang(lang);
-      setActiveFile(file.path);
-      activeFileGlobal = file.path;
+      return lang;
+    };
+
+    // Receive content
+    socket.on("FileContent", file => {
+      if (file.content) {
+        // Set value
+        setEditorValue(file.content);
+        // Set language for the editor
+        setEditorLang(getFileLang(file.path));
+        setActiveFile(file.path);
+        activeFileGlobal = file.path;
+      } else {
+        socket.emit("CreateNewFile", {
+          path: path,
+          instanceID: instanceID,
+        });
+        // Set value
+        setEditorValue("");
+        // Set language for the editor
+        setEditorLang(getFileLang(path));
+        setActiveFile(path);
+        activeFileGlobal = path;
+      }
     });
   };
 
@@ -443,6 +493,14 @@ export default function Workspace() {
             </TerminalHistoryContext.Provider>
           </InstanceErrorContext.Provider>
         </SettingsContext.Provider>
+        <Backdrop
+          sx={{zIndex: 9999}}
+          open={openImageViewer}
+          onClick={() => {
+            setOpenImageViewer(false);
+          }}>
+          <img src={imgViewerContent} alt={"image"} id={"image-viewer"} />
+        </Backdrop>
       </ThemeProvider>
     </div>
   );
