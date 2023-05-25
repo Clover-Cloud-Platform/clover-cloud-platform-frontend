@@ -220,6 +220,7 @@ export default function WorkspaceAppBar(props) {
               triangle={"hide"}
               color={tColor}
               colors={[
+                "#202124",
                 "#1c1b22",
                 "#000000",
                 "#0f111a",
@@ -229,7 +230,6 @@ export default function WorkspaceAppBar(props) {
                 "#003f26",
                 "#b3faff",
                 "#8e9ba5",
-                "#f5f3ff",
               ]}
             />
           </Box>

@@ -77,8 +77,8 @@ export const theme = createTheme({
       default: "rgba(33,29,42,0.9)",
       dock: "rgba(255,255,255,0.7)",
       appBar: "#ede9fe",
-      cloverAppBar: "#2a2931",
-      cloverMain: "#1c1b22",
+      cloverAppBar: "#303235",
+      cloverMain: "#202124",
     },
     text: {
       primary: "rgba(33,29,42,0.9)",

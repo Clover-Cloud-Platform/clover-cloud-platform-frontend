@@ -15,7 +15,7 @@
     display: none;
 }
 .monaco-editor, .monaco-editor-background, .monaco-editor .inputarea.ime-input, .monaco-editor .margin {
-    background-color: #1c1b22 !important;
+    background-color: #202124 !important;
 }
 .circle-picker{
     flex-direction: column;
