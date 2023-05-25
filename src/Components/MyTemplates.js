@@ -58,6 +58,9 @@ export default function MyTemplates({
               maxHeight: "100px",
               overflow: "scroll",
               scrollbarWidth: "none",
+              "&::-webkit-scrollbar": {
+                display: "none",
+              },
             }}>
             {props.description}
           </Typography>
