@@ -29,7 +29,6 @@ import EditMenu from "./EditMenu";
 import {socket} from "./Instances";
 import IconButton from "@mui/material/IconButton";
 
-let filesReceived = false;
 let data = [];
 export default function FileManager({
   onDragToEditor,
@@ -42,12 +41,9 @@ export default function FileManager({
     socket.emit("GetFiles", instanceID);
   }, []);
   socket.on("Files", files => {
-    if (!filesReceived) {
-      data = files;
-      setFileTree(<FileTree data={files} />);
-      filesReceived = true;
-      onLoadManager();
-    }
+    data = files;
+    setFileTree(<FileTree data={files} />);
+    onLoadManager();
   });
 
   const [openErrorFile, setOpenErrorFile] = React.useState(false);
@@ -130,8 +126,17 @@ export default function FileManager({
           }
         }
       } else {
-        // If we need to move the node, push source object in the target array
-        target_array.push(source_object);
+        // Check if there is a folder or file with the same name
+        if (target_array.filter(el => el.name === source_object.name)[0]) {
+          if (source_object.type === "file") {
+            setOpenErrorFolder(true);
+          } else {
+            setOpenErrorFile(true);
+          }
+        } else {
+          // If we need to move the node, push source object in the target array
+          target_array.push(source_object);
+        }
       }
     } else if (operation === "edit") {
       let newSource = source_object;
@@ -164,7 +169,7 @@ export default function FileManager({
 
   // Directory node in the file tree
   const Directory = props => {
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = React.useState(props.status);
     const [showActions, setShowActions] = React.useState("none");
     const [inputValue, setInputValue] = React.useState("");
     const path = props.path;
@@ -184,7 +189,11 @@ export default function FileManager({
       end: (item, monitor) => {
         const dropResult = monitor.getDropResult();
         if (item && dropResult) {
-          if (item.path !== dropResult.name) {
+          if (
+            item.path !== dropResult.name &&
+            (item.path.match(/\//g) || []).length <
+              (dropResult.name.match(/\//g) || []).length
+          ) {
             // Send MoveItem request to the server and edit file tree
             socket.emit("MoveItem", {
               source: item.path,
@@ -297,6 +306,9 @@ export default function FileManager({
     const deleteItem = () => {
       socket.emit("DeleteDirectory", {path: path, instanceID: instanceID});
       setFileTree(editTree(path, "", "delete"));
+      if (localStorage.getItem(path)) {
+        localStorage.removeItem(path);
+      }
     };
 
     // Return the directory node
@@ -329,6 +341,13 @@ export default function FileManager({
           <Box
             ml={`${props.level * 10}px`}
             onClick={() => {
+              if (open) {
+                if (localStorage.getItem(path)) {
+                  localStorage.removeItem(path);
+                }
+              } else {
+                localStorage.setItem(path, "true");
+              }
               setOpen(prev => !prev);
             }}
             display={"flex"}
@@ -655,13 +674,35 @@ export default function FileManager({
           );
         }
         if (item.type === "folder") {
+          let dirStatus = false;
+          if (localStorage.getItem(item.path)) {
+            dirStatus = true;
+          }
+          let children = item.children;
+          const nameSort = () => (a, b) =>
+            a.type === b.type
+              ? a.name === b.name
+                ? 0
+                : a.name < b.name
+                ? -1
+                : 1
+              : 0;
+          const typeSort = () => (a, b) =>
+            a.type === b.type
+              ? 0
+              : a.type === "file" && b.type === "folder"
+              ? 1
+              : -1;
+          children.sort(typeSort());
+          children.sort(nameSort());
           return (
             <Directory
+              status={dirStatus}
               name={item.name}
               level={level}
               key={item.path}
               path={item.path}>
-              <FileTree data={item.children} />
+              <FileTree data={children} />
             </Directory>
           );
         }
