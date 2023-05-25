@@ -57,7 +57,12 @@ const Template = props => {
         </Typography>
         <Typography
           variant="body2"
-          sx={{wordWrap: "break-word", maxHeight: "100px", overflow: "scroll"}}>
+          sx={{
+            wordWrap: "break-word",
+            maxHeight: "100px",
+            overflow: "scroll",
+            scrollbarWidth: "none",
+          }}>
           {props.description}
         </Typography>
       </CardContent>

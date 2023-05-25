@@ -57,6 +57,7 @@ export default function MyTemplates({
               wordWrap: "break-word",
               maxHeight: "100px",
               overflow: "scroll",
+              scrollbarWidth: "none",
             }}>
             {props.description}
           </Typography>
