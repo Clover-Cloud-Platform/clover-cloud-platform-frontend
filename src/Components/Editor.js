@@ -228,7 +228,21 @@ export default function CodeEditor({
             position={"absolute"}
             height={"100%"}
             width={"100%"}
-            sx={{overflow: "scroll"}}
+            sx={{
+              overflow: "scroll",
+              scrollbarWidth: "thin",
+              scrollbarColor: "#5f6368 #2a2931",
+              "&::-webkit-scrollbar": {
+                width: "5px",
+                height: "8px",
+                backgroundColor: "#2a2931",
+                borderRadius: "4px",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "#5f6368",
+                borderRadius: "4px",
+              },
+            }}
             top={0}
             left={0}>
             <ReactMarkdown
