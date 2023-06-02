@@ -57,7 +57,7 @@ export default function Workspace() {
   const [preloader, setPreloader] = React.useState(true);
   const [splitSizesX, setSplitSizesX] = React.useState([20, 45, 35]);
   const [splitSizesY, setSplitSizesY] = React.useState([50, 50]);
-  const [terminalBG, setTerminalBG] = React.useState("#1c1b22");
+  const [terminalBG, setTerminalBG] = React.useState("#202124");
   const [editorFontSize, setEditorFontSize] = React.useState(13);
   const [instanceError, setInstanceError] = React.useState(null);
   const [history, setHistory] = React.useState([]);
